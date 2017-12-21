@@ -845,7 +845,9 @@ run_fch_dfs(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
     std::string arclab_file =  gr + "." + alg_name + "." + "label";
 
     warthog::label::dfs_labelling* lab = warthog::label::dfs_labelling::load(
-            arclab_file.c_str(), &g, &order, &part);
+           arclab_file.c_str(), &g, &order, &part);
+
+    //warthog::label::dfs_labelling* lab = 0;
 
     if(lab == 0)
     {

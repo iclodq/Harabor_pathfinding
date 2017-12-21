@@ -70,6 +70,18 @@ warthog::fch_dfs_expansion_policy::expand(
         (pn && (current_rank < get_rank(pn->get_id()))) *
         heads_[current_id];
 
+    if(succ == begin)
+    {
+        if(!down_closure_contains_target(current_id))
+        {
+            end = begin + heads_[current_id];
+        }
+//        else if(!up_closure_contains_target(current_id))
+//        {
+//            succ = begin + heads_[current_id];
+//        }
+    }
+
     for( ; succ != end; succ++)
     {
         warthog::graph::edge& e = *succ;

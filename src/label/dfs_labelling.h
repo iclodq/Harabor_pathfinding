@@ -177,6 +177,18 @@ class dfs_labelling
             return lab_->at(node_id).at(edge_idx);
         }
 
+        dfs_label&
+        get_up_closure(uint32_t node_id)
+        {
+            return up_closure.at(node_id);
+        }
+
+        dfs_label&
+        get_down_closure(uint32_t node_id)
+        {
+            return down_closure.at(node_id);
+        }
+
         inline int32_t
         get_dfs_index(uint32_t graph_id) { return dfs_order_->at(graph_id); }
 
@@ -222,6 +234,7 @@ class dfs_labelling
             }
 
             ifs.close();
+            lab->compute_dfs_closures();
             return lab;
         }
         
@@ -418,6 +431,9 @@ class dfs_labelling
         void 
         compute_dfs_labels(warthog::util::workload_manager* workload);
 
+        void
+        compute_dfs_closures();
+
         // Computes a DFS post-order id for every node in the hierarchy
         // (top-down traversal)
         // @param id of the highest node in the contraction hierarchy
@@ -432,6 +448,8 @@ class dfs_labelling
 
         std::vector<int32_t>* dfs_order_;
         std::vector< std::vector< dfs_label >>* lab_;
+        std::vector < dfs_label > up_closure;
+        std::vector < dfs_label > down_closure;
 };
 
 std::istream&

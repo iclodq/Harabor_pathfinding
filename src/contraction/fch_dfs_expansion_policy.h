@@ -152,6 +152,24 @@ class fch_dfs_expansion_policy : public expansion_policy
         {
             return rank_->at(id);
         }
+
+        inline bool
+        down_closure_contains_target(uint32_t node_idx)
+        {
+            warthog::label::dfs_label& label = 
+                lab_->get_down_closure(node_idx);
+            return label.bbox_.contains(tx_, ty_)
+                && label.ids_.contains(t_label);
+        }
+
+        inline bool
+        up_closure_contains_target(uint32_t node_idx)
+        {
+            warthog::label::dfs_label& label = 
+                lab_->get_up_closure(node_idx);
+            return label.bbox_.contains(tx_, ty_)
+                && label.ids_.contains(t_label);
+        }
 };
 }
 

@@ -182,14 +182,14 @@ warthog::label::dfs_labelling::compute_dfs_labels(
     // 2. label the nodes in the subtree using a post-order visitation scheme
     // 3. store for every down edge a label that bounds the reachable subtree
     // 4. store for all nodes a label to bound its down closure
-    std::vector< dfs_label > closure(
+    down_closure.resize(
             this->g_->get_num_nodes(), dfs_label(bytes_per_af_label_));
     std::vector< uint8_t > recurse(this->g_->get_num_nodes(), 1);
     std::function<void(uint32_t)> label_fn = 
-        [this, workload, &recurse, &closure, &label_fn] 
+        [this, workload, &recurse, &label_fn] 
         (uint32_t source_id) -> void
         {
-            dfs_label& s_lab = closure.at(source_id);
+            dfs_label& s_lab = this->down_closure.at(source_id);
             warthog::graph::node* source = this->g_->get_node(source_id);
             warthog::graph::edge_iter begin = source->outgoing_begin();
 
@@ -209,7 +209,7 @@ warthog::label::dfs_labelling::compute_dfs_labels(
                 if(workload->get_flag(source_id))
                 {
                     lab_->at(source_id).at(it - begin) = 
-                        closure.at(it->node_id_);
+                        this->down_closure.at(it->node_id_);
                 }
                 s_lab.merge(lab_->at(source_id).at(it - begin));
             }
@@ -231,10 +231,11 @@ warthog::label::dfs_labelling::compute_dfs_labels(
     // 1. perform an upwards dfs traversal of the CH from a given source node
     // 2. store for every up edge a label that bounds the up-reachable subtree
     // 3. store for all nodes a label to bound its up-reachable closure
-    std::vector< dfs_label > up_closure(
+    //std::vector< dfs_label > up_closure(
+    this->up_closure.resize(
             this->g_->get_num_nodes(), dfs_label(bytes_per_af_label_));
     std::function<void(uint32_t)> up_label_fn = 
-        [this, workload, &closure, &up_closure, &recurse, &up_label_fn] 
+        [this, workload, &recurse, &up_label_fn] 
         (uint32_t source_id) -> void
         {
             warthog::graph::node* source = this->g_->get_node(source_id);
@@ -252,22 +253,20 @@ warthog::label::dfs_labelling::compute_dfs_labels(
                 { continue; }
 
                 // DFS
-                if(recurse.at(it->node_id_))
-                { up_label_fn(it->node_id_); }
+                if(recurse.at(it->node_id_)) { up_label_fn(it->node_id_); }
 
                 // grow the label for the up edge at hand
                 if(workload->get_flag(source_id))
-                {
-                    dfs_label& e_lab = lab_->at(source_id).at(it-begin);
-                    e_lab.merge(up_closure.at(it->node_id_)); 
+                { 
+                    dfs_label& e_lab = lab_->at(source_id).at(it-begin); 
+                    e_lab.merge(up_closure.at(it->node_id_));
+                    e_lab.merge(down_closure.at(it->node_id_));
                 }
 
                 // grow the up-reachable closure for the source node
                 s_lab.merge(lab_->at(source_id).at(it-begin));
             }
-
             recurse.at(source_id) = 0;
-            s_lab.merge(closure.at(source_id));
         };
 
     // Top-down DFS from the apex to compute down-edge labels
@@ -282,3 +281,98 @@ warthog::label::dfs_labelling::compute_dfs_labels(
     }
 }
 
+void
+warthog::label::dfs_labelling::compute_dfs_closures()
+{
+    // Here we:
+    // 1. perform a downwards dfs traversal of the CH from a given source node
+    // 2. label the nodes in the subtree using a post-order visitation scheme
+    // 3. store for every down edge a label that bounds the reachable subtree
+    // 4. store for all nodes a label to bound its down closure
+    down_closure.clear();
+    down_closure.assign(
+            this->g_->get_num_nodes(), dfs_label(bytes_per_af_label_));
+    std::vector< uint8_t > recurse(this->g_->get_num_nodes(), 1);
+    std::function<void(uint32_t)> label_fn = 
+        [this, &recurse, &label_fn] 
+        (uint32_t source_id) -> void
+        {
+            dfs_label& s_lab = this->down_closure.at(source_id);
+            warthog::graph::node* source = this->g_->get_node(source_id);
+            warthog::graph::edge_iter begin = source->outgoing_begin();
+
+            for( warthog::graph::edge_iter it = begin; 
+                    it != source->outgoing_end();
+                    it++)
+            {
+                // skip up edges
+                if(this->rank_->at(it->node_id_) > this->rank_->at(source_id)) 
+                { continue; }
+
+                // DFS
+                if(recurse.at(it->node_id_))
+                { label_fn(it->node_id_); }
+
+                // grow the label of the down edge at hand
+                s_lab.merge(lab_->at(source_id).at(it - begin));
+            }
+            recurse.at(source_id) = 0;
+
+            s_lab.rank_.grow(this->rank_->at(source_id));
+            s_lab.ids_.grow(this->dfs_order_->at(source_id));
+
+            int32_t x, y;
+            this->g_->get_xy(source_id, x, y);
+            s_lab.bbox_.grow(x, y);
+
+            uint32_t s_part = this->part_->at(source_id);
+            s_lab.flags_[s_part >> 3] |= (1 << (s_part & 7)); // div8, mod8
+            assert(s_lab.flags_[s_part >> 3] & (1 << (s_part & 7)));
+        };
+
+    // Here we:
+    // 1. perform an upwards dfs traversal of the CH from a given source node
+    // 2. store for every up edge a label that bounds the up-reachable subtree
+    // 3. store for all nodes a label to bound its up-reachable closure
+    //std::vector< dfs_label > up_closure(
+    this->up_closure.clear();
+    this->up_closure.assign(
+            this->g_->get_num_nodes(), dfs_label(bytes_per_af_label_));
+    std::function<void(uint32_t)> up_label_fn = 
+        [this, &recurse, &up_label_fn] 
+        (uint32_t source_id) -> void
+        {
+            warthog::graph::node* source = this->g_->get_node(source_id);
+            warthog::graph::edge_iter begin = source->outgoing_begin();
+            warthog::graph::edge_iter end = source->outgoing_end();
+            dfs_label& s_lab = up_closure.at(source_id);
+
+            // compute labels for each up edge by taking the union of:
+            // 1. the up-closure of every up-edge
+            // 2. the down-closure of every node in the up-closure
+            for( warthog::graph::edge_iter it = begin; it != end; it++)
+            {
+                // skip down edges
+                if(this->rank_->at(it->node_id_) < this->rank_->at(source_id)) 
+                { continue; }
+
+                // DFS
+                if(recurse.at(it->node_id_)) { up_label_fn(it->node_id_); }
+
+                // grow the up-reachable closure for the source node
+                s_lab.merge(lab_->at(source_id).at(it-begin));
+            }
+            recurse.at(source_id) = 0;
+        };
+
+    // Top-down DFS from the apex to compute down-edge labels
+    label_fn(apex_id_);
+    recurse.clear();
+    recurse.assign(this->g_->get_num_nodes(), 1);
+
+    // bottom-up DFS to compute up-edge labels
+    for(uint32_t n_id = 0; n_id < this->g_->get_num_nodes(); n_id++)
+    { 
+        up_label_fn(n_id); 
+    }
+}
