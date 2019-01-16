@@ -21,6 +21,7 @@
 #include "gm_parser.h"
 
 #include <climits>
+#include <cstring>
 #include <stdint.h>
 
 namespace warthog
