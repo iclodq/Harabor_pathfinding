@@ -75,7 +75,7 @@ class cmp_cbs_ll_lessthan
 			if(first.get_f() == second.get_f())
 			{
                 // break ties in favour of larger g
-                if(first.get_g() >= second.get_g())
+                if(first.get_g() > second.get_g())
                 {
                     // but only if tile is not reserved
                     if((this->*(is_reserved_fn_))(first.get_id()))
