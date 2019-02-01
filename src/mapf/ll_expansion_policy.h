@@ -30,6 +30,16 @@
 namespace warthog
 {
 
+typedef union
+{
+    uint64_t t_id;
+    struct
+    {
+        uint32_t id : 32;
+        uint32_t t : 32;
+    };
+} packed_time_and_id;
+
 class ll_expansion_policy 
 {
 	public:
@@ -75,8 +85,66 @@ class ll_expansion_policy
             n(ret, cost);
 		}
 
-		void 
-		expand(warthog::search_node*, warthog::problem_instance*);
+        template<bool goal_has_timestep>
+		void
+        expand(warthog::search_node* current, warthog::problem_instance* problem)
+        {
+            reset();
+
+            // get the xy id of the current node and extract current timestep
+            const packed_time_and_id xyt{.t_id = current->get_id()};
+
+            if constexpr (goal_has_timestep)
+            {
+                const packed_time_and_id goal{.t_id = problem->target_id_};
+                if (xyt.t == goal.t)
+                    return;
+                assert(xyt.t < goal.t);
+            }
+
+            // neighbour ids are calculated using xy_id offsets
+            uint32_t nid_m_w = xyt.id - map_->width();
+            uint32_t nid_p_w = xyt.id + map_->width();
+
+            // edge constraints for the current node
+            warthog::mapf::cell_constraint* cur_cc =
+                cons_->get_constraint(xyt.id, xyt.t);
+
+            // move NORTH
+            double move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::NORTH] : 1;
+            if( map_->get_label(nid_m_w) && move_cost != warthog::INF32 )
+            {
+                add_neighbour( __generate(nid_m_w, xyt.t+1), move_cost );
+            }
+
+            // move EAST
+            move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::EAST] : 1;
+            if( map_->get_label(xyt.id + 1) && move_cost != warthog::INF32)
+            {
+                add_neighbour( __generate(xyt.id+1, xyt.t+1), move_cost );
+            }
+
+            // move SOUTH
+            move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::SOUTH] : 1;
+            if( map_->get_label(nid_p_w) && move_cost != warthog::INF32 )
+            {
+                add_neighbour( __generate(nid_p_w, xyt.t+1), move_cost );
+            }
+
+            // move WEST
+            move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::WEST] : 1;
+            if( map_->get_label(xyt.id - 1) && move_cost != warthog::INF32 )
+            {
+                add_neighbour( __generate(xyt.id-1, xyt.t+1), move_cost );
+            }
+
+            // move WAIT
+            move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::WAIT] : 1;
+            if( move_cost != warthog::INF32 )
+            {
+                add_neighbour( __generate(xyt.id, xyt.t+1), move_cost );
+            }
+        }
 
         void
         get_xy(warthog::sn_id_t node_id, int32_t& x, int32_t& y);
@@ -93,25 +161,31 @@ class ll_expansion_policy
             return __generate((uint32_t)node_id, node_id>>32);
         }
 
-        inline bool
-        is_target(warthog::search_node* n, warthog::problem_instance* pi)
+        uint32_t get_latest_arrival_at_target(warthog::problem_instance* pi)
         {
-            // agents must arrive at the xy location of the target
-            uint32_t xy_id = (uint32_t)(n->get_id() & UINT32_MAX);
-            if(xy_id != (uint32_t)pi->target_id_) { return false; }
+            const packed_time_and_id goal{.t_id = pi->target_id_};
 
-            uint32_t arrival_time = (uint32_t)(n->get_id() >> 32);
-            std::vector<warthog::mapf::cell_constraint>& xy_cons = 
-                cons_->get_constraint_set((uint32_t)(n->get_id()));
+            const auto& goal_cons = cons_->get_constraint_set(goal.id);
+            const uint32_t latest_arrival = goal_cons.empty() ?
+                                            0 :
+                                            goal_cons.back().timestep_;
+            return latest_arrival;
+        }
 
-            // the arrival is _safe_ if the agent never has to move again
-            for(uint32_t i = 0; i < xy_cons.size(); i++)
-            {
-                if((xy_cons.at(i).timestep_ >= arrival_time) &&
-                    xy_cons.at(i).v_) 
-                { return false; }
-            }
-            return true;
+        inline bool
+        is_target_without_timestep(warthog::search_node* n, warthog::problem_instance* pi)
+        {
+            // same location
+            const packed_time_and_id xyt{.t_id = n->get_id()};
+            const packed_time_and_id goal{.t_id = pi->target_id_};
+            return xyt.id == goal.id;
+        }
+
+        inline bool
+        is_target_with_timestep(warthog::search_node* n, warthog::problem_instance* pi)
+        {
+            // same location and time
+            return n->get_id() == pi->target_id_;
         }
 
         warthog::mapf::time_constraints<warthog::mapf::cell_constraint>*

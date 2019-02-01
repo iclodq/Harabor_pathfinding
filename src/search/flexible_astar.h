@@ -29,6 +29,9 @@
 #include <memory>
 #include <vector>
 
+#include "cbs.h"
+#include "ll_expansion_policy.h"
+
 namespace warthog
 {
 
@@ -37,7 +40,7 @@ namespace warthog
 template< class H, 
           class E, 
           class Q = warthog::pqueue_min >
-class flexible_astar : public warthog::search
+class flexible_astar //: public warthog::search
 {
 	public:
 		flexible_astar(H* heuristic, E* expander, Q* queue) :
@@ -69,19 +72,20 @@ class flexible_astar : public warthog::search
             }
         }
 
-        virtual void
+        template<bool goal_has_timestep = false>
+        void
 		get_path(warthog::problem_instance& instance, warthog::solution& sol)
 		{
             sol.reset();
             pi_ = instance;
 
-			warthog::search_node* target = search(sol);
+			warthog::search_node* target = search<goal_has_timestep>(sol);
 			if(target)
 			{
                 sol.sum_of_edge_costs_ = target->get_g();
 
 				// follow backpointers to extract the path
-				assert(expander_->is_target(target, &pi_));
+//				assert(expander_->is_target(target, &pi_));
                 warthog::search_node* current = target;
 				while(true)
                 {
@@ -237,6 +241,7 @@ class flexible_astar : public warthog::search
 		flexible_astar& 
 		operator=(const flexible_astar& other) { return *this; }
 
+        template<bool goal_has_timestep = false>
 		warthog::search_node*
 		search(warthog::solution& sol)
 		{
@@ -278,6 +283,15 @@ class flexible_astar : public warthog::search
 			if(pi_.verbose_) { pi_.print(std::cerr); std:: cerr << "\n";}
 			#endif
 
+            uint32_t latest_arrival;
+            double best_obj;
+            if constexpr (std::is_same<E, warthog::ll_expansion_policy>::value &&
+                          !goal_has_timestep)
+            {
+                latest_arrival = expander_->get_latest_arrival_at_target(&pi_);
+                best_obj = std::numeric_limits<double>::max();
+            }
+
             // begin expanding
 			while(open_->size())
 			{
@@ -288,10 +302,45 @@ class flexible_astar : public warthog::search
                 if(on_expand_fn_) { (*on_expand_fn_)(current); }
 
                 // goal test
-                if(expander_->is_target(current, &pi_))
+                if constexpr (std::is_same<E, warthog::ll_expansion_policy>::value)
                 {
-                    target = current;
-                    break;
+                    if constexpr (goal_has_timestep)
+                    {
+                        if(expander_->is_target_with_timestep(current, &pi_))
+                        {
+                            target = current;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if(expander_->is_target_without_timestep(current, &pi_))
+                        {
+                            // store the path if it's better than the previous path due to
+                            // negative edge costs
+                            const auto obj = current->get_g();
+                            if (obj < best_obj)
+                            {
+                                best_obj = obj;
+                                target = current;
+                            }
+
+                            // stop only if it is safe
+                            const packed_time_and_id xyt{.t_id = current->get_id()};
+                            if (xyt.t > latest_arrival)
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if(expander_->is_target(current, &pi_))
+                    {
+                        target = current;
+                        break;
+                    }
                 }
                     
                 // early termination: in case we want bounded-cost 
@@ -314,7 +363,14 @@ class flexible_astar : public warthog::search
 				#endif
 
                 // generate successors
-				expander_->expand(current, &pi_);
+                if constexpr (std::is_same<E, warthog::ll_expansion_policy>::value)
+                {
+                    expander_->template expand<goal_has_timestep>(current, &pi_);
+                }
+                else
+                {
+                    expander_->expand(current, &pi_);
+                }
 				warthog::search_node* n = 0;
 				warthog::cost_t cost_to_n = 0;
                 uint32_t edge_id = 0;

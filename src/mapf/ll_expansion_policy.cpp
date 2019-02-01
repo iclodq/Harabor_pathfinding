@@ -42,63 +42,6 @@ warthog::ll_expansion_policy::~ll_expansion_policy()
     delete neis_;
 }
 
-
-void 
-warthog::ll_expansion_policy::expand(warthog::search_node* current,
-		warthog::problem_instance* problem)
-{
-	reset();
-
-    // get the xy id of the current node and extract current timestep
-	uint32_t xy_id = (uint32_t)current->get_id();
-    uint32_t timestep = (uint32_t)(current->get_id() >> 32);
-
-    // neighbour ids are calculated using xy_id offsets
-	uint32_t nid_m_w = xy_id - map_->width();
-	uint32_t nid_p_w = xy_id + map_->width();
-
-    // edge constraints for the current node 
-    warthog::mapf::cell_constraint* cur_cc = 
-        cons_->get_constraint(xy_id, timestep);
-
-    // move NORTH
-    double move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::NORTH] : 1;
-    if( map_->get_label(nid_m_w) && move_cost != warthog::INF32 )
-    {
-        add_neighbour( __generate(nid_m_w, timestep+1), move_cost );
-            
-	} 
-
-    // move EAST
-    move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::EAST] : 1;
-    if( map_->get_label(xy_id + 1) && move_cost != warthog::INF32)
-    {
-        add_neighbour( __generate(xy_id+1, timestep+1), move_cost );
-	} 
-
-    // move SOUTH
-    move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::SOUTH] : 1;
-    if( map_->get_label(nid_p_w) && move_cost != warthog::INF32 )
-    {
-        add_neighbour( __generate(nid_p_w, timestep+1), move_cost );
-	} 
-
-    // move WEST
-    move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::WEST] : 1;
-    if( map_->get_label(xy_id - 1) && move_cost != warthog::INF32 )
-    {
-        add_neighbour( __generate(xy_id-1, timestep+1), move_cost );
-            
-	} 
-
-    // move WAIT
-    move_cost = cur_cc ? cur_cc->e_[warthog::cbs::move::WAIT] : 1;
-    if( move_cost != warthog::INF32 )
-    {
-        add_neighbour( __generate(xy_id, timestep+1), move_cost );
-	} 
-}
-
 void
 warthog::ll_expansion_policy::get_xy(warthog::sn_id_t nid, int32_t& x, int32_t& y)
 {
@@ -109,22 +52,19 @@ warthog::search_node*
 warthog::ll_expansion_policy::generate_start_node(
         warthog::problem_instance* pi)
 { 
-    warthog::sn_id_t max_id = map_->header_width() * map_->header_height();
-    if(pi->start_id_ >= max_id) { return 0; }
     uint32_t padded_id = map_->to_padded_id((uint32_t)pi->start_id_);
-    return __generate(padded_id, 0);
+    uint32_t timestep = (uint32_t)(pi->start_id_ >> 32);
+    return __generate(padded_id, timestep);
 }
 
 warthog::search_node*
 warthog::ll_expansion_policy::generate_target_node(
         warthog::problem_instance* pi)
 {
-    warthog::sn_id_t max_id = map_->header_width() * map_->header_height();
-    if(pi->target_id_ >= max_id) { return 0; }
-
     h_->set_current_target(pi->target_id_);
     uint32_t padded_id = map_->to_padded_id((uint32_t)pi->target_id_);
-    return __generate(padded_id, 0);
+    uint32_t timestep = (uint32_t)(pi->target_id_ >> 32);
+    return __generate(padded_id, timestep);
 }
 
 size_t
