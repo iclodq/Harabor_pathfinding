@@ -284,12 +284,10 @@ class flexible_astar //: public warthog::search
 			#endif
 
             uint32_t latest_arrival;
-            double best_obj;
             if constexpr (std::is_same<E, warthog::ll_expansion_policy>::value &&
                           !goal_has_timestep)
             {
-                latest_arrival = expander_->get_latest_arrival_at_target(&pi_);
-                best_obj = std::numeric_limits<double>::max();
+                latest_arrival = expander_->get_safe_arrival_time(&pi_);
             }
 
             // begin expanding
@@ -311,6 +309,13 @@ class flexible_astar //: public warthog::search
                             target = current;
                             break;
                         }
+                        else if(!expander_->is_target_without_timestep(current, &pi_))
+                        {
+                            if(current->get_f() > cost_cutoff_)
+                            {
+                                break;
+                            }
+                        }
                     }
                     else
                     {
@@ -319,15 +324,22 @@ class flexible_astar //: public warthog::search
                             // store the path if it's better than the previous path due to
                             // negative edge costs
                             const auto obj = current->get_g();
-                            if (obj < best_obj)
+                            if (obj < cost_cutoff_)
                             {
-                                best_obj = obj;
+                                cost_cutoff_ = obj;
                                 target = current;
                             }
 
                             // stop only if it is safe
                             const packed_time_and_id xyt{.t_id = current->get_id()};
                             if (xyt.t > latest_arrival)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if(current->get_f() > cost_cutoff_)
                             {
                                 break;
                             }
@@ -341,13 +353,12 @@ class flexible_astar //: public warthog::search
                         target = current;
                         break;
                     }
-                }
-                    
-                // early termination: in case we want bounded-cost 
-                // search or if we want to impose some memory limit
-                if(current->get_f() > cost_cutoff_) { break; } 
-                if(sol.nodes_expanded_ >= exp_cutoff_) { break; }
 
+                    if(current->get_f() > cost_cutoff_)
+                    {
+                        break;
+                    }
+                }
 
 				#ifndef NDEBUG
 				if(pi_.verbose_)

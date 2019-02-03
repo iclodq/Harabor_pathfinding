@@ -161,15 +161,20 @@ class ll_expansion_policy
             return __generate((uint32_t)node_id, node_id>>32);
         }
 
-        uint32_t get_latest_arrival_at_target(warthog::problem_instance* pi)
+        uint32_t get_safe_arrival_time(warthog::problem_instance* pi)
         {
             const packed_time_and_id goal{.t_id = pi->target_id_};
 
             const auto& goal_cons = cons_->get_constraint_set(goal.id);
-            const uint32_t latest_arrival = goal_cons.empty() ?
-                                            0 :
-                                            goal_cons.back().timestep_;
-            return latest_arrival;
+            for (int32_t idx = goal_cons.size() - 1; idx >= 0; --idx)
+                if (goal_cons[idx].e_[warthog::cbs::move::NORTH] < 0 ||
+                    goal_cons[idx].e_[warthog::cbs::move::SOUTH] < 0 ||
+                    goal_cons[idx].e_[warthog::cbs::move::EAST] < 0 ||
+                    goal_cons[idx].e_[warthog::cbs::move::WEST] < 0)
+                {
+                    return goal_cons[idx].timestep_ + 1;
+                }
+            return 0;
         }
 
         inline bool
