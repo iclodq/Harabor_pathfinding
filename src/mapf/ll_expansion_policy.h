@@ -178,7 +178,7 @@ class ll_expansion_policy
         }
 
         inline bool
-        is_target_without_timestep(warthog::search_node* n, warthog::problem_instance* pi)
+        is_target(warthog::search_node* n, warthog::problem_instance* pi)
         {
             // same location
             const packed_time_and_id xyt{.t_id = n->get_id()};
@@ -187,10 +187,19 @@ class ll_expansion_policy
         }
 
         inline bool
-        is_target_with_timestep(warthog::search_node* n, warthog::problem_instance* pi)
+        is_target_time_eq(warthog::search_node* n, warthog::problem_instance* pi)
         {
             // same location and time
             return n->get_id() == pi->target_id_;
+        }
+
+        inline bool
+        is_target_time_geq(warthog::search_node* n, warthog::problem_instance* pi)
+        {
+            // same location
+            const packed_time_and_id xyt{.t_id = n->get_id()};
+            const packed_time_and_id goal{.t_id = pi->target_id_};
+            return xyt.id == goal.id && xyt.t >= goal.t;
         }
 
         warthog::mapf::time_constraints<warthog::mapf::cell_constraint>*

@@ -304,12 +304,12 @@ class flexible_astar //: public warthog::search
                 {
                     if constexpr (goal_has_timestep)
                     {
-                        if(expander_->is_target_with_timestep(current, &pi_))
+                        if(expander_->is_target_time_eq(current, &pi_))
                         {
                             target = current;
                             break;
                         }
-                        else if(!expander_->is_target_without_timestep(current, &pi_))
+                        else if(!expander_->is_target(current, &pi_))
                         {
                             if(current->get_f() > cost_cutoff_)
                             {
@@ -319,7 +319,7 @@ class flexible_astar //: public warthog::search
                     }
                     else
                     {
-                        if(expander_->is_target_without_timestep(current, &pi_))
+                        if(expander_->is_target_time_geq(current, &pi_))
                         {
                             // store the path if it's better than the previous path due to
                             // negative edge costs
@@ -337,7 +337,7 @@ class flexible_astar //: public warthog::search
                                 break;
                             }
                         }
-                        else
+                        else if(!expander_->is_target(current, &pi_))
                         {
                             if(current->get_f() > cost_cutoff_)
                             {
