@@ -67,56 +67,9 @@ class cmp_cbs_ll_lessthan
         bool
         operator()(const warthog::search_node& first, const warthog::search_node& second)
         {
-			if(first.get_f() < second.get_f())
-			{
-				return true;
-			}
-
-			if(first.get_f() == second.get_f())
-			{
-                // break ties in favour of larger g
-                if(first.get_g() > second.get_g())
-                {
-                    // but only if tile is not reserved
-                    if((this->*(is_reserved_fn_))(first.get_id()))
-                    {
-                        if((this->*(is_reserved_fn_))(second.get_id()))
-                        {
-                            // both nodes are reserved; so we pick
-                            // @param first which has a larger g-value
-                            return true;
-                        }
-                        // @param first has a larger g-value but is_reserved
-                        // @param second has a smaller g-value & !is_reserved 
-                        // tie-break in favour of @param second
-                        return false;
-                    }
-                    // @param first !is_reserved and it has a 
-                    // smaller g-value. hooray.
-                    return true; 
-                }
-
-                if((this->*(is_reserved_fn_))(second.get_id()))
-                {
-                    if((this->*(is_reserved_fn_))(first.get_id()))
-                    {
-                        // both @param first and @param second are reserved
-                        // we choose @param second since it has a larger g-value
-                        return false;
-                    }
-                    // @param second has a larger g-value and is_reserved 
-                    // @param first has a smaller g-value & !is_reserved
-                    // we choose @param first
-                    return true;
-                    
-                }
-
-                // @param second has larger g-value and !is_reserved and so
-                // @param first is strictly dominated
-                // we choose @param second
-                return false;
-			}
-            return false;
+            return (first.get_f() <  second.get_f()) ||
+                   (first.get_f() == second.get_f() && first.get_g() >  second.get_g()) ||
+                   (first.get_f() == second.get_f() && first.get_g() == second.get_g() && static_cast<bool>(rand() % 2) );
         }
     
     private:
