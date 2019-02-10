@@ -40,6 +40,13 @@ typedef union
     };
 } packed_time_and_id;
 
+enum class time_comparison
+{
+    eq,
+    geq,
+    between
+};
+
 class ll_expansion_policy 
 {
 	public:
@@ -85,7 +92,7 @@ class ll_expansion_policy
             n(ret, cost);
 		}
 
-        template<bool goal_has_timestep>
+        template<warthog::time_comparison cmp>
 		void
         expand(warthog::search_node* current, warthog::problem_instance* problem)
         {
@@ -94,12 +101,13 @@ class ll_expansion_policy
             // get the xy id of the current node and extract current timestep
             const packed_time_and_id xyt{.t_id = current->get_id()};
 
-            if constexpr (goal_has_timestep)
+            // stop expanding if the goal has a latest arrival time (upper bound)
+            if constexpr (cmp != warthog::time_comparison::geq)
             {
-                const packed_time_and_id goal{.t_id = problem->target_id_};
-                if (xyt.t == goal.t)
+                const auto latest_finish = problem->latest_finish_;
+                if (xyt.t == latest_finish)
                     return;
-                assert(xyt.t < goal.t);
+                assert(xyt.t < latest_finish);
             }
 
             // neighbour ids are calculated using xy_id offsets
@@ -196,10 +204,19 @@ class ll_expansion_policy
         inline bool
         is_target_time_geq(warthog::search_node* n, warthog::problem_instance* pi)
         {
-            // same location
+            // same location with earliest time
             const packed_time_and_id xyt{.t_id = n->get_id()};
             const packed_time_and_id goal{.t_id = pi->target_id_};
             return xyt.id == goal.id && xyt.t >= goal.t;
+        }
+
+        inline bool
+        is_target_time_btw(warthog::search_node* n, warthog::problem_instance* pi)
+        {
+            // same location with earliest time and latest time
+            const packed_time_and_id xyt{.t_id = n->get_id()};
+            const packed_time_and_id goal{.t_id = pi->target_id_};
+            return xyt.id == goal.id && xyt.t >= goal.t && xyt.t <= pi->latest_finish_;
         }
 
         warthog::mapf::time_constraints<warthog::mapf::cell_constraint>*

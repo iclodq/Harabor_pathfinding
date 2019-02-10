@@ -34,6 +34,7 @@ class problem_instance
             this->instance_id_ = other.instance_id_;
             this->verbose_ = other.verbose_;
             this->extra_params_ = other.extra_params_;
+            this->latest_finish_ = other.latest_finish_;
         }
 
 		~problem_instance() { } 
@@ -52,6 +53,7 @@ class problem_instance
             this->instance_id_ = other.instance_id_;
             this->verbose_ = other.verbose_;
             this->extra_params_ = other.extra_params_;
+            this->latest_finish_ = other.latest_finish_;
             return *this; 
         }
 
@@ -67,6 +69,7 @@ class problem_instance
 		warthog::sn_id_t target_id_;
 		uint32_t instance_id_;
         bool verbose_;
+        uint32_t latest_finish_{std::numeric_limits<uint32_t>::max()};
 
         // stuff we might want to pass in
         void* extra_params_;

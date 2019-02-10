@@ -72,14 +72,14 @@ class flexible_astar //: public warthog::search
             }
         }
 
-        template<bool goal_has_timestep = false>
+        template<warthog::time_comparison cmp = warthog::time_comparison::geq>
         void
 		get_path(warthog::problem_instance& instance, warthog::solution& sol)
 		{
             sol.reset();
             pi_ = instance;
 
-			warthog::search_node* target = search<goal_has_timestep>(sol);
+			warthog::search_node* target = search<cmp>(sol);
 			if(target)
 			{
                 sol.sum_of_edge_costs_ = target->get_g();
@@ -241,7 +241,7 @@ class flexible_astar //: public warthog::search
 		flexible_astar& 
 		operator=(const flexible_astar& other) { return *this; }
 
-        template<bool goal_has_timestep = false>
+        template<warthog::time_comparison cmp = warthog::time_comparison::geq>
 		warthog::search_node*
 		search(warthog::solution& sol)
 		{
@@ -283,11 +283,10 @@ class flexible_astar //: public warthog::search
 			if(pi_.verbose_) { pi_.print(std::cerr); std:: cerr << "\n";}
 			#endif
 
-            uint32_t latest_arrival;
             if constexpr (std::is_same<E, warthog::ll_expansion_policy>::value &&
-                          !goal_has_timestep)
+                          cmp == warthog::time_comparison::geq)
             {
-                latest_arrival = expander_->get_safe_arrival_time(&pi_);
+                pi_.latest_finish_ = expander_->get_safe_arrival_time(&pi_);
             }
 
             // begin expanding
@@ -302,22 +301,20 @@ class flexible_astar //: public warthog::search
                 // goal test
                 if constexpr (std::is_same<E, warthog::ll_expansion_policy>::value)
                 {
-                    if constexpr (goal_has_timestep)
+                    if constexpr (cmp == warthog::time_comparison::eq)
                     {
                         if(expander_->is_target_time_eq(current, &pi_))
                         {
                             target = current;
                             break;
                         }
-                        else if(!expander_->is_target(current, &pi_))
+                        else if(!expander_->is_target(current, &pi_) &&
+                                current->get_f() > cost_cutoff_)
                         {
-                            if(current->get_f() > cost_cutoff_)
-                            {
-                                break;
-                            }
+                            break;
                         }
                     }
-                    else
+                    else if constexpr (cmp == warthog::time_comparison::geq)
                     {
                         if(expander_->is_target_time_geq(current, &pi_))
                         {
@@ -332,17 +329,41 @@ class flexible_astar //: public warthog::search
 
                             // stop only if it is safe
                             const packed_time_and_id xyt{.t_id = current->get_id()};
-                            if (xyt.t > latest_arrival)
+                            if (xyt.t > pi_.latest_finish_)
                             {
                                 break;
                             }
                         }
-                        else if(!expander_->is_target(current, &pi_))
+                        else if(!expander_->is_target(current, &pi_) &&
+                                current->get_f() > cost_cutoff_)
                         {
-                            if(current->get_f() > cost_cutoff_)
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if(expander_->is_target_time_btw(current, &pi_))
+                        {
+                            // store the path if it's better than the previous path due to
+                            // negative edge costs
+                            const auto obj = current->get_g();
+                            if (obj < cost_cutoff_)
+                            {
+                                cost_cutoff_ = obj;
+                                target = current;
+                            }
+
+                            // stop only if it is safe
+                            const packed_time_and_id xyt{.t_id = current->get_id()};
+                            if (xyt.t > pi_.latest_finish_)
                             {
                                 break;
                             }
+                        }
+                        else if(!expander_->is_target(current, &pi_) &&
+                                current->get_f() > cost_cutoff_)
+                        {
+                            break;
                         }
                     }
                 }
@@ -376,7 +397,7 @@ class flexible_astar //: public warthog::search
                 // generate successors
                 if constexpr (std::is_same<E, warthog::ll_expansion_policy>::value)
                 {
-                    expander_->template expand<goal_has_timestep>(current, &pi_);
+                    expander_->template expand<cmp>(current, &pi_);
                 }
                 else
                 {
