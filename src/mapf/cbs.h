@@ -27,7 +27,8 @@ enum move
     SOUTH = __builtin_ffs(warthog::grid::SOUTH)-1,
     EAST = __builtin_ffs(warthog::grid::EAST)-1,
     WEST = __builtin_ffs(warthog::grid::WEST)-1,
-    WAIT = WEST + 1
+    WAIT = WEST + 1,
+    INVALID = 5
 };
 
 // This data structure describes the constraints CBS imposes on 
