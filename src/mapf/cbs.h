@@ -59,36 +59,32 @@ struct cbs_constraint
 class cmp_cbs_ll_lessthan
 {
     public:
-        cmp_cbs_ll_lessthan(warthog::reservation_table* restab)
-            : restab_(restab)
-        { 
-            is_reserved_fn_ = &cmp_cbs_ll_lessthan::__is_reserved;
+        cmp_cbs_ll_lessthan(uint32_t map_sz)
+            : restab_(map_sz)
+        {
         }
 
         bool
         operator()(const warthog::search_node& first, const warthog::search_node& second)
         {
-            const auto first_is_reserved = (this->*(is_reserved_fn_))(first.get_id());
-            const auto second_is_reserved = (this->*(is_reserved_fn_))(second.get_id());
+            const auto first_is_reserved = is_reserved(first.get_id());
+            const auto second_is_reserved = is_reserved(second.get_id());
             return (first.get_f() <  second.get_f()) ||
                    (first.get_f() == second.get_f() && first_is_reserved <  second_is_reserved) ||
                    (first.get_f() == second.get_f() && first_is_reserved == second_is_reserved && first.get_g() >  second.get_g()) ||
                    (first.get_f() == second.get_f() && first_is_reserved == second_is_reserved && first.get_g() == second.get_g() && static_cast<bool>(rand() % 2));
         }
+
+        inline warthog::reservation_table& restab() { return restab_; }
+        inline const warthog::reservation_table& restab() const { return restab_; }
     
     private:
-        typedef bool(cmp_cbs_ll_lessthan::*fn_is_reserved)(warthog::sn_id_t time_indexed_id);
+        warthog::reservation_table restab_;
 
-        warthog::reservation_table* restab_;
-        fn_is_reserved  is_reserved_fn_;
-
-        bool
-        __is_reserved_dummy(warthog::sn_id_t) { return false; }
-
-        bool
-        __is_reserved(warthog::sn_id_t map_id)
+        inline bool
+        is_reserved(warthog::sn_id_t map_id)
         { 
-            return restab_->is_reserved(map_id);
+            return restab_.is_reserved(map_id);
         }
 };
 
