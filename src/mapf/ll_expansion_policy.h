@@ -30,15 +30,20 @@
 namespace warthog
 {
 
-typedef union
+union packed_time_and_id
 {
-    uint64_t t_id;
+    uint64_t t_id : 64;
     struct
     {
         uint32_t id : 32;
-        uint32_t t : 32;
+        int32_t t : 32;
     };
-} packed_time_and_id;
+};
+
+inline bool operator==(const packed_time_and_id lhs, const packed_time_and_id rhs)
+{
+    return lhs.t_id == rhs.t_id;
+}
 
 enum class time_comparison
 {
