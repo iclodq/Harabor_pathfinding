@@ -72,6 +72,24 @@ class gridmap
 			x = grid_id_p % padded_width_;
 		}
 
+		// get neighbor node IDs
+		inline uint32_t get_north_id(const uint32_t padded_id) const
+		{
+			return padded_id - width();
+		}
+	    inline uint32_t get_south_id(const uint32_t padded_id) const
+	    {
+	    	return padded_id + width();
+	    }
+	    inline uint32_t get_east_id(const uint32_t padded_id) const
+	    {
+	    	return padded_id + 1;
+	    }
+	    inline uint32_t get_west_id(const uint32_t padded_id) const
+	    {
+	    	return padded_id - 1;
+	    }
+
 		// get the immediately adjacent neighbours of @param node_id
 		// neighbours from the row above node_id are stored in 
 		// @param tiles[0], neighbours from the same row in tiles[1]
