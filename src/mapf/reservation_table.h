@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <cstring>
 
 namespace warthog
 {
@@ -66,8 +67,7 @@ class reservation_table
             while(table_.size() <= timestep)
             {
                 uint64_t* map = (uint64_t*)pool_->allocate();
-                for(uint32_t i = 0; i < map_sz_in_qwords_; i++)
-                { map[i] = 0; }
+                memset(map, 0, sizeof(uint64_t) * map_sz_in_qwords_);
                 table_.push_back(map);
             }
             table_[timestep][xy_id >> LOG2_QWORD_SZ] |= (1 << (xy_id & 63));
@@ -102,8 +102,7 @@ class reservation_table
         {
             for(uint64_t* map : table_)
             {
-                for(uint32_t i = 0; i < map_sz_in_qwords_; i++)
-                { map[i] = 0; }
+                memset(map, 0, sizeof(uint64_t) * map_sz_in_qwords_);
             }
         }
 
