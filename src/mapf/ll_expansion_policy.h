@@ -38,12 +38,18 @@ union packed_time_and_id
         uint32_t id : 32;
         int32_t t : 32;
     };
+
+    packed_time_and_id() noexcept = default;
+    explicit packed_time_and_id(uint64_t t_id) noexcept : t_id(t_id) {}
+    explicit packed_time_and_id(int32_t t, uint32_t id) noexcept : id(id), t(t) {}
 };
 
 inline bool operator==(const packed_time_and_id lhs, const packed_time_and_id rhs)
 {
     return lhs.t_id == rhs.t_id;
 }
+
+static_assert(std::is_trivially_copyable<packed_time_and_id>::value);
 
 enum class time_comparison
 {
@@ -104,7 +110,7 @@ class ll_expansion_policy
             reset();
 
             // get the xy id of the current node and extract current timestep
-            const packed_time_and_id xyt{.t_id = current->get_id()};
+            const packed_time_and_id xyt{current->get_id()};
 
             // stop expanding if the goal has a latest arrival time (upper bound)
             if constexpr (cmp != warthog::time_comparison::geq)
@@ -176,7 +182,7 @@ class ll_expansion_policy
 
         uint32_t get_safe_arrival_time(warthog::problem_instance* pi)
         {
-            const packed_time_and_id goal{.t_id = pi->target_id_};
+            const packed_time_and_id goal{pi->target_id_};
 
             const auto& goal_cons = cons_->get_constraint_set(goal.id);
             for (int32_t idx = goal_cons.size() - 1; idx >= 0; --idx)
@@ -194,8 +200,8 @@ class ll_expansion_policy
         is_target(warthog::search_node* n, warthog::problem_instance* pi)
         {
             // same location
-            const packed_time_and_id xyt{.t_id = n->get_id()};
-            const packed_time_and_id goal{.t_id = pi->target_id_};
+            const packed_time_and_id xyt{n->get_id()};
+            const packed_time_and_id goal{pi->target_id_};
             return xyt.id == goal.id;
         }
 
@@ -210,8 +216,8 @@ class ll_expansion_policy
         is_target_time_geq(warthog::search_node* n, warthog::problem_instance* pi)
         {
             // same location with earliest time
-            const packed_time_and_id xyt{.t_id = n->get_id()};
-            const packed_time_and_id goal{.t_id = pi->target_id_};
+            const packed_time_and_id xyt{n->get_id()};
+            const packed_time_and_id goal{pi->target_id_};
             return xyt.id == goal.id && xyt.t >= goal.t;
         }
 
@@ -219,8 +225,8 @@ class ll_expansion_policy
         is_target_time_btw(warthog::search_node* n, warthog::problem_instance* pi)
         {
             // same location with earliest time and latest time
-            const packed_time_and_id xyt{.t_id = n->get_id()};
-            const packed_time_and_id goal{.t_id = pi->target_id_};
+            const packed_time_and_id xyt{n->get_id()};
+            const packed_time_and_id goal{pi->target_id_};
             return xyt.id == goal.id && xyt.t >= goal.t && xyt.t <= pi->latest_finish_;
         }
 

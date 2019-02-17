@@ -328,7 +328,7 @@ class flexible_astar //: public warthog::search
                             }
 
                             // stop only if it is safe
-                            const packed_time_and_id xyt{.t_id = current->get_id()};
+                            const packed_time_and_id xyt{current->get_id()};
                             if (xyt.t > pi_.latest_finish_)
                             {
                                 break;
@@ -354,7 +354,7 @@ class flexible_astar //: public warthog::search
                             }
 
                             // stop only if it is safe
-                            const packed_time_and_id xyt{.t_id = current->get_id()};
+                            const packed_time_and_id xyt{current->get_id()};
                             if (xyt.t > pi_.latest_finish_)
                             {
                                 break;
