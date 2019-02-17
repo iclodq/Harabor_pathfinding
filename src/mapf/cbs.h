@@ -64,7 +64,7 @@ class cmp_cbs_ll_lessthan
         {
         }
 
-        bool
+        inline bool
         operator()(const warthog::search_node& first, const warthog::search_node& second)
         {
             const auto first_is_reserved = is_reserved(first.get_id());
