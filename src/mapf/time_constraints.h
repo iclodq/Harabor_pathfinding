@@ -33,31 +33,11 @@ namespace mapf
 // 
 struct cell_constraint
 {
-    cell_constraint()
-    {
-        e_[warthog::cbs::move::NORTH] = 1;
-        e_[warthog::cbs::move::SOUTH] = 1;
-        e_[warthog::cbs::move::EAST] = 1;
-        e_[warthog::cbs::move::WEST] = 1;
-        e_[warthog::cbs::move::WAIT] = 1;
-        timestep_ = 0;
-    }
-
-    cell_constraint&
-    operator=(const cell_constraint& other)
-    {
-        e_[0] = other.e_[0];
-        e_[1] = other.e_[1];
-        e_[2] = other.e_[2];
-        e_[3] = other.e_[3];
-        e_[4] = other.e_[4];
-        timestep_ = other.timestep_;
-        return *this;
-    }
-
-    double e_[5];
-    uint16_t timestep_;
+    double e_[5]{1,1,1,1,1};
+    uint16_t timestep_{0};
 };
+
+static_assert(std::is_trivially_copyable<cell_constraint>::value);
 
 template<typename CONSTRAINT>
 class time_constraints
