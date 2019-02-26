@@ -56,6 +56,12 @@ class cbs_ll_heuristic
                 std::vector<uint32_t>& target_nodes,
                 warthog::gridmap* gm);
 
+        // compute g-values to a target that was not previously computed
+        void
+        compute_new_h_value(
+            uint32_t target_id,
+            warthog::gridmap* map);
+
         // the current target specifies which set of g-values to
         // refer to when answering ::h queries
         // this function returns true if @param target_id (unpadded)

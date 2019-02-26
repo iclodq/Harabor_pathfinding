@@ -61,7 +61,13 @@ warthog::search_node*
 warthog::ll_expansion_policy::generate_target_node(
         warthog::problem_instance* pi)
 {
-    h_->set_current_target(pi->target_id_);
+    auto found_target = h_->set_current_target(pi->target_id_);
+    if (!found_target)
+    {
+        h_->compute_new_h_value(pi->target_id_, map_);
+        found_target = h_->set_current_target(pi->target_id_);
+        assert(found_target);
+    }
     uint32_t padded_id = map_->to_padded_id((uint32_t)pi->target_id_);
     uint32_t timestep = (uint32_t)(pi->target_id_ >> 32);
     return __generate(padded_id, timestep);
