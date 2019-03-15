@@ -14,6 +14,7 @@
 #include "pqueue.h"
 #include "reservation_table.h"
 #include "search_node.h"
+#include "node_id.h"
 
 namespace warthog
 {
