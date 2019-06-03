@@ -69,14 +69,16 @@ class scenario_manager
 		inline void clear() { experiments_.clear(); }
 		
 		void generate_experiments(warthog::gridmap*, int num);
-		void load_scenario(const char* filelocation);
+		void load_scenario(const char* filelocation,
+		                   const int nb_agents = std::numeric_limits<int>::max());
 		void write_scenario(std::ostream& out);
 		void sort(); // organise by increasing solution length
 
 
 	private:
 		experiment* generate_single_experiment(warthog::gridmap*);
-		void load_gppc_scenario(std::ifstream& infile);
+		void load_gppc_scenario(std::ifstream& infile,
+		                        const int nb_agents = std::numeric_limits<int>::max());
 
 		std::vector<warthog::experiment*> experiments_;		
 		std::string sfile_;

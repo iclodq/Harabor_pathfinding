@@ -113,7 +113,7 @@ warthog::scenario_manager::generate_single_experiment(warthog::gridmap* map)
 }
 
 void 
-warthog::scenario_manager::load_scenario(const char* filelocation)
+warthog::scenario_manager::load_scenario(const char* filelocation, const int nb_agents)
 {
 	std::ifstream infile;
 	infile.open(filelocation,std::ios::in);
@@ -133,7 +133,7 @@ warthog::scenario_manager::load_scenario(const char* filelocation)
     if(strstr(buf, "version 1"))
 	{
         // GPPC format scenarios
-		load_gppc_scenario(infile);
+		load_gppc_scenario(infile, nb_agents);
 	}
 	else
 	{
@@ -147,7 +147,7 @@ warthog::scenario_manager::load_scenario(const char* filelocation)
 
 // V1.0 is the version officially supported by HOG
 void 
-warthog::scenario_manager::load_gppc_scenario(std::ifstream& infile)
+warthog::scenario_manager::load_gppc_scenario(std::ifstream& infile, const int nb_agents)
 {
 	uint32_t sizeX = 0, sizeY = 0; 
 	uint32_t bucket;
@@ -167,7 +167,19 @@ warthog::scenario_manager::load_gppc_scenario(std::ifstream& infile)
 			precision = ((int32_t)dist.size() - (int32_t)(dist.find(".")+1));
 		}
 		experiments_.back()->set_precision(precision);
+
+		if (experiments_.size() == nb_agents)
+		{
+			break;
+		}
 	}
+
+	if (nb_agents < std::numeric_limits<int>::max() && experiments_.size() < nb_agents)
+    {
+        std::cerr << "err; not enough agents in scenario file to solve for " << nb_agents
+                  << " agents\n";
+        exit(EINVAL);
+    }
 
     // sanity check
     if(experiments_.size() == 0) { return; }
