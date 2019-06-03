@@ -32,16 +32,10 @@ template <class Comparator = warthog::cmp_less_search_node,
 class pqueue 
 {
 	public:
-        pqueue(uint32_t map_sz)
-            : maxsize_(1024), minqueue_(QType().is_min_), queuesize_(0),
-              elts_(0), cmp_(map_sz)
-        {
-            resize(1024);
-        }
-
-		pqueue()
-            : maxsize_(1024), minqueue_(QType().is_min_), queuesize_(0),
-            elts_(0), cmp_()
+        template<class ...Args>
+		pqueue(Args... args)
+            : maxsize_(1024), minqueue_(QType().is_min_), queuesize_(0), elts_(0),
+              cmp_(args...)
         {
             resize(1024);
         }

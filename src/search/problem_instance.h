@@ -69,7 +69,7 @@ class problem_instance
 		warthog::sn_id_t target_id_;
 		uint32_t instance_id_;
         bool verbose_;
-        uint32_t latest_finish_{std::numeric_limits<uint32_t>::max()};
+        int32_t latest_finish_{std::numeric_limits<int32_t>::max()};
 
         // stuff we might want to pass in
         void* extra_params_;

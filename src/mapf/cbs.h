@@ -14,7 +14,6 @@
 #include "pqueue.h"
 #include "reservation_table.h"
 #include "search_node.h"
-#include "node_id.h"
 
 namespace warthog
 {
@@ -29,7 +28,7 @@ enum move
     EAST = __builtin_ffs(warthog::grid::EAST)-1,
     WEST = __builtin_ffs(warthog::grid::WEST)-1,
     WAIT = WEST + 1,
-    INVALID = 5
+    INVALID = WAIT + 1
 };
 
 // This data structure describes the constraints CBS imposes on 
@@ -74,6 +73,7 @@ class cmp_cbs_ll_lessthan
                    (first.get_f() == second.get_f() && first_is_reserved <  second_is_reserved) ||
                    (first.get_f() == second.get_f() && first_is_reserved == second_is_reserved && first.get_g() >  second.get_g()) ||
                    (first.get_f() == second.get_f() && first_is_reserved == second_is_reserved && first.get_g() == second.get_g() && static_cast<bool>(rand() % 2));
+            // TODO: check that this is optmized correctly
         }
 
         inline warthog::reservation_table& restab() { return restab_; }

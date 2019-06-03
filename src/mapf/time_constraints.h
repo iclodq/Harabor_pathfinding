@@ -60,7 +60,7 @@ class time_constraints
            return cons_.size();
        }
 
-       // add a constraint to location @param xy_id
+       // add a constraint to location @param xy_id or replace an existing constraint
        inline void
        add_or_replace_constraint(const uint32_t xy_id, const CONSTRAINT& con)
        {
@@ -76,8 +76,8 @@ class time_constraints
            }
        }
 
-       // return all constraints associated with the xy location
-       // @param padded_id
+       // return all constraints at location @param xy_id
+       // @param xy_id
        inline std::vector<CONSTRAINT>&
        get_constraint_set(const uint32_t xy_id)
        {
@@ -90,7 +90,7 @@ class time_constraints
        // return the constraint associated with the location
        // @param xy_id, at the time @param timestep
        inline CONSTRAINT*
-       get_constraint(uint32_t xy_id, uint32_t timestep)
+       get_constraint(const uint32_t xy_id, const int32_t timestep)
        {
            CONSTRAINT* con = nullptr;
 
@@ -105,7 +105,7 @@ class time_constraints
        // create or return the constraint associated with the location
        // @param xy_id, at the time @param timestep
        inline CONSTRAINT&
-       get_or_create_constraint(uint32_t xy_id, uint32_t timestep)
+       get_or_create_constraint(const uint32_t xy_id, const int32_t timestep)
        {
            CONSTRAINT* con;
 
@@ -178,8 +178,10 @@ class time_constraints
     private:
         std::vector<std::vector<CONSTRAINT>> cons_;
 
+        // find the position of an existing time constraint or the position to insert a new time
+        // constraint
         inline auto
-        find_pos(const uint32_t xy_id, const uint16_t t)
+        find_pos(const uint32_t xy_id, const int32_t t)
         {
 #ifndef NDEBUG
             assert(xy_id < map_xy_sz());
@@ -188,7 +190,7 @@ class time_constraints
             auto it = std::lower_bound(xy_cons.begin(),
                                        xy_cons.end(),
                                        t,
-                                       [](const CONSTRAINT& con, const uint16_t t)
+                                       [](const CONSTRAINT& con, const int32_t t)
                                        {
                                            return con.timestep_ < t;
                                        });
