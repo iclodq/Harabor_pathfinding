@@ -415,13 +415,15 @@ class flexible_astar //: public warthog::search
                     { (*on_generate_fn_)(n, current, cost_to_n, edge_id++); }
                     
                     // add new nodes to the fringe
-                    if(n->get_search_number() != current->get_search_number())
+                    if((n->get_search_number() != current->get_search_number()) ||
+                       (n->get_expanded() && current->get_g() + cost_to_n < n->get_g()))
                     {
 						warthog::cost_t gval = current->get_g() + cost_to_n;
                         n->init(current->get_search_number(), current->get_id(),
                             gval, 
                             gval + heuristic_->h(n->get_id(),pi_.target_id_));
 
+                        assert(!open_->contains(n));
                         open_->push(n);
                         sol.nodes_inserted_++;
 
