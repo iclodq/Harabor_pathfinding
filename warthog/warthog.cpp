@@ -14,7 +14,6 @@
 #include "gridmap.h"
 #include "gridmap_expansion_policy.h"
 #include "jps_expansion_policy.h"
-#include "jps_expansion_policy_wgm.h"
 #include "jps2_expansion_policy.h"
 #include "jpsplus_expansion_policy.h"
 #include "jps2plus_expansion_policy.h"
@@ -598,14 +597,7 @@ run_grid(warthog::util::cfg& cfg)
 
     if(alg == "jps")
     {
-        if(wgm)
-        {
-            run_jps_wgm(scenmgr);
-        }
-        else
-        {
-            run_jps(scenmgr);
-        }
+        run_jps(scenmgr);
     }
 
     if(alg == "astar")
