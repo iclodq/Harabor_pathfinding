@@ -1,5 +1,6 @@
 *.d
 *.o
 *.class
+**/__pycache__/
 src/bin/
 src/lib/
