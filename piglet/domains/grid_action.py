@@ -7,15 +7,26 @@
 
 import sys
 
+MOVE_UP = 0
+MOVE_LEFT = 1
+MOVE_RIGHT = 2  
+MOVE_DOWN = 3
+MOVE_WAIT = 9
+
 class grid_action:
-    
-    UP = 0
-    LEFT = 1
-    RIGHT = 2  
-    DOWN = 3
-    WAIT = 9
 
     def __init__(self):
-        self.move_ = grid_action.WAIT
+        self.move_ = MOVE_WAIT
         self.cost_ = 1
 
+    def print(self):
+        if(self.move_ == MOVE_UP):
+            print("UP " + str(self.cost_))
+        elif(self.move_ == MOVE_DOWN):
+            print("DOWN " + str(self.cost_))
+        elif(self.move_ == MOVE_LEFT):
+            print("LEFT " + str(self.cost_))
+        elif(self.move_ == MOVE_RIGHT):
+            print("RIGHT " + str(self.cost_))
+        else:
+            print("WAIT " + str(self.cost_))

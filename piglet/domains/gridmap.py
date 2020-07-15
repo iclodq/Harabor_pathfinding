@@ -14,8 +14,8 @@ class gridmap:
     
     def __init__(self):
         self.map_ = []
-        self.height_ = 0
-        self.width_ = 0
+        self.height_ = int(0)
+        self.width_ = int(0)
 
     def load(self, filename):
         map_fo = open(filename, "r")
@@ -24,24 +24,26 @@ class gridmap:
         if(self.__parse_header(map_fo) == -1):
             sys.stderr.write("err; invalid map header");
             return
-        self.map_ = [False] * (int(self.height_) * int(self.width_))
+
+        for x in range(int(self.width_)):
+            self.map_ = [ [False] * int(self.height_) for x in range(int(self.width_)) ]
+
         i = 0
         while(True):
             char = map_fo.read(1)
-            print
             if not char:
                 break
             if(char == '\n'):
-                print()
                 continue
+
+            y = int(i / int(self.width_))
+            x = int(i % int(self.width_))
             if(char == '.'):
-                self.map_[i] = True
+                self.map_[x][y] = True
             else:
-                self.map_[i] = False
+                self.map_[x][y] = False
             i += 1
 
-        self.num_tiles_ = int(self.width_)*(self.height_)
-        
     def write(self):
 
         print("type octile")
@@ -51,7 +53,7 @@ class gridmap:
  
         for y in range(0, int(self.height_)):
             for x in range(0, int(self.width_)):
-                if(self.map_[y*int(self.width_) + x] == True):
+                if(self.map_[x][y] == True):
                     print('.', end="")
                 else:
                     print('@', end="")
@@ -60,33 +62,42 @@ class gridmap:
     # return a list with all the applicable/valid actions
     # at tile (x, y)
     def get_moves(self, x, y):
-        index = y*self.width_ + x
         retval = []
+
+        if(x < 0 or x >= int(self.width_) or y < 0 or y >= int(self.height_)):
+            return retval
+
+        if(self.map_[x][y] == False):
+            return retval
         
-        if((int(y)-1) >= 0):
+        if(int(y-1) >= 0 and self.map_[x][y-1]):
             retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.UP
+            retval[-1].move_ = grid_action.MOVE_UP
             retval[-1].cost_ = 1;
 
-        if((int(y)+1) < self.height_):
+        if(int(y+1) < int(self.height_) and self.map_[x][y+1]):
             retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.DOWN
+            retval[-1].move_ = grid_action.MOVE_DOWN
             retval[-1].cost_ = 1;
 
-        if((int(x)+1) < self.width_):
+        if((int(x)-1) >= 0 and self.map_[x-1][y]):
             retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.RIGHT
+            retval[-1].move_ = grid_action.MOVE_LEFT
             retval[-1].cost_ = 1;
 
-        if((int(x)-1) < self.width_):
+        if((int(x)+1) < int(self.width_) and self.map_[x+1][y]):
             retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.LEFT
+            retval[-1].move_ = grid_action.MOVE_RIGHT
             retval[-1].cost_ = 1;
 
-    # tells whether the tile at location (x, y) is traversable or not
+        return retval
+
+    # tells whether the tile at location @param index is traversable or not
     # @return True/False
-    def get_tile(self, x, y):
-        return get_tile_index(int(y) * int(self.width_) + int(x))
+    def get_tile(self, index):
+        if(x < 0 or x >= self.width_ or y < 0 or y >= self.height_):
+            return False;
+        return self.map_[x][y]
 
     def __parse_header(self, map_fo):
 

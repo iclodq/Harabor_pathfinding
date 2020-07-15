@@ -1,5 +1,5 @@
 import sys, getopt
-from domains import gridmap
+from domains import gridmap, grid_action
 
 def main(argv):
     inputfile = ''
@@ -17,10 +17,23 @@ def main(argv):
          inputfile = arg
     print('Input file is ', inputfile)
 
-    parser = gridmap.gridmap()
-    parser.load(inputfile)
-    parser.write()
+    ga = grid_action.grid_action();
+    gm = gridmap.gridmap()
+    gm.load(inputfile)
+    gm.write()
 
+    print("1,1")
+    for move in gm.get_moves(1,1):
+        move.print()
+
+    print("2,2")
+    for move in gm.get_moves(2,2):
+        move.print()
+
+    print("0,0")
+    for move in gm.get_moves(0,0):
+        move.print()
+        
 if __name__ == "__main__":
     main(sys.argv[1:])
 
