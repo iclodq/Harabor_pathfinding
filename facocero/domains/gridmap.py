@@ -1,4 +1,4 @@
-# gm_parser
+# gridmap
 # 
 # Reads and writes 2d grid maps
 #
@@ -9,7 +9,7 @@
 
 import sys
 
-class gm_parser:
+class gridmap:
     
     def __init__(self):
         self.map_ = []

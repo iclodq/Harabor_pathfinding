@@ -1,5 +1,5 @@
 import sys, getopt
-from util import gm_parser
+from domains import gridmap
 
 def main(argv):
     inputfile = ''
@@ -17,7 +17,7 @@ def main(argv):
          inputfile = arg
     print('Input file is ', inputfile)
 
-    parser = gm_parser.gm_parser()
+    parser = gridmap.gridmap()
     parser.load(inputfile)
     parser.write(inputfile)
 
