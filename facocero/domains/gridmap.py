@@ -7,6 +7,7 @@
 # @created: 2020-07-14
 #
 
+from domains import grid_action
 import sys
 
 class gridmap:
@@ -38,10 +39,11 @@ class gridmap:
             else:
                 self.map_[i] = False
             i += 1
-        
-    def write(self, filename):
 
-        print("write function begin")
+        self.num_tiles_ = int(self.width_)*(self.height_)
+        
+    def write(self):
+
         print("type octile")
         print("height " + str(self.height_))
         print("width " + str(self.width_))
@@ -54,6 +56,37 @@ class gridmap:
                 else:
                     print('@', end="")
             print()
+
+    # return a list with all the applicable/valid actions
+    # at tile (x, y)
+    def get_moves(self, x, y):
+        index = y*self.width_ + x
+        retval = []
+        
+        if((int(y)-1) >= 0):
+            retval.append(grid_action.grid_action())
+            retval[-1].move_ = grid_action.UP
+            retval[-1].cost_ = 1;
+
+        if((int(y)+1) < self.height_):
+            retval.append(grid_action.grid_action())
+            retval[-1].move_ = grid_action.DOWN
+            retval[-1].cost_ = 1;
+
+        if((int(x)+1) < self.width_):
+            retval.append(grid_action.grid_action())
+            retval[-1].move_ = grid_action.RIGHT
+            retval[-1].cost_ = 1;
+
+        if((int(x)-1) < self.width_):
+            retval.append(grid_action.grid_action())
+            retval[-1].move_ = grid_action.LEFT
+            retval[-1].cost_ = 1;
+
+    # tells whether the tile at location (x, y) is traversable or not
+    # @return True/False
+    def get_tile(self, x, y):
+        return get_tile_index(int(y) * int(self.width_) + int(x))
 
     def __parse_header(self, map_fo):
 

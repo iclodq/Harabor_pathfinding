@@ -19,7 +19,7 @@ def main(argv):
 
     parser = gridmap.gridmap()
     parser.load(inputfile)
-    parser.write(inputfile)
+    parser.write()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
