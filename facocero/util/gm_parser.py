@@ -23,9 +23,8 @@ class gm_parser:
         if(self.__parse_header(map_fo) == -1):
             sys.stderr.write("err; invalid map header");
             return
-        print(
         self.map_ = [False] * (int(self.height_) * int(self.width_))
-        i = 0;
+        i = 0
         while(True):
             char = map_fo.read(1)
             print
