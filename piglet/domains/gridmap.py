@@ -7,17 +7,26 @@
 # @created: 2020-07-14
 #
 
-from domains import grid_action
+from domains.grid_action import grid_action, Move_Actions
 import sys
 
 class gridmap:
+    map: list
+    height_: int
+    width_: int
+    map_size_: int
+    domain_file_: str
     
     def __init__(self):
         self.map_ = []
         self.height_ = int(0)
         self.width_ = int(0)
+        self.map_size_ = int(0)
 
-    def load(self, filename):
+    # Load map in the map instance
+    # @param filename The path to map file.
+    def load(self, filename: str):
+        self.domain_file_ = filename
         map_fo = open(filename, "r")
 
         print("parsing map")
@@ -44,6 +53,7 @@ class gridmap:
                 self.map_[x][y] = False
             i += 1
 
+    # Write map tp a file
     def write(self):
 
         print("type octile")
@@ -61,7 +71,11 @@ class gridmap:
 
     # return a list with all the applicable/valid actions
     # at tile (x, y)
-    def get_moves(self, x, y):
+    # @param loc A (x,y) coordinate tuple
+    # @return a list of gridaction object.
+    def get_actions(self, loc: tuple):
+        x = loc[0]
+        y = loc[1]
         retval = []
 
         if(x < 0 or x >= int(self.width_) or y < 0 or y >= int(self.height_)):
@@ -71,30 +85,32 @@ class gridmap:
             return retval
         
         if(int(y-1) >= 0 and self.map_[x][y-1]):
-            retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.MOVE_UP
+            retval.append(grid_action())
+            retval[-1].move_ = Move_Actions.MOVE_UP
             retval[-1].cost_ = 1;
 
         if(int(y+1) < int(self.height_) and self.map_[x][y+1]):
-            retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.MOVE_DOWN
+            retval.append(grid_action())
+            retval[-1].move_ = Move_Actions.MOVE_DOWN
             retval[-1].cost_ = 1;
 
         if((int(x)-1) >= 0 and self.map_[x-1][y]):
-            retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.MOVE_LEFT
+            retval.append(grid_action())
+            retval[-1].move_ = Move_Actions.MOVE_LEFT
             retval[-1].cost_ = 1;
 
         if((int(x)+1) < int(self.width_) and self.map_[x+1][y]):
-            retval.append(grid_action.grid_action())
-            retval[-1].move_ = grid_action.MOVE_RIGHT
+            retval.append(grid_action())
+            retval[-1].move_ = Move_Actions.MOVE_RIGHT
             retval[-1].cost_ = 1;
 
         return retval
 
     # tells whether the tile at location @param index is traversable or not
     # @return True/False
-    def get_tile(self, index):
+    def get_tile(self, loc: tuple):
+        x = loc[0]
+        y = loc[1]
         if(x < 0 or x >= self.width_ or y < 0 or y >= self.height_):
             return False;
         return self.map_[x][y]
@@ -109,13 +125,16 @@ class gridmap:
         for i in range(0, 2):
             tmp = map_fo.readline().strip().split(" ")
             if tmp[0] == "height" and len(tmp) == 2:
-                self.height_ = tmp[1]
+                self.height_ = int(tmp[1])
             elif tmp[0] == "width" and len(tmp) == 2:
-                self.width_ = tmp[1]
+                self.width_ = int(tmp[1])
             else:
                 return -1
 
         tmp = map_fo.readline().strip()
         if(tmp != "map"):
             return -1
+
+    def __str__(self):
+        return self.domain_file_
 

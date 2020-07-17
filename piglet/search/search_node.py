@@ -8,22 +8,27 @@
 
 import sys
 
-def class search_node:
-    self.action_
-    self.state_
-    self.parent_
-    self.g_
-    self.depth_
-    self.instance_
+class search_node:
+    action_ = None
+    state_ = None
+    parent_ = None
+    g_ = None
+    depth_ = None
+    instance_ = None
 
-    __init__(self):
+    def __init__(self):
         # some default values for uninitialised nodes
         self.action_ = False 
         self.state_ = False 
-        self.parent_ = False 
-        self.g_ = sys.maxint
-        self.depth_ = sys.maxint
-        self.instance_ = sys.maxint
+        self.parent_ = None
+        self.g_ = sys.maxsize
+        self.depth_ = sys.maxsize
+        self.instance_ = sys.maxsize
 
-    
+    def __str__(self):
+        return str(self.state_)
+
+    def __repr__(self):
+        return self.state_.__repr__()
+
     
