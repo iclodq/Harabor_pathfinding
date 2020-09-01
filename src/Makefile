@@ -41,7 +41,7 @@ fast: main extras__
 
 .PHONY: dev
 dev: CFLAGS += $(DEV_CFLAGS) $(D_INCLUDES)
-dev: main extras__
+dev: main extras__ tests__ frank_wolfe__
     @echo "COMPILE FINISHED: DEBUG MODE. RUN MAKE FAST FOR PERFORMANCE"
 
 .PHONY: profile
@@ -86,9 +86,16 @@ extras__: makedirs warthog
 	$(CC) programs/dimacs2metis.cpp -o ./bin/dimacs2metis -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
 	$(CC) programs/dimacs2xy.cpp -o ./bin/dimacs2xy -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
 	$(CC) programs/grid2graph.cpp -o ./bin/grid2graph -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
-	$(CC) programs/tests.cpp -o ./bin/tests -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
 	$(CC) programs/make_cpd.cpp -o ./bin/make_cpd -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES) -fopenmp
+
+.PHONY: tests__
+tests__: makedirs warthog
+	$(CC) programs/tests.cpp -o ./bin/tests -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
 	$(CC) test/cpd_search.cpp -o ./bin/test_cpd_search -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
+
+.PHONY: frank_wolfe__
+frank_wolfe__: makedirs warthog
+	$(CC) programs/frank_wolfe.cpp -o ./bin/fw -lwarthog $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
 
 .PHONY: makedirs
 makedirs:
