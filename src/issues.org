@@ -1,0 +1,23 @@
+* Issues
+
+Things that do not work quite how we want them.
+
+- [ ] Lambdas do not work properly. Need clang-12 to have braces on the
+    correct line. Need something like: =AsFunction= so we can format them the
+    same as functions directly. ([[file:~/code/pathfinding/src/label/dfs_labelling.cpp::std::function<void(uint32_t)> label_fn =][example]])
+- [ ] Multiline assignments end up with the = sign on a new line, which
+    screws with whatever is below. ([[file:~/code/pathfinding/src/programs/roadhog.cpp::warthog::util::param valid_args\[\]][example]])
+- [ ] How shall we deal with access modifiers? Currently, they are at
+    half-indent, we could dedent them completely.
+- [ ] One-line =if= and multiline =else= looks weird. We would need
+    something like: =OnlyIf= which only wraps the =if= if there is no =else=
+    underneath. Or worse, =else if=. ([[file:~/code/pathfinding/src/programs/fifo.cpp::if (alg_name == "cpd-search")][example]])
+- [ ] Template breaks are a tad odd, it seems they for breaks when declaring
+    variables which we would rather avoid. ([[file:~/code/pathfinding/src/programs/roadhog.cpp::warthog::cpd_search<][example]])
+- [ ] We need to choose a style for multiline parameters; there is no option
+    for "fill first line, then indent." Currently it always breaks and then
+    fills the parameters. Another option is to align parameters one per line.
+    ([[file:~/code/pathfinding/src/programs/roadhog.cpp::run_cpd_search(warthog::util::cfg& cfg,][example]])
+- [ ] Compact functions do not exist, it is either /all on one line/ or
+    expanded version. ([[file:~/code/pathfinding/src/search/cpd_search.h::get_heuristic()][example]])
+
