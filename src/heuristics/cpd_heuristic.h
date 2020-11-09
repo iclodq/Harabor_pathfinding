@@ -45,11 +45,12 @@ struct cpd_heuristic_cache_entry
     uint32_t graph_id_;
 };
 
-class cpd_heuristic
+template<class ORACLE>
+class cpd_heuristic_base
 {
     typedef std::pair<warthog::sn_id_t, warthog::graph::edge*> stack_pair;
     public:
-        cpd_heuristic(warthog::cpd::graph_oracle* cpd, double hscale=1.0)
+        cpd_heuristic_base(ORACLE* cpd, double hscale=1.0)
             : cpd_(cpd), hscale_(hscale)
         {
             graph::xy_graph* g = cpd_->get_graph();
@@ -59,7 +60,7 @@ class cpd_heuristic
             g->perturb(*g);
         }
 
-        ~cpd_heuristic() { }
+        ~cpd_heuristic_base() { }
 
         inline void
         set_hscale(double hscale)
@@ -69,7 +70,7 @@ class cpd_heuristic
         get_hscale()
         { return hscale_; }
 
-        warthog::cpd::graph_oracle*
+        ORACLE*
         get_oracle()
         { return cpd_; }
 
@@ -180,11 +181,13 @@ class cpd_heuristic
                    cache_.at(c_id).graph_id_ == cpd_->get_graph()->get_id();
         }
 
-        warthog::cpd::graph_oracle* cpd_;
+        ORACLE* cpd_;
         double hscale_;
         std::vector<warthog::cpd_heuristic_cache_entry> cache_;
         std::vector<stack_pair> stack_;
 };
+
+typedef cpd_heuristic_base<cpd::graph_oracle> cpd_heuristic;
 
 }
 
