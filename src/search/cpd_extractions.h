@@ -17,11 +17,12 @@
 namespace warthog
 {
 
+template<class ORACLE>
 class cpd_extractions : public warthog::search
 {
     public:
         cpd_extractions(warthog::graph::xy_graph *g,
-                        warthog::cpd::graph_oracle *oracle)
+                        ORACLE *oracle)
             : g_(g), oracle_(oracle)
         {
             assert(oracle->get_graph() == g);
@@ -124,7 +125,7 @@ class cpd_extractions : public warthog::search
 
     private:
         warthog::graph::xy_graph* g_;
-        warthog::cpd::graph_oracle* oracle_;
+        ORACLE* oracle_;
         warthog::problem_instance pi_;
         double time_cutoff_;            // Time limit in nanoseconds
         uint32_t max_k_moves_;          // Max "distance" from target

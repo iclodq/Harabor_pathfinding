@@ -380,15 +380,17 @@ run_cpd(warthog::util::cfg &cfg, warthog::graph::xy_graph &g,
 
     for (auto& alg: algos)
     {
-        alg = new warthog::cpd_extractions(&g, &oracle);
+        alg = new warthog::cpd_extractions<warthog::cpd::graph_oracle>(
+            &g, &oracle);
     }
 
     user(VERBOSE, "Loaded", algos.size(), "search.");
 
     conf_fn apply_conf = [] (warthog::search* base, config &conf) -> void
     {
-        warthog::cpd_extractions* alg =
-            static_cast<warthog::cpd_extractions*>(base);
+        auto alg =
+            static_cast<warthog::cpd_extractions<warthog::cpd::graph_oracle>*>(
+                base);
 
         alg->set_max_k_moves(conf.k_moves);
     };
