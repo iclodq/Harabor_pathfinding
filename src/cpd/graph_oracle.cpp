@@ -2,18 +2,22 @@
 #include "graph_oracle.h"
 #include "helpers.h"
 
+/**
+ * Add a row to the CPD by computing the APSP from the source to all other
+ * nodes. The @param s_row needs to be the same as the one given to the listener
+ * for the @param dijk.
+ */
 void
-warthog::cpd::compute_row(uint32_t source_id,
-                          warthog::cpd::graph_oracle* cpd,
-                          warthog::search* dijk,
-                          std::vector<warthog::cpd::fm_coll> &s_row)
+warthog::cpd::graph_oracle::compute_row(
+    uint32_t source_id, warthog::search* dijk,
+    std::vector<warthog::cpd::fm_coll> &s_row)
 {
     warthog::problem_instance problem(source_id);
     warthog::solution sol;
 
     std::fill(s_row.begin(), s_row.end(), warthog::cpd::CPD_FM_NONE);
     dijk->get_path(problem, sol);
-    cpd->add_row(source_id, s_row);
+    add_row(source_id, s_row);
 }
 
 void

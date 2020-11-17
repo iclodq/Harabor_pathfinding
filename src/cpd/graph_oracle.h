@@ -158,6 +158,9 @@ class graph_oracle
         warthog::cpd::graph_oracle&
         operator+=(const warthog::cpd::graph_oracle &cpd);
 
+        void
+        compute_row(uint32_t source_id, warthog::search* dijk,
+                    std::vector<warthog::cpd::fm_coll> &s_row);
     private:
         std::vector<std::vector<warthog::cpd::rle_run32>> fm_;
         std::vector<uint32_t> order_;
@@ -169,10 +172,6 @@ operator<<(std::ostream& out, warthog::cpd::graph_oracle& o);
 
 std::istream&
 operator>>(std::istream& in, warthog::cpd::graph_oracle& o);
-
-void
-compute_row(uint32_t source_id, warthog::cpd::graph_oracle* cpd,
-            warthog::search* dijk, std::vector<warthog::cpd::fm_coll> &s_row);
 
 // helps to precompute first-move data
 struct graph_oracle_listener

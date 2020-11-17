@@ -100,9 +100,8 @@ make_cpd(warthog::graph::xy_graph &g, warthog::cpd::graph_oracle &cpd, int from,
 
         while (source_id < node_end)
         {
-            warthog::cpd::compute_row(source_id, &cpd, &dijk, s_row);
-            // No idea why we want to play with an int pointer...
-            //
+            cpd.compute_row(source_id, &dijk, s_row);
+
             // We increment the source by the number of threads to *jump* to
             // that id.
             source_id += thread_count;
