@@ -1,10 +1,12 @@
 WARTHOG_SRC = $(wildcard src/*/*.cpp)
 EXTRA_SRC = $(wildcard extra/*.cpp)
+PYHOG_SRC = $(wildcard python/src/*.cpp)
 
 WARTHOG_EXE = $(wildcard programs/*.cpp)
 WARTHOG_TEST = $(wildcard test/*.cpp)
 WARTHOG_OBJ = $(WARTHOG_SRC:%.cpp=obj/%.o)
 EXTRA_OBJ = $(EXTRA_SRC:%.cpp=obj/%.o)
+PYHOG_OBJ = $(PYHOG_SRC:python/src/%.cpp=python/obj/%.o)
 
 D_WARTHOG_INCLUDES = -I../../src/ -I../../src/domains -I../../src/util			\
 	-I../../src/search -I../../src/experimental -I../../src/heuristics				\
@@ -17,9 +19,11 @@ D_LIBS = -L./lib -L/usr/local/lib
 
 warthog = ./lib/libwarthog.a
 extra = ./lib/libwarthog-extra.a
+pyhog = ./python/pyhog$(shell python3-config --extension-suffix)
 
 CFLAGS = -std=c++11 -pedantic -pthread -Wall -Werror -Wno-conversion \
 	-Wno-unused-result -Wno-unused-but-set-variable -fopenmp
+PYFLAGS = $(CFLAGS) $(shell python3 -m pybind11 --includes) -shared -fPIC
 # PROFILE_CFLAGS = $(DEV_CFLAGS) -pg -DNDEBUG
 
 FLAVOURS = fast dev debug
@@ -29,6 +33,7 @@ PROGRAMS += $(WARTHOG_TEST:.cpp=)
 ifeq ("$(findstring Darwin, "$(shell uname -s)")", "Darwin")
   CC = g++
   CFLAGS += -DOS_MAC
+  PYFLAGS += -undefined dynamic_lookup
 else
   CC = g++
   ifeq ("$(findstring Linux, "$(shell uname -s)")", "Linux")
@@ -90,6 +95,19 @@ dev: build/dev/Makefile			## Compile with debug symbols
 debug: CFLAGS += -ggdb -O3 -gdwarf-4 -no-pie -DQUICK_LOG=3
 debug: build/debug/Makefile		## Opti flags with debug symbols
 	+$(MAKE) -C $(<D) $(ACTIONS)
+
+##@ Build Python binding
+python: $(PYHOG_OBJ) $(pyhog) 	## pyhog: warthog Python bindings
+
+# -include $(PYHOG_OBJ:.o=.d)
+
+python/obj/%.o: python/src/%.cpp
+	@$(shell mkdir -p $(@D))
+	$(CXX) -c $< -o $@ $(PYFLAGS) $(D_INCLUDES) -MMD -MP -MT $@ -MF $(@:.o=.d)
+
+$(pyhog): $(PYHOG_OBJ)
+	@echo "### Creating Python lib $@ ###"
+	@$(CXX) $(PYFLAGS) -o $@ $^
 
 # Generate the Makefile of the appropriate flavour
 %/Makefile: make.file
