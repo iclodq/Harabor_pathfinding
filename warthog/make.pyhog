@@ -1,0 +1,23 @@
+# -*- mode: makefile -*-
+
+all: $(pyhog)
+
+.PHONY: clean
+clean:
+	@-$(RM) -rf ./obj/*
+
+$(warthog): $(WARTHOG_OBJ)
+	@echo "###  Archiving object files: $(warthog) ###"
+	@$(shell mkdir -p $(@D))
+	@ar -crs $@ $(WARTHOG_OBJ)
+
+$(pyhog): $(PYHOG_OBJ) $(warthog)
+	@echo "### Creating Python lib $@ ###"
+	$(CXX) $(PYFLAGS) -o $@ $^
+
+-include $(WARTHOG_OBJ:.o=.d)
+-include $(PYHOG_OBJ:.o=.d)
+
+obj/%.o: ../../%.cpp
+	@$(shell mkdir -p $(@D))
+	$(CXX) -c $< -o $@ $(PYFLAGS) $(D_INCLUDES) -MMD -MP -MT $@ -MF $(@:.o=.d)
