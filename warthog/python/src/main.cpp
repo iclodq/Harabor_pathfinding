@@ -199,4 +199,33 @@ PYBIND11_MODULE(pyhog, m)
             warthog::simple_graph_expansion_policy,
             warthog::pqueue_min>(h, expander, open);
     });
+
+    m.def("create_cpd_search", [](std::string& xy_name)
+    {
+        std::ifstream ifs;
+        auto* g = new warthog::graph::xy_graph();
+        open_file(ifs, xy_name);
+        ifs >> *g;
+        ifs.close();
+
+        auto* oracle = new warthog::cpd::graph_oracle(g);
+        std::string cpd_filename = xy_name + ".cpd";
+        open_file(ifs, cpd_filename);
+        ifs >> *oracle;
+        ifs.close();
+
+        std::string diff_filename = xy_name + ".diff";
+        open_file(ifs, diff_filename);
+        g->perturb(ifs);
+        ifs.close();
+
+        auto* expander = new warthog::simple_graph_expansion_policy(g);
+        auto* h = new warthog::cpd_heuristic(oracle, 1.0);
+        auto* open = new warthog::pqueue_min();
+
+        return new warthog::cpd_search<
+            warthog::cpd_heuristic,
+            warthog::simple_graph_expansion_policy,
+            warthog::pqueue_min>(h, expander, open);
+    });
 }
