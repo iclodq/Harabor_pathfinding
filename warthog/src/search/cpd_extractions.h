@@ -11,7 +11,6 @@
 #include "problem_instance.h"
 #include "solution.h"
 #include "timer.h"
-#include <bits/stdint-uintn.h>
 #include <climits>
 
 namespace warthog
