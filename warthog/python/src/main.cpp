@@ -140,6 +140,7 @@ PYBIND11_MODULE(pyhog, m)
 
     py::class_<warthog::problem_instance>(m, "pi")
         .def(py::init<>())
+        .def(py::init<warthog::sn_id_t, warthog::sn_id_t>())
         .def_readwrite("start_id", &warthog::problem_instance::start_id_)
         .def_readwrite("target_id", &warthog::problem_instance::target_id_)
         .def_readonly("instance_id", &warthog::problem_instance::instance_id_)
