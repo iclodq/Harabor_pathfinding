@@ -36,7 +36,7 @@ class solution
         { }
 
         inline void
-        print(std::ostream& out)
+        print(std::ostream& out) const
         {
             print_metrics(out);
             out << std::endl;
@@ -45,7 +45,7 @@ class solution
         }
 
         inline void
-        print_metrics(std::ostream& out)
+        print_metrics(std::ostream& out) const
         {
             out 
                 << "sum_of_edge_costs=" << sum_of_edge_costs_ 
@@ -59,7 +59,7 @@ class solution
         }
 
         inline void
-        print_path(std::ostream& out)
+        print_path(std::ostream& out) const
         {
             out << "path=";
            for(auto &state : path_) { out << state << " "; }

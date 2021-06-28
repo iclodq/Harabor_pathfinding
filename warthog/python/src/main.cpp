@@ -8,6 +8,7 @@
  */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <fstream>
 #include <sstream>
@@ -129,7 +130,13 @@ PYBIND11_MODULE(pyhog, m)
         .def_readonly("nodes_updated", &warthog::solution::nodes_updated_)
         .def_readonly("nodes_touched", &warthog::solution::nodes_touched_)
         .def_readonly("nodes_surplus", &warthog::solution::nodes_surplus_)
-        .def_readonly("path", &warthog::solution::path_);
+        .def_readonly("path", &warthog::solution::path_)
+        .def("__repr__", [](const warthog::solution& sol)
+        {
+            std::stringstream ss;
+            sol.print(ss);
+            return "<warthog.solution " + ss.str() + ">";
+        });
 
     py::class_<warthog::problem_instance>(m, "pi")
         .def(py::init<>())
