@@ -91,6 +91,80 @@ warthog::geo::vincenty_distance(
     return warthog::geo::EARTH_RADIUS * atan(sqrt(num) / den);
 }
 
+// Exact (to a factor) Vincenty formula, accurate to .6 mm
+//
+// http://www.movable-type.co.uk/scripts/latlong-vincenty.html
+double
+warthog::geo::exact_distance(
+    double lat_a, double lng_a, double lat_b, double lng_b)
+{
+    double a = 6378.137;       // semi-major axis
+    double b = 6356.752314245; // semi-minor axis
+    double f = (a - b) / a;    // flattening
+    // double inv_f = 298.257223563; // inverse flattening
+    double p1 = deg_to_rad(lat_a);
+    double l1 = deg_to_rad(lng_a);
+    double p2 = deg_to_rad(lat_b);
+    double l2 = deg_to_rad(lng_b);
+
+    double D = l2 - l1;
+    double u1 = atan((1 - f) * tan(p1));
+    double u2 = atan((1 - f) * tan(p2));
+    double sin_u1 = sin(u1);
+    double cos_u1 = cos(u1);
+    double sin_u2 = sin(u2);
+    double cos_u2 = cos(u2);
+    double lambda = D;
+    double lambda_pi = 2 * M_PI;
+
+    double cos2sigma_m = 0;
+    double cos_sq_alpha = 0;
+    double sigma = 0;
+    double sin_sigma = 0;
+    double cos_sigma = 0;
+
+    while(fabs(lambda - lambda_pi) > 1e-12)
+    {
+        double sin_lambda = sin(lambda);
+        double cos_lambda = cos(lambda);
+        sin_sigma = sqrt(
+            (cos_u2 * sin_lambda) * (cos_u2 * sin_lambda)
+            + (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda)
+                * (cos_u1 * sin_u2 - sin_u1 * cos_u2 * cos_lambda));
+        cos_sigma = sin_u1 * sin_u2 + cos_u1 * cos_u2 * cos_lambda;
+        sigma = atan2(sin_sigma, cos_sigma);
+
+        double alpha = asin(cos_u1 * cos_u2 * sin_lambda / sin_sigma);
+
+        cos_sq_alpha = cos(alpha) * cos(alpha);
+        cos2sigma_m = cos_sigma - 2 * sin_u1 * sin_u2 / cos_sq_alpha;
+
+        double cc = f / 16 * cos_sq_alpha * (4 + f * (4 - 3 * cos_sq_alpha));
+        lambda_pi = lambda;
+        lambda = D
+            + (1 - cc) * f * sin(alpha)
+                * (sigma
+                   + cc * sin_sigma
+                       * (cos2sigma_m
+                          + cc * cos_sigma
+                              * (-1 + 2 * cos2sigma_m * cos2sigma_m)));
+    }
+
+    double usq = cos_sq_alpha * (a * a - b * b) / (b * b);
+    double aa
+        = 1 + usq / 16384 * (4096 + usq * (-768 + usq * (320 - 175 * usq)));
+    double bb = usq / 1024 * (256 + usq * (-128 + usq * (74 - 47 * usq)));
+    double delta_sigma = bb * sin_sigma
+        * (cos2sigma_m
+           + bb / 4
+               * (cos_sigma * (-1 + 2 * cos2sigma_m * cos2sigma_m)
+                  - bb / 6 * cos2sigma_m * (-3 + 4 * sin_sigma * sin_sigma)
+                      * (-3 + 4 * cos2sigma_m * cos2sigma_m)));
+
+    // length of the geodesic
+    return b * aa * (sigma - delta_sigma);
+}
+
 // We calculate bearing with the following formula:
 // θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
 // where:

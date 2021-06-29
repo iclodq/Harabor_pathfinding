@@ -21,7 +21,8 @@ enum distance
 {
     SPHERICAL,
     GREAT_CIRCLE,
-    VINCENTY
+    VINCENTY,
+    EXACT
 };
 
 // Compute distance using a Spherical Earth projected to a plane
@@ -36,6 +37,10 @@ great_circle_distance(double lat_a, double lng_a, double lat_b, double lng_b);
 // Vincenty formula.
 double
 vincenty_distance(double lat_a, double lng_a, double lat_b, double lng_b);
+
+// Iterative Vincenty, accurate to .6mm
+double
+exact_distance(double lat_a, double lng_a, double lat_b, double lng_b);
 
 // Get the bearing from pos1 to pos2
 double
