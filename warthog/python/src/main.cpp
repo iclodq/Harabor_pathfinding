@@ -63,6 +63,31 @@ PYBIND11_MODULE(pyhog, m)
         .def(py::init<>())
         .def("get_num_nodes", &warthog::graph::xy_graph::get_num_nodes)
         .def("get_num_edges", &warthog::graph::xy_graph::get_num_edges_out)
+        .def("get_nodes", &warthog::graph::xy_graph::get_node)
+        .def(
+            "get_edge",
+            [](warthog::graph::xy_graph& g, uint32_t head, uint32_t tail)
+            {
+                warthog::graph::node* n = g.get_node(head);
+                if(n == nullptr)
+                {
+                    std::stringstream ss;
+                    ss << "Node not found in" << __func__ << "(" << head << ", "
+                       << tail << ")";
+                    throw std::range_error(ss.str());
+                }
+
+                warthog::graph::edge_iter e = n->find_edge(tail);
+                if(e == n->outgoing_end())
+                {
+                    std::stringstream ss;
+                    ss << "Edge not found in" << __func__ << "(" << head << ", "
+                       << tail << ")";
+                    throw std::range_error(ss.str());
+                }
+
+                return *e;
+            })
         .def(
             "__repr__",
             [](warthog::graph::xy_graph& xy)
