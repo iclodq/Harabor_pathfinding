@@ -125,6 +125,23 @@ PYBIND11_MODULE(pyhog, m)
                 g.perturb(ifs);
                 ifs.close();
 
+            })
+        // .def("perturb", &warthog::graph::xy_graph::perturb)
+        .def(
+            "perturb",
+            [](warthog::graph::xy_graph& g,
+               std::vector<std::tuple<int, int, int>>& modif)
+            {
+                std::vector<std::pair<uint32_t, warthog::graph::edge>> edges;
+                for(auto& e : modif)
+                {
+                    uint32_t head = std::get<0>(e);
+                    uint32_t tail = std::get<1>(e);
+                    uint32_t weight = std::get<2>(e);
+                    edges.push_back({head, warthog::graph::edge(tail, weight)});
+                }
+
+                g.perturb(edges);
             });
 
     py::class_<warthog::cpd::graph_oracle>(m, "graph_oracle")
