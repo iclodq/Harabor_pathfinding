@@ -46,6 +46,18 @@ warthog::dimacs_parser::init()
     experiments_ = new std::vector<warthog::dimacs_parser::experiment>();
 }
 
+warthog::dimacs_parser::node&
+warthog::dimacs_parser::get_node(uint32_t id)
+{
+    return nodes_->at(id);
+}
+
+warthog::dimacs_parser::node&
+warthog::dimacs_parser::get_dimacs_node(uint32_t id)
+{
+    return nodes_->at(id - 1);
+}
+
 bool
 warthog::dimacs_parser::load_graph(const char* filename)
 {

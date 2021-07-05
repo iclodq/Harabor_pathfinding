@@ -74,6 +74,12 @@ class dimacs_parser
         bool
         load_instance(const char* dimacs_file);
 
+        warthog::dimacs_parser::node&
+        get_node(uint32_t id);
+
+        warthog::dimacs_parser::node&
+        get_dimacs_node(uint32_t id);
+
         inline uint32_t
         get_num_nodes() 
         {
