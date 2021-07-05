@@ -15,6 +15,7 @@
 
 #include "cpd_heuristic.h"
 #include "cpd_search.h"
+#include "graph.h"
 #include "graph_expansion_policy.h"
 #include "graph_oracle.h"
 #include "log.h"
@@ -38,6 +39,26 @@ open_file(std::ifstream& ifs, std::string& filename)
 PYBIND11_MODULE(pyhog, m)
 {
     // Class definitions
+    py::class_<warthog::graph::node>(m, "node")
+        .def("__repr__", [](warthog::graph::node& n)
+        {
+            std::ostringstream os;
+            os << "<node deg=" << n.out_degree() << ">";
+
+            return os.str();
+        });
+
+    py::class_<warthog::graph::edge>(m, "edge")
+        .def("__repr__", [](warthog::graph::edge& e)
+        {
+            std::ostringstream os;
+            os << "<";
+            e.print(os);
+            os << ">";
+
+            return os.str();
+        });
+
     py::class_<warthog::graph::xy_graph>(m, "xy_graph")
         .def(py::init<>())
         .def("get_num_nodes", &warthog::graph::xy_graph::get_num_nodes)
