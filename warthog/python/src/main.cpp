@@ -130,14 +130,14 @@ PYBIND11_MODULE(pyhog, m)
         .def(
             "perturb",
             [](warthog::graph::xy_graph& g,
-               std::vector<std::tuple<int, int, int>>& modif)
+               std::vector<std::tuple<int, int, double>>& modif)
             {
                 std::vector<std::pair<uint32_t, warthog::graph::edge>> edges;
                 for(auto& e : modif)
                 {
                     uint32_t head = std::get<0>(e);
                     uint32_t tail = std::get<1>(e);
-                    uint32_t weight = std::get<2>(e);
+                    warthog::graph::edge_cost_t weight = std::get<2>(e);
                     edges.push_back({head, warthog::graph::edge(tail, weight)});
                 }
 
