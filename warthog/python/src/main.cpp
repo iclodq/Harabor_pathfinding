@@ -142,6 +142,29 @@ PYBIND11_MODULE(pyhog, m)
                 }
 
                 g.perturb(edges);
+            })
+        .def(
+            "add_node",
+            static_cast<
+            uint32_t (warthog::graph::xy_graph::*)(int32_t, int32_t)>(
+                &warthog::graph::xy_graph::add_node))
+        .def(
+            "add_edge",
+            [](warthog::graph::xy_graph& g, uint32_t head, uint32_t tail,
+               warthog::graph::edge_cost_t weight)
+            {
+                warthog::graph::node* n = g.get_node(head);
+                if(n == nullptr)
+                {
+                    std::stringstream ss;
+                    ss << "Node not found in" << __func__ << "(" << head << ", "
+                       << tail << ")";
+                    throw std::range_error(ss.str());
+                }
+
+                n->add_outgoing(warthog::graph::edge(tail, weight));
+
+                return n;
             });
 
     py::class_<warthog::cpd::graph_oracle>(m, "graph_oracle")
