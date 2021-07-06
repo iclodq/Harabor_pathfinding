@@ -58,7 +58,9 @@ PYBIND11_MODULE(pyhog, m)
             os << ">";
 
             return os.str();
-        });
+        })
+        .def_readonly("node_id", &warthog::graph::edge::node_id_)
+        .def_readonly("wt", &warthog::graph::edge::wt_);
 
     // Class object
     py::class_<warthog::graph::xy_graph>(m, "xy_graph")
