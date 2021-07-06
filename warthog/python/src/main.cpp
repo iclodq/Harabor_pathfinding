@@ -63,7 +63,7 @@ PYBIND11_MODULE(pyhog, m)
         .def(py::init<>())
         .def("get_num_nodes", &warthog::graph::xy_graph::get_num_nodes)
         .def("get_num_edges", &warthog::graph::xy_graph::get_num_edges_out)
-        .def("get_nodes", &warthog::graph::xy_graph::get_node)
+        .def("get_node", &warthog::graph::xy_graph::get_node)
         .def(
             "get_edge",
             [](warthog::graph::xy_graph& g, uint32_t head, uint32_t tail)
