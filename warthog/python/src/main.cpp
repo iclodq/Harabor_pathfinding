@@ -38,7 +38,8 @@ open_file(std::ifstream& ifs, std::string& filename)
 
 PYBIND11_MODULE(pyhog, m)
 {
-    // Class definitions
+    // Opaque objects, declared so that Python does not crash but should not be
+    // interacted with.
     py::class_<warthog::graph::node>(m, "node")
         .def("__repr__", [](warthog::graph::node& n)
         {
@@ -59,11 +60,15 @@ PYBIND11_MODULE(pyhog, m)
             return os.str();
         });
 
+    // Class object
     py::class_<warthog::graph::xy_graph>(m, "xy_graph")
-        .def(py::init<>())
+        .def(py::init<>(), "Graph class to use with warthog.")
         .def("get_num_nodes", &warthog::graph::xy_graph::get_num_nodes)
         .def("get_num_edges", &warthog::graph::xy_graph::get_num_edges_out)
-        .def("get_node", &warthog::graph::xy_graph::get_node)
+        .def(
+            "get_node",
+            &warthog::graph::xy_graph::get_node,
+            "`pyhog.node` is opaque, cannot interact with the results")
         .def(
             "get_edge",
             [](warthog::graph::xy_graph& g, uint32_t head, uint32_t tail)
@@ -87,7 +92,8 @@ PYBIND11_MODULE(pyhog, m)
                 }
 
                 return *e;
-            })
+            },
+            "`pyhog.edge` is opaque, cannot interact with the results")
         .def(
             "__repr__",
             [](warthog::graph::xy_graph& xy)
@@ -114,7 +120,8 @@ PYBIND11_MODULE(pyhog, m)
                 open_file(ifs, xy_filename);
                 ifs >> g;
                 ifs.close();
-            })
+            },
+            "Load an existing xy-graph file.")
         .def(
             "perturb",
             [](warthog::graph::xy_graph& g, std::string& diff_filename)
@@ -125,8 +132,8 @@ PYBIND11_MODULE(pyhog, m)
                 g.perturb(ifs);
                 ifs.close();
 
-            })
-        // .def("perturb", &warthog::graph::xy_graph::perturb)
+            },
+            "Perturg the current graph given another xy-graph file.")
         .def(
             "perturb",
             [](warthog::graph::xy_graph& g,
@@ -142,12 +149,14 @@ PYBIND11_MODULE(pyhog, m)
                 }
 
                 g.perturb(edges);
-            })
+            },
+            "Perturb the current graph given a list of (head, tail, cost).")
         .def(
             "add_node",
             static_cast<
             uint32_t (warthog::graph::xy_graph::*)(int32_t, int32_t)>(
-                &warthog::graph::xy_graph::add_node))
+                &warthog::graph::xy_graph::add_node),
+            "Add a node to the current graph with coordinates (x, y).")
         .def(
             "add_edge",
             [](warthog::graph::xy_graph& g, uint32_t head, uint32_t tail,
@@ -165,10 +174,14 @@ PYBIND11_MODULE(pyhog, m)
                 n->add_outgoing(warthog::graph::edge(tail, weight));
 
                 return n;
-            });
+            },
+            "As `pyhog.node` is opaque, use this method to add edges to a node "
+            "in the current graph.");
 
     py::class_<warthog::cpd::graph_oracle>(m, "graph_oracle")
-        .def(py::init<warthog::graph::xy_graph*>())
+        .def(
+            py::init<warthog::graph::xy_graph*>(),
+            "A graph oracle is based on an xy-graph and gives search directions.")
         .def(
             "get_num_nodes",
             [](warthog::cpd::graph_oracle& cpd)
@@ -185,7 +198,8 @@ PYBIND11_MODULE(pyhog, m)
                 open_file(ifs, cpd_filename);
                 ifs >> cpd;
                 ifs.close();
-            })
+            },
+            "Load CPD from file.")
         .def(
             "__eq__",
             [](warthog::cpd::graph_oracle& cpd,
@@ -208,7 +222,9 @@ PYBIND11_MODULE(pyhog, m)
         .def(py::init<warthog::graph::xy_graph*>());
 
     py::class_<warthog::solution>(m, "solution")
-        .def(py::init<>())
+        .def(
+            py::init<>(),
+            "Solution object contains statistics, and the cost and path found.")
         .def_readonly("sum_of_edge_costs", &warthog::solution::sum_of_edge_costs_)
         .def_readonly("time_elapsed_nano", &warthog::solution::time_elapsed_nano_)
         .def_readonly("nodes_expanded", &warthog::solution::nodes_expanded_)
@@ -225,7 +241,7 @@ PYBIND11_MODULE(pyhog, m)
         });
 
     py::class_<warthog::problem_instance>(m, "pi")
-        .def(py::init<>())
+        .def(py::init<>(), "A problem instance represents an (o, d)-pair")
         .def(py::init<warthog::sn_id_t, warthog::sn_id_t>())
         .def_readwrite("start_id", &warthog::problem_instance::start_id_)
         .def_readwrite("target_id", &warthog::problem_instance::target_id_)
@@ -235,42 +251,56 @@ PYBIND11_MODULE(pyhog, m)
     py::class_<cpd_search_t>(m, "cpd_search")
         .def(py::init<
              warthog::cpd_heuristic*, warthog::simple_graph_expansion_policy*,
-             warthog::pqueue_min*>())
-        .def("get_path", &cpd_search_t::get_path)
-        .def("get_pathcost", &cpd_search_t::get_pathcost)
+             warthog::pqueue_min*>(),
+            "CPD Search algorithm, needs a heuristic, an exander and a queue.")
+        .def(
+            "get_path",
+            &cpd_search_t::get_path,
+            "Default interface: execute search and return the path found.")
+        .def(
+            "get_pathcost",
+            &cpd_search_t::get_pathcost,
+            "Default interface: execute search and return the cost of the path "
+            "found.")
         .def(
             "path",
             [](cpd_search_t& s, warthog::sn_id_t source, warthog::sn_id_t target)
-        {
-            warthog::problem_instance pi(source, target);
-            warthog::solution sol;
+            {
+                warthog::problem_instance pi(source, target);
+                warthog::solution sol;
 
-            s.get_path(pi, sol);
+                s.get_path(pi, sol);
 
-            return sol.path_;
-        })
+                return sol.path_;
+            },
+            "Direct interface: execute search between @param source and @param "
+            "target and return the path found.")
         .def(
             "cost",
             [](cpd_search_t& s, warthog::sn_id_t source, warthog::sn_id_t target)
-        {
-            warthog::problem_instance pi(source, target);
-            warthog::solution sol;
+            {
+                warthog::problem_instance pi(source, target);
+                warthog::solution sol;
 
-            s.get_path(pi, sol);
+                s.get_path(pi, sol);
 
-            return sol.sum_of_edge_costs_;
-        })
+                return sol.sum_of_edge_costs_;
+            },
+            "Direct interface: execute search between @param source and @param "
+            "target and return the cost of the path found.")
         .def(
             "solution",
             [](cpd_search_t& s, warthog::sn_id_t source, warthog::sn_id_t target)
-        {
-            warthog::problem_instance pi(source, target);
-            warthog::solution sol;
+            {
+                warthog::problem_instance pi(source, target);
+                warthog::solution sol;
 
-            s.get_path(pi, sol);
+                s.get_path(pi, sol);
 
-            return std::move(sol);
-        });
+                return std::move(sol);
+            },
+            "Direct interface: execute search between @param source and @param "
+            "target and return the solution object.");
 
     m.def("create_cpd_search", [](
               warthog::graph::xy_graph* g, warthog::cpd::graph_oracle* oracle)
@@ -284,7 +314,7 @@ PYBIND11_MODULE(pyhog, m)
             warthog::cpd_heuristic,
             warthog::simple_graph_expansion_policy,
             warthog::pqueue_min>(h, expander, open);
-    });
+    }, "Create a CPD Search using an xy-graph and a CPD oracle.");
 
     m.def("create_cpd_search", [](std::string& xy_name)
     {
@@ -313,5 +343,6 @@ PYBIND11_MODULE(pyhog, m)
             warthog::cpd_heuristic,
             warthog::simple_graph_expansion_policy,
             warthog::pqueue_min>(h, expander, open);
-    });
+    }, "Create a CPD Search from three files using @param xy_name: <xy_name> "
+        "<xy_name.cpd> <xy_name.diff>");
 }
