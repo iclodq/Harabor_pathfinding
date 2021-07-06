@@ -43,7 +43,7 @@ PYBIND11_MODULE(pyhog, m)
         .def("__repr__", [](warthog::graph::node& n)
         {
             std::ostringstream os;
-            os << "<node deg=" << n.out_degree() << ">";
+            os << "<pyhog.node deg=" << n.out_degree() << ">";
 
             return os.str();
         });
@@ -52,7 +52,7 @@ PYBIND11_MODULE(pyhog, m)
         .def("__repr__", [](warthog::graph::edge& e)
         {
             std::ostringstream os;
-            os << "<";
+            os << "<pyhog.";
             e.print(os);
             os << ">";
 
@@ -93,8 +93,8 @@ PYBIND11_MODULE(pyhog, m)
             [](warthog::graph::xy_graph& xy)
             {
                 std::ostringstream os;
-                os << "xy{n=" << xy.get_num_nodes() << ", "
-                   << "e=" << xy.get_num_edges_out() << "}";
+                os << "<pyhog.xy n=" << xy.get_num_nodes() << ", "
+                   << "e=" << xy.get_num_edges_out() << ">";
 
                 return os.str();
             })
@@ -193,7 +193,7 @@ PYBIND11_MODULE(pyhog, m)
         .def("__repr__", [](warthog::cpd::graph_oracle& cpd)
         {
             std::ostringstream os;
-            os << "cpd{n=" << cpd.get_graph()->get_num_nodes() << "}";
+            os << "<pyhog.cpd n=" << cpd.get_graph()->get_num_nodes() << ">";
 
             return os.str();
         });
@@ -221,7 +221,7 @@ PYBIND11_MODULE(pyhog, m)
         {
             std::stringstream ss;
             sol.print(ss);
-            return "<warthog.solution " + ss.str() + ">";
+            return "<pyhog.solution " + ss.str() + ">";
         });
 
     py::class_<warthog::problem_instance>(m, "pi")
