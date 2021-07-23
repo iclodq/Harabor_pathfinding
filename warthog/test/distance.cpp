@@ -3,6 +3,8 @@
 #include "log.h"
 #include "xy_graph.h"
 #include "geography.h"
+#include "euclidean_heuristic.h"
+#include "haversine_heuristic.h"
 
 #include <limits>
 #include <functional>
@@ -12,14 +14,19 @@ int suppress_header = 0;
 using namespace warthog::geo;
 using dist_fn = std::function<double(double, double, double, double)>;
 
-std::array<std::string, 5> alg_names {
-    "spherical", "great-circle", "vincenty", "vincenty-exact", "euclidean"};
+std::array<std::string, 6> alg_names {
+    "spherical", "great-circle", "vincenty", "vincenty-exact", "haversine",
+    "euclidean"};
 
-std::array<dist_fn, 5> algs {
+std::array<dist_fn, 6> algs {
     spherical_distance,
     great_circle_distance,
     vincenty_distance,
     exact_distance,
+    [](double xs, double ys, double xt, double yt) -> double
+    {
+        return warthog::haversine_heuristic::h(xs, ys, xt, yt);
+    },
     [](double xs, double ys, double xt, double yt) -> double
     {
         return warthog::euclidean_heuristic::h(xs, ys, xt, yt);
