@@ -35,6 +35,9 @@ class haversine_heuristic
     double
     get_hscale();
 
+    void
+    set_dimacs();
+
     size_t
     mem();
 

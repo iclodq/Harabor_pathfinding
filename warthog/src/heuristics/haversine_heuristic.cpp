@@ -3,14 +3,11 @@
 #include "geography.h"
 #include <cmath>
 
-#define Pi 0.017453292519943295 //#Pi/180
+#define Pi 0.017453292519943295 // Pi/180
 
 warthog::haversine_heuristic::haversine_heuristic(warthog::graph::xy_graph* g)
 {
     g_ = g;
-    // The heuristic scale factor, tuned for the DIMACS instances to guarantee
-    // admissibility. Still admissible with 0.999 but 0.9988 is safe.
-    hscale_ = 0.9988;
 }
 
 warthog::haversine_heuristic::~haversine_heuristic() = default;
@@ -39,6 +36,15 @@ warthog::haversine_heuristic::h(
 
     // 2*R*asin... converted to m from km then converted to 0.1m;
     return floor(127420000 * asin(sqrt(a)));
+
+// The heuristic scale factor, tuned for the DIMACS instances to guarantee
+// admissibility. Still admissible with 0.999 but 0.9988 is safe.
+//
+// Then multiplied by 10e4 to scale to 0.1 m.
+void
+warthog::haversine_heuristic::set_dimacs()
+{
+    hscale_ = 9988;
 }
 
 void
