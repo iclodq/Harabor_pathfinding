@@ -24,8 +24,8 @@ warthog::haversine_heuristic::h(warthog::sn_id_t id, warthog::sn_id_t id2)
     g_->get_xy((uint32_t)id2, x2, y2);
 
     return hscale_ * warthog::haversine_heuristic::h(
-        x / warthog::geo::DIMACS_RATIO, y / warthog::geo::DIMACS_RATIO,
-        x2 / warthog::geo::DIMACS_RATIO, y2 / warthog::geo::DIMACS_RATIO);
+        x / warthog::DIMACS_RATIO, y / warthog::DIMACS_RATIO,
+        x2 / warthog::DIMACS_RATIO, y2 / warthog::DIMACS_RATIO);
 }
 
 double

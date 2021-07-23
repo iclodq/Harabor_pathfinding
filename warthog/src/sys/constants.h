@@ -48,6 +48,7 @@ namespace warthog
 	static const uint32_t FNV32_offset_basis = 2166136261;
 	static const uint32_t FNV32_prime = 16777619;
 
+    static const double DIMACS_RATIO = 1e6;
 }
 
 #endif

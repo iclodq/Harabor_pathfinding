@@ -13,7 +13,6 @@ namespace warthog
 namespace geo
 {
 
-static const double DIMACS_RATIO = 1e6;
 static const double EARTH_RADIUS = 6371.0009; // km
 
 // Distance functions ordered by precision

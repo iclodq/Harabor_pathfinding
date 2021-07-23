@@ -232,15 +232,15 @@ warthog::geo::get_bearing_xy(
     uint32_t lat1, uint32_t lng1, uint32_t lat2, uint32_t lng2)
 {
     return warthog::geo::get_bearing(
-        lat1 / warthog::geo::DIMACS_RATIO, lng1 / warthog::geo::DIMACS_RATIO,
-        lat2 / warthog::geo::DIMACS_RATIO, lng2 / warthog::geo::DIMACS_RATIO);
+        lat1 / warthog::DIMACS_RATIO, lng1 / warthog::DIMACS_RATIO,
+        lat2 / warthog::DIMACS_RATIO, lng2 / warthog::DIMACS_RATIO);
 }
 
 double
 warthog::geo::true_bearing_xy(uint32_t lng, uint32_t lat)
 {
     return warthog::geo::true_bearing(
-        lat / warthog::geo::DIMACS_RATIO, lng / warthog::geo::DIMACS_RATIO);
+        lat / warthog::DIMACS_RATIO, lng / warthog::DIMACS_RATIO);
 }
 
 double
@@ -249,9 +249,9 @@ warthog::geo::get_angle_xy(
     uint32_t lat_c, uint32_t lng_c)
 {
     return warthog::geo::get_angle(
-        lat_a / warthog::geo::DIMACS_RATIO, lng_a / warthog::geo::DIMACS_RATIO,
-        lat_b / warthog::geo::DIMACS_RATIO, lng_b / warthog::geo::DIMACS_RATIO,
-        lat_c / warthog::geo::DIMACS_RATIO, lng_c / warthog::geo::DIMACS_RATIO);
+        lat_a / warthog::DIMACS_RATIO, lng_a / warthog::DIMACS_RATIO,
+        lat_b / warthog::DIMACS_RATIO, lng_b / warthog::DIMACS_RATIO,
+        lat_c / warthog::DIMACS_RATIO, lng_c / warthog::DIMACS_RATIO);
 }
 
 bool
@@ -260,9 +260,9 @@ warthog::geo::between_xy(
     uint32_t lat_c, uint32_t lng_c)
 {
     return warthog::geo::between(
-        lat_a / warthog::geo::DIMACS_RATIO, lng_a / warthog::geo::DIMACS_RATIO,
-        lat_b / warthog::geo::DIMACS_RATIO, lng_b / warthog::geo::DIMACS_RATIO,
-        lat_c / warthog::geo::DIMACS_RATIO, lng_c / warthog::geo::DIMACS_RATIO);
+        lat_a / warthog::DIMACS_RATIO, lng_a / warthog::DIMACS_RATIO,
+        lat_b / warthog::DIMACS_RATIO, lng_b / warthog::DIMACS_RATIO,
+        lat_c / warthog::DIMACS_RATIO, lng_c / warthog::DIMACS_RATIO);
 }
 
 bool
@@ -271,8 +271,8 @@ warthog::geo::between_xy(
     uint32_t lat_b, uint32_t lng_b, uint32_t lat_c, uint32_t lng_c)
 {
     return warthog::geo::between(
-        lat_s / warthog::geo::DIMACS_RATIO, lng_s / warthog::geo::DIMACS_RATIO,
-        lat_a / warthog::geo::DIMACS_RATIO, lng_a / warthog::geo::DIMACS_RATIO,
-        lat_b / warthog::geo::DIMACS_RATIO, lng_b / warthog::geo::DIMACS_RATIO,
-        lat_c / warthog::geo::DIMACS_RATIO, lng_c / warthog::geo::DIMACS_RATIO);
+        lat_s / warthog::DIMACS_RATIO, lng_s / warthog::DIMACS_RATIO,
+        lat_a / warthog::DIMACS_RATIO, lng_a / warthog::DIMACS_RATIO,
+        lat_b / warthog::DIMACS_RATIO, lng_b / warthog::DIMACS_RATIO,
+        lat_c / warthog::DIMACS_RATIO, lng_c / warthog::DIMACS_RATIO);
 }

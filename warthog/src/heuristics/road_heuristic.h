@@ -53,8 +53,8 @@ class road_heuristic_base
         g_->get_xy(target_id, xt, yt);
 
         return distance_(
-            xs / warthog::geo::DIMACS_RATIO, ys / warthog::geo::DIMACS_RATIO,
-            xt / warthog::geo::DIMACS_RATIO, yt / warthog::geo::DIMACS_RATIO);
+            xs / warthog::DIMACS_RATIO, ys / warthog::DIMACS_RATIO,
+            xt / warthog::DIMACS_RATIO, yt / warthog::DIMACS_RATIO);
     }
 
   private:

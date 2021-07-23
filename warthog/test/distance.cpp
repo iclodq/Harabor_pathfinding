@@ -44,8 +44,8 @@ lat_lon(warthog::graph::xy_graph *g)
         int32_t y;
 
         g->get_xy(i, x, y);
-        coords.at(i * 2) = x / warthog::geo::DIMACS_RATIO;
-        coords.at(i * 2 + 1) = y / warthog::geo::DIMACS_RATIO;
+        coords.at(i * 2) = x / warthog::DIMACS_RATIO;
+        coords.at(i * 2 + 1) = y / warthog::DIMACS_RATIO;
     }
 
     return coords;
@@ -61,10 +61,10 @@ run_precision(warthog::dimacs_parser& parser)
         warthog::dimacs_parser::node head = parser.get_dimacs_node(e->head_id_);
         warthog::dimacs_parser::node tail = parser.get_dimacs_node(e->tail_id_);
 
-        double lon_a = tail.x_ / warthog::geo::DIMACS_RATIO;
-        double lat_a = tail.y_ / warthog::geo::DIMACS_RATIO;
-        double lon_b = head.x_ / warthog::geo::DIMACS_RATIO;
-        double lat_b = head.y_ / warthog::geo::DIMACS_RATIO;
+        double lon_a = tail.x_ / warthog::DIMACS_RATIO;
+        double lat_a = tail.y_ / warthog::DIMACS_RATIO;
+        double lon_b = head.x_ / warthog::DIMACS_RATIO;
+        double lat_b = head.y_ / warthog::DIMACS_RATIO;
 
         std::cout << lat_a << "," << lon_a << "," << lat_b << "," << lon_b
             << "," << e->weight_;
