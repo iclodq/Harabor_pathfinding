@@ -62,7 +62,7 @@ class road_heuristic_base
     double hscale_ = 1.0;
 
     warthog::cost_t
-    distance_(double lat_s, double lon_s, double lat_t, double lon_t);
+    distance_(double lon_s, double lat_s, double lon_t, double lat_t);
 };
 
 }

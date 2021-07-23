@@ -20,12 +20,12 @@ rad_to_deg(double rad)
 // https://en.wikipedia.org/wiki/Geographical_distance
 double
 warthog::geo::spherical_distance(
-    double lat_a, double lng_a, double lat_b, double lng_b)
+    double lon_a, double lat_a, double lon_b, double lat_b)
 {
     double p1 = deg_to_rad(lat_a);
-    double l1 = deg_to_rad(lng_a);
+    double l1 = deg_to_rad(lon_a);
     double p2 = deg_to_rad(lat_b);
-    double l2 = deg_to_rad(lng_b);
+    double l2 = deg_to_rad(lon_b);
 
     // (\Delta \phi) ^ 2
     double D_p_2 = pow(fabs(p1 - p2), 2);
@@ -43,12 +43,12 @@ warthog::geo::spherical_distance(
 // https://en.wikipedia.org/wiki/Great-circle_distance
 double
 warthog::geo::great_circle_distance(
-    double lat_a, double lng_a, double lat_b, double lng_b)
+    double lon_a, double lat_a, double lon_b, double lat_b)
 {
     double p1 = deg_to_rad(lat_a);
-    double l1 = deg_to_rad(lng_a);
+    double l1 = deg_to_rad(lon_a);
     double p2 = deg_to_rad(lat_b);
-    double l2 = deg_to_rad(lng_b);
+    double l2 = deg_to_rad(lon_b);
 
     double D_l = fabs(l1 - l2);
     double D_p = fabs(p1 - p2);
@@ -68,12 +68,12 @@ warthog::geo::great_circle_distance(
 // https://en.wikipedia.org/wiki/Vincenty%27s_formulae
 double
 warthog::geo::vincenty_distance(
-    double lat_a, double lng_a, double lat_b, double lng_b)
+    double lon_a, double lat_a, double lon_b, double lat_b)
 {
     double p1 = deg_to_rad(lat_a);
-    double l1 = deg_to_rad(lng_a);
+    double l1 = deg_to_rad(lon_a);
     double p2 = deg_to_rad(lat_b);
-    double l2 = deg_to_rad(lng_b);
+    double l2 = deg_to_rad(lon_b);
 
     double D_l = fabs(l1 - l2);
 
@@ -96,16 +96,16 @@ warthog::geo::vincenty_distance(
 // http://www.movable-type.co.uk/scripts/latlong-vincenty.html
 double
 warthog::geo::exact_distance(
-    double lat_a, double lng_a, double lat_b, double lng_b)
+    double lon_a, double lat_a, double lon_b, double lat_b)
 {
     double a = 6378.137;       // semi-major axis
     double b = 6356.752314245; // semi-minor axis
     double f = (a - b) / a;    // flattening
     // double inv_f = 298.257223563; // inverse flattening
     double p1 = deg_to_rad(lat_a);
-    double l1 = deg_to_rad(lng_a);
+    double l1 = deg_to_rad(lon_a);
     double p2 = deg_to_rad(lat_b);
-    double l2 = deg_to_rad(lng_b);
+    double l2 = deg_to_rad(lon_b);
 
     double D = l2 - l1;
     double u1 = atan((1 - f) * tan(p1));

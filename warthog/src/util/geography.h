@@ -26,20 +26,20 @@ enum distance
 
 // Compute distance using a Spherical Earth projected to a plane
 double
-spherical_distance(double lat_a, double lng_a, double lat_b, double lng_b);
+spherical_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 
 // Compute the distance between two points on a sphere.
 double
-great_circle_distance(double lat_a, double lng_a, double lat_b, double lng_b);
+great_circle_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 
 // Compute the distance between two points using (a special case of) the
 // Vincenty formula.
 double
-vincenty_distance(double lat_a, double lng_a, double lat_b, double lng_b);
+vincenty_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 
 // Iterative Vincenty, accurate to .6mm
 double
-exact_distance(double lat_a, double lng_a, double lat_b, double lng_b);
+exact_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 
 // Get the bearing from pos1 to pos2
 double

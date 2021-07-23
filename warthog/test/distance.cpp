@@ -71,7 +71,7 @@ run_precision(warthog::dimacs_parser& parser)
 
         for(size_t alg = 0; alg < alg_names.size(); alg++)
         {
-            std::cout << "," << algs.at(alg)(lat_a, lon_a, lat_b, lon_b);
+            std::cout << "," << algs.at(alg)(lon_a, lat_a, lon_b, lat_b);
         }
         std::cout << std::endl;
     }
