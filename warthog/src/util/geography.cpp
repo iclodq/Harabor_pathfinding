@@ -121,15 +121,13 @@ warthog::geo::great_circle_distance(
     double l2 = deg_to_rad(lon_b);
 
     double D_l = fabs(l1 - l2);
-    double D_p = fabs(p1 - p2);
-
-    double hav_p = pow(sin(D_p / 2), 2);
-    double hav_l = pow(sin(D_l / 2), 2);
+    // double D_p = p1 - p2;
     double cos_p = cos(p1) * cos(p2);
+    double sin_p = sin(p1) * sin(p2);
 
-    double sigma = 2 * asin(sqrt(hav_p + cos_p * hav_l));
+    double sigma = sin_p + cos_p * cos(D_l);
 
-    return warthog::geo::EARTH_RADIUS * sigma;
+    return warthog::geo::EARTH_RADIUS * acos(sigma);
 }
 
 // The Vincenty formula is an iterative procedure which can be accurate up to
