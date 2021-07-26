@@ -97,12 +97,13 @@ warthog::geo::spherical_distance(
     double l2 = deg_to_rad(lon_b);
 
     // (\Delta \phi) ^ 2
-    double D_p_2 = pow(fabs(p1 - p2), 2);
+    double D_p = p1 - p2;
+    double D_p_2 = D_p * D_p;
 
     double cos_pm = cos((p1 + p2) / 2);
-    double x = cos_pm * fabs(l1 - l2);
+    double x = cos_pm * (l1 - l2);
 
-    return warthog::geo::EARTH_RADIUS * sqrt(D_p_2 + pow(x, 2));
+    return warthog::geo::EARTH_RADIUS * sqrt(D_p_2 + x * x);
 }
 
 // Compute the distance between two points on a sphere by using the Haversine
