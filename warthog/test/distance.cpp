@@ -14,11 +14,11 @@ int suppress_header = 0;
 using namespace warthog::geo;
 using dist_fn = std::function<double(double, double, double, double)>;
 
-std::array<std::string, 6> alg_names {
+std::array<std::string, 9> alg_names {
     "spherical", "great-circle", "vincenty", "vincenty-exact", "haversine",
-    "euclidean"};
+    "haversine-direct", "fast-haversine", "haversine-approx", "euclidean"};
 
-std::array<dist_fn, 6> algs {
+std::array<dist_fn, 9> algs {
     spherical_distance,
     great_circle_distance,
     vincenty_distance,
@@ -27,6 +27,9 @@ std::array<dist_fn, 6> algs {
     {
         return warthog::haversine_heuristic::h(xs, ys, xt, yt);
     },
+    haversine,
+    fast_haversine,
+    haversine_approx,
     [](double xs, double ys, double xt, double yt) -> double
     {
         return warthog::euclidean_heuristic::h(xs, ys, xt, yt);
@@ -118,7 +121,6 @@ main(int argc, char** argv)
         // {"verbose",  no_argument, &verbose, 1},
         {"noheader",  no_argument, &suppress_header, 1},
         {"input",  required_argument, nullptr, 1},
-        {"nruns", required_argument, nullptr, 1},
         {"dist", required_argument, nullptr, 1},
         // {"problem",  required_argument, 0, 1},
         // {"fscale", required_argument, 0, 1},
@@ -160,7 +162,7 @@ main(int argc, char** argv)
             if(nruns <= 0 || nruns > coords.size() / 2)
             {
                 warning(true, "Using the full input, quadratic behaviour.");
-                nruns = coords.size() * 2;
+                nruns = coords.size() / 2;
             }
         }
 
