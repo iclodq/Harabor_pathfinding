@@ -247,6 +247,21 @@ warthog::geo::fast_haversine(
     return TWO_EARTH_RADII * asin(sqrt(a));
 }
 
+// Approximate haversine function, meant for speed (again)
+// https://blog.utoctadel.com.ar/2016/05/20/fast-haversine.html
+double
+warthog::geo::haversine_approx(
+    double lon1, double lat1, double lon2, double lat2)
+{
+    double l1 = cos((lat1 + lat2) * PI_360);
+    double Dl = fabs(lat1 - lat2) * PI_360;
+    double Dp = fabs(lon1 - lon2) * PI_360;
+    double f = Dl * Dl + l1 * l1 * Dp * Dp;
+    double c = atan2(sqrt(f), sqrt(1 - f));
+
+    return TWO_EARTH_RADII * c;
+}
+
 // We calculate bearing with the following formula:
 // θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
 // where:
