@@ -43,6 +43,9 @@ vincenty_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 double
 exact_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 
+// Haversine using sin^2
+double
+haversine(double lon_a, double lat_a, double lon_b, double lat_b);
 
 // Haversine implement with sincospi
 double

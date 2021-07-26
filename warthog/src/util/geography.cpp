@@ -270,6 +270,22 @@ warthog::geo::haversine_approx(
     return TWO_EARTH_RADII * c;
 }
 
+double
+warthog::geo::haversine(
+    double lon1, double lat1, double lon2, double lat2)
+{
+    double p_1 = deg_to_rad(lat1);
+    double p_2 = deg_to_rad(lat2);
+    double D_p = p_1 - p_2;
+    double D_l = deg_to_rad(lon2 - lon1);
+    double hav_l = pow(sin(D_l / 2), 2);
+    double hav_p = pow(sin(D_p / 2), 2);
+    double a = cos(p_1) * cos(p_2) * hav_l;
+
+    // 2*R*asin...
+    return TWO_EARTH_RADII * asin(sqrt(hav_p + a));
+}
+
 // We calculate bearing with the following formula:
 // θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
 // where:
