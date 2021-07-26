@@ -32,11 +32,11 @@ warthog::haversine_heuristic::h(
 {
     // NB: precision loss when warthog::cost_t is an integer
 
-    double a = 0.5 - cos(fabs(lat2 - lat1) * Pi) / 2
-        + cos(lat1 * Pi) * cos(lat2 * Pi) * (1 - cos(fabs(lon2 - lon1) * Pi)) / 2;
+    double a = 0.5 - cos((lat2 - lat1) * Pi) / 2
+        + cos(lat1 * Pi) * cos(lat2 * Pi) * (1 - cos((lon2 - lon1) * Pi)) / 2;
 
     // 2*R*asin...
-    return 2 * warthog::geo::EARTH_RADIUS * asin(sqrt(a));
+    return warthog::geo::TWO_EARTH_RADII * asin(sqrt(a));
 }
 
 // The heuristic scale factor, tuned for the DIMACS instances to guarantee
