@@ -63,11 +63,19 @@ sincospi(double a, double *sp, double *cp)
     *cp = c;
 }
 
+#ifdef NDEBUG
+inline double
+deg_to_rad(double deg)
+{
+    return deg * PI_180;
+}
+#else
 double
 deg_to_rad(double deg)
 {
     return deg * M_PI / 180;
 }
+#endif
 
 double
 rad_to_deg(double rad)
