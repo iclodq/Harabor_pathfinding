@@ -2,6 +2,67 @@
 #include "constants.h"
 #include <cmath>
 
+#define PI_360 0.00872664625997
+#define PI_180 0.017453292519943295
+
+/* Writes result sine result sin(πa) to the location pointed to by sp
+   Writes result cosine result cos(πa) to the location pointed to by cp
+
+   In extensive testing, no errors > 0.97 ulp were found in either the sine
+   or cosine results, suggesting the results returned are faithfully rounded.
+
+   https://stackoverflow.com/a/42792940
+*/
+inline void
+sincospi(double a, double *sp, double *cp)
+{
+    double c, r, s, t, az;
+    int64_t i;
+
+    az = a * 0.0; // must be evaluated with IEEE-754 semantics
+    /* for |a| >= 2**53, cospi(a) = 1.0, but cospi(Inf) = NaN */
+    a = (fabs (a) < 9.0071992547409920e+15) ? a : az;  // 0x1.0p53
+    /* reduce argument to primary approximation interval (-0.25, 0.25) */
+    r = nearbyint (a + a); // must use IEEE-754 "to nearest" rounding
+    i = (int64_t)r;
+    t = fma (-0.5, r, a);
+    /* compute core approximations */
+    s = t * t;
+    /* Approximate cos(pi*x) for x in [-0.25,0.25] */
+    r =            -1.0369917389758117e-4;
+    r = fma (r, s,  1.9294935641298806e-3);
+    r = fma (r, s, -2.5806887942825395e-2);
+    r = fma (r, s,  2.3533063028328211e-1);
+    r = fma (r, s, -1.3352627688538006e+0);
+    r = fma (r, s,  4.0587121264167623e+0);
+    r = fma (r, s, -4.9348022005446790e+0);
+    c = fma (r, s,  1.0000000000000000e+0);
+    /* Approximate sin(pi*x) for x in [-0.25,0.25] */
+    r =             4.6151442520157035e-4;
+    r = fma (r, s, -7.3700183130883555e-3);
+    r = fma (r, s,  8.2145868949323936e-2);
+    r = fma (r, s, -5.9926452893214921e-1);
+    r = fma (r, s,  2.5501640398732688e+0);
+    r = fma (r, s, -5.1677127800499516e+0);
+    s = s * t;
+    r = r * s;
+    s = fma (t, 3.1415926535897931e+0, r);
+    /* map results according to quadrant */
+    if (i & 2) {
+        s = 0.0 - s; // must be evaluated with IEEE-754 semantics
+        c = 0.0 - c; // must be evaluated with IEEE-754 semantics
+    }
+    if (i & 1) {
+        t = 0.0 - s; // must be evaluated with IEEE-754 semantics
+        s = c;
+        c = t;
+    }
+    /* IEEE-754: sinPi(+n) is +0 and sinPi(-n) is -0 for positive integers n */
+    if (a == floor (a)) s = az;
+    *sp = s;
+    *cp = c;
+}
+
 double
 deg_to_rad(double deg)
 {
@@ -163,6 +224,27 @@ warthog::geo::exact_distance(
 
     // length of the geodesic
     return b * aa * (sigma - delta_sigma);
+}
+
+// fast haversine from
+// https://developer.nvidia.com/blog/fast-great-circle-distance-calculation-cuda-c/
+double
+warthog::geo::fast_haversine(
+    double lon1, double lat1, double lon2, double lat2)
+{
+    double c1, c2, dlat, dlon, d1, d2, dunce;
+
+    sincospi(lat1 / 180, &dunce, &c1);
+    sincospi(lat2 / 180, &dunce, &c2);
+    dlat = lat2 - lat1;
+    dlon = lon2 - lon1;
+    sincospi(dlat / 360, &d1, &dunce);
+    sincospi(dlon / 360, &d2, &dunce);
+    double t = d2 * d2 * c1 * c2;
+    double a = d1 * d1 + t;
+
+    // 2*R*asin...
+    return TWO_EARTH_RADII * asin(sqrt(a));
 }
 
 // We calculate bearing with the following formula:

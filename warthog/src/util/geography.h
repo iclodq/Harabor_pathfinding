@@ -22,7 +22,8 @@ enum distance
     SPHERICAL,
     GREAT_CIRCLE,
     VINCENTY,
-    EXACT
+    EXACT,
+    FAST
 };
 
 // Compute distance using a Spherical Earth projected to a plane
@@ -42,6 +43,10 @@ vincenty_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 double
 exact_distance(double lon_a, double lat_a, double lon_b, double lat_b);
 
+
+// Haversine implement with sincospi
+double
+fast_haversine(double lon_a, double lat_a, double lon_b, double lat_b);
 // Get the bearing from pos1 to pos2
 double
 get_bearing(double lat_a, double lng_a, double lat_b, double lng_b);
