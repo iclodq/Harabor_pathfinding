@@ -1,4 +1,4 @@
-// -*- compile-command: cd .. && make fast test/distance
+// -*- compile-command: "cd .. && make debug test/distance" -*-
 #include "cfg.h"
 #include "log.h"
 #include "xy_graph.h"
@@ -87,18 +87,23 @@ run_distance(size_t alg, std::vector<double>& coords, size_t nruns)
 
     dist_fn dist = algs.at(alg);
     warthog::timer t;
+    size_t i = 0;
 
     t.start();
-    for(size_t i = 0; i < nruns; i += 2)
+    while(nruns > 0)
     {
         double x = coords.at(i);
         double y = coords.at(i + 1);
+        i++;
 
         for(size_t j = 0; j < coords.size(); j += 2)
         {
             if(i == j) { continue; }
 
             dist(x, y, coords.at(j), coords.at(j + 1));
+            nruns--;
+
+            if(nruns <= 0) { break; }
         }
     }
 
@@ -154,16 +159,12 @@ main(int argc, char** argv)
 
         std::vector<double> coords = lat_lon(&g);
 
-        size_t nruns = 1;
+        size_t nruns = coords.size() / 2;
         std::string s_runs = cfg.get_param_value("nruns");
         if(!s_runs.empty())
         {
             nruns = std::stoi(s_runs);
-            if(nruns <= 0 || nruns > coords.size() / 2)
-            {
-                warning(true, "Using the full input, quadratic behaviour.");
-                nruns = coords.size() / 2;
-            }
+            assert(nruns > 0);
         }
 
         if(suppress_header != 1)
