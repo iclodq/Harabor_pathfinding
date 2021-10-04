@@ -21,9 +21,8 @@ class search_node
 	public:
 		search_node(warthog::sn_id_t id = warthog::SN_ID_MAX) :
             id_(id), parent_id_(warthog::SN_ID_MAX),
-            g_(warthog::COST_MAX), f_(warthog::COST_MAX),
-            status_(0), priority_(warthog::INF32), search_number_(0),
-            ub_(warthog::COST_MAX)
+            g_(warthog::COST_MAX), f_(warthog::COST_MAX), ub_(warthog::COST_MAX),
+            status_(0), priority_(warthog::INF32), search_number_(0)
 		{
 			refcount_++;
 		}
@@ -36,8 +35,8 @@ class search_node
 		inline void
 		init(uint32_t search_number,
              warthog::sn_id_t parent_id,
-             double g,
-             double f,
+             warthog::cost_t g,
+             warthog::cost_t f,
              warthog::cost_t ub=warthog::COST_MAX)
 		{
 			status_ = 0;
@@ -90,17 +89,17 @@ class search_node
 		inline void
 		set_priority(uint32_t priority) { priority_ = priority; }
 
-		inline double
+		inline warthog::cost_t
 		get_g() const { return g_; }
 
 		inline void
-		set_g(double g) { g_ = g; }
+		set_g(warthog::cost_t g) { g_ = g; }
 
-		inline double
+		inline warthog::cost_t
 		get_f() const { return f_; }
 
 		inline void
-		set_f(double f) { f_ = f; }
+		set_f(warthog::cost_t f) { f_ = f; }
 
 		inline warthog::cost_t
 		get_ub() const { return ub_; }
@@ -109,7 +108,7 @@ class search_node
 		set_ub(warthog::cost_t ub) { ub_ = ub; }
 
 		inline void
-		relax(double g, warthog::sn_id_t parent_id)
+		relax(warthog::cost_t g, warthog::sn_id_t parent_id)
 		{
 			assert(g < g_);
 			f_ = (f_ - g_) + g;
@@ -230,13 +229,15 @@ class search_node
 		warthog::sn_id_t id_;
         warthog::sn_id_t parent_id_;
 
-		double g_;
-		double f_;
+        warthog::cost_t g_;
+        warthog::cost_t f_;
+        warthog::cost_t ub_;
+
+        // TODO steal the high-bit from priority instead of ::status_ ?
         uint8_t status_; // open or closed
 		uint32_t priority_; // expansion priority
 
 		uint32_t search_number_;
-        warthog::cost_t ub_;
 
         static uint32_t refcount_;
 };

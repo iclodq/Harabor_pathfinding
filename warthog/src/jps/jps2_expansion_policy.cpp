@@ -22,6 +22,8 @@ warthog::jps2_expansion_policy::expand(
     jp_costs_.clear();
 
 	// compute the direction of travel used to reach the current node.
+    // TODO: store this value with the jump point location so we don't need
+    // to compute it all the time
 	warthog::jps::direction dir_c =
 	   	this->compute_direction((uint32_t)current->get_parent(), (uint32_t)current->get_id());
 
@@ -52,7 +54,7 @@ warthog::jps2_expansion_policy::expand(
 		uint32_t jp_id = jp_ids_.at(i);
         double jp_cost = jp_costs_.at(i);
 
-		warthog::search_node* mynode = generate(jp_id & warthog::jps::JPS_ID_MASK);
+		warthog::search_node* mynode = generate(jp_id);
 		add_neighbour(mynode, jp_cost);
 	}
 }
