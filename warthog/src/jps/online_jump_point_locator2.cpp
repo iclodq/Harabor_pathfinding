@@ -54,7 +54,7 @@ void
 warthog::jps::online_jump_point_locator2::jump(warthog::jps::direction d,
 	   	uint32_t node_id, uint32_t goal_id, 
 		std::vector<uint32_t>& jpoints,
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
     __jump_east_fp = &warthog::jps::online_jump_point_locator2::__jump_east;
     __jump_west_fp = &warthog::jps::online_jump_point_locator2::__jump_west;
@@ -112,7 +112,7 @@ void
 warthog::jps::online_jump_point_locator2::rjump(warthog::jps::direction d,
 	   	uint32_t node_id, uint32_t goal_id, 
 		std::vector<uint32_t>& jpoints,
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
     __jump_east_fp = &warthog::jps::online_jump_point_locator2::__rjump_east;
     __jump_west_fp = &warthog::jps::online_jump_point_locator2::__rjump_west;
@@ -164,12 +164,12 @@ warthog::jps::online_jump_point_locator2::rjump(warthog::jps::direction d,
 void
 warthog::jps::online_jump_point_locator2::jump_north(
 		std::vector<uint32_t>& jpoints,
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t rnode_id = current_rnode_id_;
 	uint32_t rgoal_id = current_rgoal_id_;
 	uint32_t jumpnode_id;
-	double jumpcost;
+	warthog::cost_t jumpcost;
 
 	__jump_north(rnode_id, rgoal_id, jumpnode_id, jumpcost, rmap_);
 
@@ -184,7 +184,7 @@ warthog::jps::online_jump_point_locator2::jump_north(
 
 void
 warthog::jps::online_jump_point_locator2::__jump_north(uint32_t node_id, 
-		uint32_t goal_id, uint32_t& jumpnode_id, double& jumpcost,
+		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost,
 		warthog::gridmap* mymap)
 {
 	// jumping north in the original map is the same as jumping
@@ -195,12 +195,12 @@ warthog::jps::online_jump_point_locator2::__jump_north(uint32_t node_id,
 void
 warthog::jps::online_jump_point_locator2::jump_south(
 		std::vector<uint32_t>& jpoints, 
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t rnode_id = current_rnode_id_;
 	uint32_t rgoal_id = current_rgoal_id_;
 	uint32_t jumpnode_id;
-	double jumpcost;
+	warthog::cost_t jumpcost;
 
 	__jump_south(rnode_id, rgoal_id, jumpnode_id, jumpcost, rmap_);
 
@@ -215,7 +215,7 @@ warthog::jps::online_jump_point_locator2::jump_south(
 
 void
 warthog::jps::online_jump_point_locator2::__jump_south(uint32_t node_id, 
-		uint32_t goal_id, uint32_t& jumpnode_id, double& jumpcost,
+		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost,
 		warthog::gridmap* mymap)
 {
 	// jumping north in the original map is the same as jumping
@@ -226,12 +226,12 @@ warthog::jps::online_jump_point_locator2::__jump_south(uint32_t node_id,
 void
 warthog::jps::online_jump_point_locator2::jump_east(
 		std::vector<uint32_t>& jpoints, 
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t node_id = current_node_id_;
 	uint32_t goal_id = current_goal_id_;
 	uint32_t jumpnode_id;
-	double jumpcost;
+	warthog::cost_t jumpcost;
 
 	(this->*(__jump_east_fp))(node_id, goal_id, jumpnode_id, jumpcost, map_);
 
@@ -246,7 +246,7 @@ warthog::jps::online_jump_point_locator2::jump_east(
 
 void
 warthog::jps::online_jump_point_locator2::__jump_east(uint32_t node_id, 
-		uint32_t goal_id, uint32_t& jumpnode_id, double& jumpcost, 
+		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost, 
 		warthog::gridmap* mymap)
 {
 	jumpnode_id = node_id;
@@ -312,7 +312,7 @@ warthog::jps::online_jump_point_locator2::__jump_east(uint32_t node_id,
 
 void
 warthog::jps::online_jump_point_locator2::__rjump_east(uint32_t node_id, 
-		uint32_t goal_id, uint32_t& jumpnode_id, double& jumpcost, 
+		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost, 
 		warthog::gridmap* mymap)
 {
 	jumpnode_id = node_id;
@@ -385,12 +385,12 @@ warthog::jps::online_jump_point_locator2::__rjump_east(uint32_t node_id,
 void
 warthog::jps::online_jump_point_locator2::jump_west(
 		std::vector<uint32_t>& jpoints, 
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t node_id = current_node_id_;
 	uint32_t goal_id = current_goal_id_;
 	uint32_t jumpnode_id;
-	double jumpcost;
+	warthog::cost_t jumpcost;
 
 	(this->*(__jump_west_fp))(node_id, goal_id, jumpnode_id, jumpcost, map_);
 
@@ -404,7 +404,7 @@ warthog::jps::online_jump_point_locator2::jump_west(
 
 void
 warthog::jps::online_jump_point_locator2::__jump_west(uint32_t node_id, 
-		uint32_t goal_id, uint32_t& jumpnode_id, double& jumpcost, 
+		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost, 
 		warthog::gridmap* mymap)
 {
 	bool deadend = false;
@@ -461,7 +461,7 @@ warthog::jps::online_jump_point_locator2::__jump_west(uint32_t node_id,
 
 void
 warthog::jps::online_jump_point_locator2::__rjump_west(uint32_t node_id, 
-		uint32_t goal_id, uint32_t& jumpnode_id, double& jumpcost, 
+		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost, 
 		warthog::gridmap* mymap)
 {
 	bool deadend = false;
@@ -522,10 +522,10 @@ warthog::jps::online_jump_point_locator2::__rjump_west(uint32_t node_id,
 void
 warthog::jps::online_jump_point_locator2::jump_northeast(
 		std::vector<uint32_t>& jpoints,
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t jumpnode_id, jp1_id, jp2_id;
-	double jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
+	warthog::cost_t jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
 	jumpnode_id = jp1_id = jp2_id = 0;
 	jumpcost = jp1_cost = jp2_cost = cost_to_nodeid = 0;
 
@@ -576,9 +576,9 @@ void
 warthog::jps::online_jump_point_locator2::__jump_northeast(
 		uint32_t& node_id, uint32_t& rnode_id, 
 		uint32_t goal_id, uint32_t rgoal_id,
-		uint32_t& jumpnode_id, double& jumpcost, 
-		uint32_t& jp_id1, double& cost1,
-		uint32_t& jp_id2, double& cost2)
+		uint32_t& jumpnode_id, warthog::cost_t& jumpcost, 
+		uint32_t& jp_id1, warthog::cost_t& cost1,
+		uint32_t& jp_id2, warthog::cost_t& cost2)
 {
 	uint32_t num_steps = 0;
 
@@ -612,10 +612,10 @@ warthog::jps::online_jump_point_locator2::__jump_northeast(
 void
 warthog::jps::online_jump_point_locator2::jump_northwest(
 		std::vector<uint32_t>& jpoints,
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t jumpnode_id, jp1_id, jp2_id;
-	double jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
+	warthog::cost_t jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
 	jumpnode_id = jp1_id = jp2_id = 0;
 	jumpcost = jp1_cost = jp2_cost = cost_to_nodeid = 0;
 
@@ -666,9 +666,9 @@ void
 warthog::jps::online_jump_point_locator2::__jump_northwest(
 		uint32_t& node_id, uint32_t& rnode_id, 
 		uint32_t goal_id, uint32_t rgoal_id,
-		uint32_t& jumpnode_id, double& jumpcost,
-		uint32_t& jp_id1, double& cost1, 
-		uint32_t& jp_id2, double& cost2)
+		uint32_t& jumpnode_id, warthog::cost_t& jumpcost,
+		uint32_t& jp_id1, warthog::cost_t& cost1, 
+		uint32_t& jp_id2, warthog::cost_t& cost2)
 
 {
 	uint32_t num_steps = 0;
@@ -702,10 +702,10 @@ warthog::jps::online_jump_point_locator2::__jump_northwest(
 void
 warthog::jps::online_jump_point_locator2::jump_southeast(
 		std::vector<uint32_t>& jpoints,
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t jumpnode_id, jp1_id, jp2_id;
-	double jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
+	warthog::cost_t jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
 	jumpnode_id = jp1_id = jp2_id = 0;
 	jumpcost = jp1_cost = jp2_cost = cost_to_nodeid = 0;
 
@@ -756,9 +756,9 @@ void
 warthog::jps::online_jump_point_locator2::__jump_southeast(
 		uint32_t& node_id, uint32_t& rnode_id, 
 		uint32_t goal_id, uint32_t rgoal_id,
-		uint32_t& jumpnode_id, double& jumpcost,
-		uint32_t& jp_id1, double& cost1, 
-		uint32_t& jp_id2, double& cost2)
+		uint32_t& jumpnode_id, warthog::cost_t& jumpcost,
+		uint32_t& jp_id1, warthog::cost_t& cost1, 
+		uint32_t& jp_id2, warthog::cost_t& cost2)
 
 {
 	uint32_t num_steps = 0;
@@ -792,10 +792,10 @@ warthog::jps::online_jump_point_locator2::__jump_southeast(
 void
 warthog::jps::online_jump_point_locator2::jump_southwest(
 		std::vector<uint32_t>& jpoints,
-		std::vector<double>& costs)
+		std::vector<warthog::cost_t>& costs)
 {
 	uint32_t jumpnode_id, jp1_id, jp2_id;
-	double jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
+	warthog::cost_t jumpcost, jp1_cost, jp2_cost, cost_to_nodeid;
 	jumpnode_id = jp1_id = jp2_id = 0;
 	jumpcost = jp1_cost = jp2_cost = cost_to_nodeid = 0;
 
@@ -845,9 +845,9 @@ void
 warthog::jps::online_jump_point_locator2::__jump_southwest(
 		uint32_t& node_id, uint32_t& rnode_id, 
 		uint32_t goal_id, uint32_t rgoal_id,
-		uint32_t& jumpnode_id, double& jumpcost,
-		uint32_t& jp_id1, double& cost1, 
-		uint32_t& jp_id2, double& cost2)
+		uint32_t& jumpnode_id, warthog::cost_t& jumpcost,
+		uint32_t& jp_id1, warthog::cost_t& cost1, 
+		uint32_t& jp_id2, warthog::cost_t& cost2)
 {
 	// jump a single step (no corner cutting)
 	uint32_t num_steps = 0;
