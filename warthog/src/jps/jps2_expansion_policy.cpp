@@ -24,8 +24,11 @@ warthog::jps2_expansion_policy::expand(
 	// compute the direction of travel used to reach the current node.
     // TODO: store this value with the jump point location so we don't need
     // to compute it all the time
+    uint32_t p_id = current->get_parent();
+    uint32_t c_id = current->get_id();
 	warthog::jps::direction dir_c =
-	   	this->compute_direction((uint32_t)current->get_parent(), (uint32_t)current->get_id());
+	   	//this->compute_direction((uint32_t)current->get_parent(), (uint32_t)current->get_id());
+	   	this->compute_direction(p_id, c_id);
 
 	// get the tiles around the current node c
 	uint32_t c_tiles;
@@ -110,36 +113,19 @@ warthog::jps2_expansion_policy::compute_direction(
     int32_t x, y, x2, y2;
     warthog::helpers::index_to_xy(n1_id, map_->width(), x, y);
     warthog::helpers::index_to_xy(n2_id, map_->width(), x2, y2);
-    warthog::jps::direction dir = warthog::jps::NONE;
-    if(y2 == y)
+    int32_t dx = abs(x2 - x);
+    int32_t dy = abs(y2 - y);
+
+    if(dx > dy)
     {
         if(x2 > x)
-            dir = warthog::jps::EAST;
+        { return warthog::jps::EAST; }
         else
-            dir = warthog::jps::WEST;
+        { return warthog::jps::WEST; }
     }
-    else if(y2 < y)
-    {
-        if(x2 == x)
-            dir = warthog::jps::NORTH;
-        else if(x2 < x)
-            //dir = warthog::jps::NORTHWEST;
-            dir = warthog::jps::WEST;
-        else // x2 > x
-            //dir = warthog::jps::NORTHEAST;
-            dir = warthog::jps::EAST;
-    }
-    else // y2 > y 
-    {
-        if(x2 == x)
-            dir = warthog::jps::SOUTH;
-        else if(x2 < x)
-            //dir = warthog::jps::SOUTHWEST;
-            dir = warthog::jps::WEST;
-        else // x2 > x
-            //dir = warthog::jps::SOUTHEAST;
-            dir = warthog::jps::EAST;
-    }
-    assert(dir != warthog::jps::NONE);
-    return dir;
+
+    if(y2 > y) 
+    { return warthog::jps::SOUTH; }
+
+    return warthog::jps::NORTH;
 }
