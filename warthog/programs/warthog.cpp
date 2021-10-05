@@ -80,10 +80,10 @@ help()
 bool
 check_optimality(warthog::solution& sol, warthog::experiment* exp)
 {
-	uint32_t precision = 1;
-	double epsilon = (1 / (int)pow(10, precision)) / 2;
-
+	uint32_t precision = 2;
+	double epsilon = (1.0 / (int)pow(10, precision)) / 2;
 	double delta = fabs(sol.sum_of_edge_costs_ - exp->distance());
+
 	if( fabs(delta - epsilon) > epsilon)
 	{
 		std::stringstream strpathlen;
