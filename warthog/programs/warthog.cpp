@@ -114,7 +114,7 @@ run_experiments(warthog::search* algo, std::string alg_name,
         std::ostream& out)
 {
 	std::cout 
-        << "id\talg\texpanded\tinserted\tupdated\ttouched\tsurplus"
+        << "id\talg\texpanded\ttouched\treopen\tsurplus\theapops"
         << "\tnanos\tpcost\tplen\tmap\n";
 	for(unsigned int i=0; i < scenmgr.num_experiments(); i++)
 	{
@@ -131,10 +131,10 @@ run_experiments(warthog::search* algo, std::string alg_name,
             << i<<"\t" 
             << alg_name << "\t" 
             << sol.nodes_expanded_ << "\t" 
-            << sol.nodes_inserted_ << "\t"
-            << sol.nodes_updated_ << "\t"
             << sol.nodes_touched_ << "\t"
+            << sol.nodes_reopen_ << "\t"
             << sol.nodes_surplus_ << "\t"
+            << sol.heap_ops_ << "\t"
             << sol.time_elapsed_nano_ << "\t"
             << sol.sum_of_edge_costs_ << "\t" 
             << (sol.path_.size()-1) << "\t" 
@@ -320,7 +320,7 @@ run_cbs_ll(warthog::scenario_manager& scenmgr, std::string mapname, std::string 
             astar(&heuristic, &expander, &open);
 
 	std::cout 
-        << "id\talg\texpanded\tinserted\tupdated\ttouched"
+        << "id\talg\texpanded\ttouched\treopen\tsurplus\theapops"
         << "\tnanos\tpcost\tplen\tmap\n";
 	for(unsigned int i=0; i < scenmgr.num_experiments(); i++)
 	{
@@ -337,9 +337,9 @@ run_cbs_ll(warthog::scenario_manager& scenmgr, std::string mapname, std::string 
             << i<<"\t" 
             << alg_name << "\t" 
             << sol.nodes_expanded_ << "\t" 
-            << sol.nodes_inserted_ << "\t"
-            << sol.nodes_updated_ << "\t"
             << sol.nodes_touched_ << "\t"
+            << sol.nodes_reopen_ << "\t"
+            << sol.heap_ops_ << "\t"
             << sol.time_elapsed_nano_ << "\t"
             << sol.sum_of_edge_costs_ << "\t" 
             << (sol.path_.size()-1) << "\t" 

@@ -304,7 +304,6 @@ class anytime_astar : public warthog::search
             incumbent_ub = heuristic_->ub(pi_.start_id_, pi_.target_id_);
 
 			open_->push(start);
-            sol.nodes_inserted_++;
             
             if(on_generate_fn_) 
             { (*on_generate_fn_)(start, 0, 0, UINT32_MAX); }
@@ -383,6 +382,11 @@ class anytime_astar : public warthog::search
                         warthog::cost_t ub_val = 
                             heuristic_->ub(n->get_id(),pi_.target_id_);
 
+                        // sometimes we can prune successors by upperbound
+                        if(incumbent_ub < (gval + hval)) { continue; }
+
+    
+                        // sometimes successors improve the upperbound
                         if((gval + ub_val) < incumbent_ub)
                         {
                             incumbent = n;
@@ -393,7 +397,6 @@ class anytime_astar : public warthog::search
                         n->init(current->get_search_number(), current->get_id(),
                             gval, gval + hval);
                         open_->push(n);
-                        sol.nodes_inserted_++;
                         if(on_relax_fn_) { (*on_relax_fn_)(n); }
                 
                         #ifndef NDEBUG
@@ -414,7 +417,7 @@ class anytime_astar : public warthog::search
 
                     // update an old node if we find a better way to reach it
                     // NB: we allow re-expansions
-                    if((current->get_g() + cost_to_n) < n->get_g())
+                    else if((current->get_g() + cost_to_n) < n->get_g())
                     {
                         warthog::cost_t gval = current->get_g() + cost_to_n;
                         warthog::cost_t hval = 
@@ -422,6 +425,7 @@ class anytime_astar : public warthog::search
                         warthog::cost_t ub_val = 
                             heuristic_->h(n->get_id(),pi_.target_id_);
 
+                        // check if relaxing the g-value improves the upperbound
                         if((gval + ub_val) < incumbent_ub)
 
                         {
@@ -430,6 +434,7 @@ class anytime_astar : public warthog::search
                             incumbent_ub = (gval + ub_val);
                         }
 
+                        // actually relax the g-value
                         n->relax(gval, current->get_id());
                         if(open_->contains(n))
                         {
@@ -439,7 +444,6 @@ class anytime_astar : public warthog::search
                         {
                             open_->push(n); 
                         }
-                        sol.nodes_updated_++;
                         if(on_relax_fn_) { (*on_relax_fn_)(n); }
 
                         #ifndef NDEBUG
@@ -456,26 +460,29 @@ class anytime_astar : public warthog::search
                         #endif
                         continue;
                     }
-
-                    // old nodes that don't need updating
-                    #ifndef NDEBUG
-                    if(pi_.verbose_)
+                    else
                     {
-                        int32_t x, y;
-                        expander_->get_xy(n->get_id(), x, y);
-                        std::cerr 
-                            << "  open; not updating (edgecost=" 
-                            << cost_to_n<< ") ("<<x<<", "<<y<<")...";
-                        n->print(std::cerr);
-                        std::cerr << std::endl;
+                        // old nodes that don't need updating
+                        #ifndef NDEBUG
+                        if(pi_.verbose_)
+                        {
+                            int32_t x, y;
+                            expander_->get_xy(n->get_id(), x, y);
+                            std::cerr 
+                                << "  dominated (edgecost=" 
+                                << cost_to_n<< ") ("<<x<<", "<<y<<")...";
+                            n->print(std::cerr);
+                            std::cerr << std::endl;
+                        }
+                        #endif
                     }
-                    #endif
 				}
 			}
 
 			mytimer.stop();
 			sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
             sol.nodes_surplus_ = open_->size();
+            sol.heap_ops_ = open_->get_heap_ops();
 
             #ifndef NDEBUG
             if(pi_.verbose_)

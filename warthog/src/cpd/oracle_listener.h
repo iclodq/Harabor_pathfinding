@@ -113,7 +113,9 @@ class reverse_oracle_listener final : public oracle_listener
         // We record the optimal move towards a node which is the id of the
         // predecessor's edge
         graph::node* pred = oracle_->get_graph()->get_node(succ->get_id());
-        graph::edge_iter eit = pred->find_edge(from->get_id());
+        graph::edge_iter eit = pred->find_edge(
+                from->get_id(), 
+                pred->outgoing_begin(), pred->outgoing_end());
         warthog::cpd::fm_coll fm = 1 << (eit - pred->outgoing_begin());
 
         assert(eit != pred->outgoing_end());
@@ -159,7 +161,8 @@ class reverse_bearing_oracle_listener final : public oracle_listener
             succ->get_search_number() == from->get_search_number() ?
             succ->get_g() : DBL_MAX;
         graph::node* pred = oracle_->get_graph()->get_node(succ->get_id());
-        graph::edge_iter eit = pred->find_edge(from->get_id());
+        graph::edge_iter eit = pred->find_edge(
+                from->get_id(), pred->outgoing_begin(), pred->outgoing_end());
 
         assert(eit != pred->outgoing_end());
         assert(

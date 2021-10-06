@@ -47,7 +47,6 @@ warthog::ch::operator<<(std::ofstream& fs_out, warthog::ch::ch_data& chd)
     {
         // write out all outgoing edges
         warthog::graph::node* n = chd.g_->get_node(i);
-        uint32_t n_level = chd.level_->at(i);
         for(uint32_t idx = 0; idx < n->out_degree(); idx ++)
         {
             warthog::graph::edge* e = n->outgoing_begin()+idx;
@@ -60,7 +59,7 @@ warthog::ch::operator<<(std::ofstream& fs_out, warthog::ch::ch_data& chd)
             for(uint32_t edge_idx = 0; edge_idx < n->in_degree(); edge_idx++)
             {
                 warthog::graph::edge* e = n->incoming_begin()+edge_idx;
-                assert(n_level < chd.level_->at(e->node_id_));
+                assert(chd.level_->at(i) < chd.level_->at(e->node_id_));
                 fs_out << "e " << e->node_id_ << " " << i  << " " << e->wt_ << std::endl;
             }
         }

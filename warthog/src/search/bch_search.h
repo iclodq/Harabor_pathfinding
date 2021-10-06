@@ -408,7 +408,7 @@ class bch_search : public warthog::search
                         std::cerr << std::endl;
                     }
                     #endif
-                    sol.nodes_inserted_++;
+                    sol.heap_ops_++;
                 }
 
                 // process neighbour nodes that the search has seen before
@@ -440,7 +440,7 @@ class bch_search : public warthog::search
                         {
                             n->relax(gval, current->get_parent());
                             open->decrease_key(n);
-                            sol.nodes_updated_++;
+                            sol.heap_ops_++;
                             #ifndef NDEBUG
                             if(pi_.verbose_)
                             {

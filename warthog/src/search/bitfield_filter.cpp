@@ -40,7 +40,7 @@ warthog::bitfield_filter::reset_filter()
 }
 
 bool
-warthog::bitfield_filter::filter(sn_id_t node_id, uint32_t edge_idx)
+warthog::bitfield_filter::filter(sn_id_t node_id)
 {
     return get_flag(node_id);
 }

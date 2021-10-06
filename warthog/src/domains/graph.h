@@ -76,7 +76,7 @@ typedef edge_base<uintptr_t> edge;
 typedef edge* edge_iter;
 
 inline bool
-operator==(const warthog::graph::edge e1, const warthog::graph::edge e2)
+operator==(const warthog::graph::edge& e1, const warthog::graph::edge& e2)
 {
     uint32_t qword = 0;
     for( ; qword < sizeof(e1) >> 3; qword++)
@@ -284,22 +284,19 @@ class node
         // the function returns an iterator for the
         // target edge or ::outgoing_end() if no suh edge
         warthog::graph::edge_iter
-        find_edge(uint32_t to_id, warthog::graph::edge_iter it = 0)
+        find_edge(
+                uint32_t to_id, 
+                warthog::graph::edge_iter begin, 
+                warthog::graph::edge_iter end)
         {
-            if(it == 0) { it = outgoing_begin(); }
-            if(it < outgoing_begin() || it >= outgoing_end())
-            {
-                return outgoing_end();
-            }
-
-            for( ; it < outgoing_end(); it++)
+            for( warthog::graph::edge_iter it = begin; it < end; it++)
             {
                 if((*it).node_id_ == to_id)
                 {
                     return it;
                 }
             }
-            return outgoing_end();
+            return end;
         }
 
         inline size_t
@@ -416,15 +413,14 @@ class node
                 return &elts[deg];
             }
          
-            // don't add redundant edges; we only want one:
-            // the one with lowest cost
+            // in case of duplicates, keep the one with smaller cost
             for(uint32_t i = 0; i < deg; i++)
             {
                 if(elts[i].node_id_ == e.node_id_)
                 {
                     if(e.wt_ < elts[i].wt_)
                     {
-                        elts[i].wt_ = e.wt_;
+                        elts[i] = e;
                     }
                     return &elts[deg];
                 }

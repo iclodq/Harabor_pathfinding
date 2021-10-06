@@ -28,30 +28,42 @@ namespace warthog
 class apriori_filter 
 {
     public:
-        apriori_filter(warthog::graph::xy_graph* g);
-        virtual ~apriori_filter();
+        apriori_filter(uint32_t sz)
+        {
+            filter_sz_ = sz;
+            filter_ = new uint8_t[filter_sz_];
+        }
 
-        // returns true if the successor node specified by @param edge_idx
-        // is being filtered. if the successor is not filtered, returns false
-        bool
-        filter(uint32_t node_id, uint32_t edge_idx);
+        ~apriori_filter()
+        { delete [] filter_; }
 
-        void
-        set_flag_true(uint32_t node_id);
+        inline void
+        add(uint32_t node_id)
+        {
+            filter_[node_id] = true;
+        }
 
-        void
-        set_flag_false(uint32_t node_id);
+        inline void
+        remove(uint32_t node_id)
+        {
+            filter_[node_id] = false;
+        }
 
-        bool
-        get_flag(uint32_t node_id);
+        inline bool
+        filter(uint32_t node_id)
+        {
+            return filter_[node_id];
+        }
 
         // clear all filter flags
-        void
-        reset_filter();
-
-        // not used by this filter
         inline void
-        set_target(uint32_t) { }
+        reset_filter()
+        {
+            for(uint32_t i = 0; i < filter_sz_; i++)
+            {
+                filter_[i] = false;
+            }
+        }
 
         inline size_t
         mem()
@@ -62,7 +74,6 @@ class apriori_filter
         }
 
     private:
-        warthog::graph::xy_graph* g_;
         uint8_t* filter_;
         uint32_t filter_sz_;
 };

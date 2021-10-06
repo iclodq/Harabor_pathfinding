@@ -24,7 +24,26 @@ namespace warthog
 {
 
 namespace ch
+{    
+
+// witness search stuff
+struct bypass_filter
 {
+
+    inline void
+    add(uint32_t id)
+    { bypass = id; }
+
+    inline void 
+    clear()
+    { bypass = UINT32_MAX; }
+
+    inline bool 
+    filter(uint32_t id)
+    { return id == bypass; } 
+
+    uint32_t bypass;
+};
 
 // in the case of bidirectional search
 enum search_direction { UP = 1, DOWN = 2, ANY = 3 };

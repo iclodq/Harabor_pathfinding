@@ -233,8 +233,7 @@ class flexible_astar: public warthog::search
                     0, heuristic_->h(pi_.start_id_, pi_.target_id_));
 
 			open_->push(start);
-            sol.nodes_inserted_++;
-
+            
             listener_->generate_node(0, start, 0, UINT32_MAX);
 
 			#ifndef NDEBUG
@@ -253,6 +252,7 @@ class flexible_astar: public warthog::search
 				current->set_expanded(true); // NB: set before generating
 				assert(current->get_expanded());
 				sol.nodes_expanded_++;
+
                 listener_->expand_node(current);
 
                 // goal test
@@ -284,19 +284,18 @@ class flexible_astar: public warthog::search
 						n != 0;
 					   	expander_->next(n, cost_to_n))
 				{
-                    sol.nodes_touched_++;
                     listener_->generate_node(current, n, cost_to_n, edge_id++);
-
-                    // add new nodes to the fringe
+                    warthog::cost_t gval = current->get_g() + cost_to_n;
+                    sol.nodes_touched_++;
+                    
                     if(n->get_search_number() != current->get_search_number())
                     {
-						warthog::cost_t gval = current->get_g() + cost_to_n;
+                        // add new nodes to the fringe
                         n->init(current->get_search_number(), current->get_id(),
                             gval,
                             gval + heuristic_->h(n->get_id(),pi_.target_id_));
 
                         open_->push(n);
-                        sol.nodes_inserted_++;
 
                         #ifndef NDEBUG
                         if(pi_.verbose_)
@@ -312,65 +311,53 @@ class flexible_astar: public warthog::search
                         #endif
 
                         listener_->relax_node(n);
-                        continue;
                     }
+                    else if(gval < n->get_g())
+                    {
+                        // relax already generated nodes
+                        n->relax(gval, current->get_id());
+                        if(n->get_expanded())
+                        {
+                            // reopen
+                            n->set_expanded(false);
+                            open_->push(n);
+                            sol.nodes_reopen_++;
+                        }
+                        else
+                        {
+                            // update priority
+                            open_->decrease_key(n);
+                        }
 
-                    // skip neighbours already expanded
-					if(n->get_expanded())
-					{
                         #ifndef NDEBUG
                         if(pi_.verbose_)
                         {
                             int32_t x, y;
                             expander_->get_xy(n->get_id(), x, y);
-                            std::cerr << "  closed; (edgecost="
-                                << cost_to_n << ") ("<<x<<", "<<y<<")...";
+                            std::cerr 
+                                << "  updating (edgecost="
+                                << cost_to_n<<") ("<<x<<", "<<y<<")...";
                             n->print(std::cerr);
                             std::cerr << std::endl;
                         }
                         #endif
-						continue;
-					}
 
-                    // update a node from the fringe
-					if(open_->contains(n))
-					{
-						warthog::cost_t gval = current->get_g() + cost_to_n;
-						if(gval < n->get_g())
-						{
-							n->relax(gval, current->get_id());
-							open_->decrease_key(n);
-                            sol.nodes_updated_++;
-
-							#ifndef NDEBUG
-							if(pi_.verbose_)
-							{
-								int32_t x, y;
-                                expander_->get_xy(n->get_id(), x, y);
-								std::cerr
-                                    << "  open; updating (edgecost="
-                                    << cost_to_n<<") ("<<x<<", "<<y<<")...";
-								n->print(std::cerr);
-								std::cerr << std::endl;
-							}
-							#endif
-                            listener_->relax_node(n);
-						}
-						else
-						{
-							#ifndef NDEBUG
-							if(pi_.verbose_)
-							{
-								int32_t x, y;
-                                expander_->get_xy(n->get_id(), x, y);
-								std::cerr
-                                    << "  open; not updating (edgecost="
-                                    << cost_to_n<< ") ("<<x<<", "<<y<<")...";
-								n->print(std::cerr);
-								std::cerr << std::endl;
-							}
-							#endif
-						}
+                        listener_->relax_node(n);
+                    }
+                    else
+                    {
+                        #ifndef NDEBUG
+                        if(pi_.verbose_)
+                        {
+                            int32_t x, y;
+                            expander_->get_xy(n->get_id(), x, y);
+                            std::cerr 
+                                << "  dominated (edgecost=" 
+                                << cost_to_n<< ") ("<<x<<", "<<y<<")...";
+                            n->print(std::cerr);
+                            std::cerr << std::endl;
+                        }
+                        #endif
 					}
 				}
 			}
@@ -378,6 +365,7 @@ class flexible_astar: public warthog::search
 			mytimer.stop();
 			sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
             sol.nodes_surplus_ = open_->size();
+            sol.heap_ops_ = open_->get_heap_ops();
 
             #ifndef NDEBUG
             if(pi_.verbose_)

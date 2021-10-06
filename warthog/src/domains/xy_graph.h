@@ -25,6 +25,7 @@
 #include "graph.h"
 #include "gridmap_expansion_policy.h"
 #include "util/timer.h"
+#include "cast.h"
 
 #include <ostream>
 #include <unordered_map>
@@ -61,10 +62,17 @@ class xy_graph_base
 
         ~xy_graph_base() { }
 
-        // TODO If you need the copy constructor, you will need to drop the
-        // @delete@ as we need to update 'graph_counter_' to be consistent.
-        xy_graph_base(const xy_graph_base&) = delete;
+        // copy ctor
+        xy_graph_base(const xy_graph_base& other)
+        {
+            verbose_ = other.verbose_;
+            filename_ = other.filename_;
+            nodes_ = other.nodes_;
+            xy_ = other.xy_;
+            graph_id_ = graph_counter_++;
+        }
 
+        // move assignment
         warthog::graph::xy_graph_base<T_NODE, T_EDGE>&
         operator=(const warthog::graph::xy_graph_base<T_NODE, T_EDGE>&& other)
         {
@@ -92,10 +100,7 @@ class xy_graph_base
                     if(xy_[i] != other.xy_[i]) { return false; }
                 }
             }
-            else
-            {
-                return false;
-            }
+            else { return false; }
 
             if(get_num_nodes() == other.get_num_nodes())
             {
@@ -376,7 +381,20 @@ class xy_graph_base
                     warthog::cost_t hdist = h_euc.h(tx, ty, hx, hy);
                     if((*it).wt_ < hdist)
                     {
-                        if(!fix_if_not) { return false; }
+                            
+                        if(!fix_if_not) 
+                        { 
+                            std::cerr 
+                                << "warn: edge (" << t_id << ", " 
+                                << h_id << ") has cost " << (*it).wt_ 
+                                << " which is < h_euc (" << hdist <<")"
+                                << std::endl;
+                            return false; 
+                        }
+                        std::cerr 
+                            << "warn: updated edge (" << t_id << ", " 
+                            << h_id << "); from cost " << (*it).wt_ 
+                            << " to h_euc (" << hdist <<")\n";
                         (*it).wt_ = static_cast<uint32_t>(ceil(hdist));
                     }
                 }
@@ -385,13 +403,14 @@ class xy_graph_base
         }
 
         /**
-         * Perturb given an already loaded 'xy_graph' and a new file.
+         * Given an already loaded 'xy_graph' and a new graph file, we edit the labels
+         * of the edges to contain the new graph costs.
          */
         void
         perturb(std::istream& in)
         {
-            uint32_t num_nodes = 0;
-            uint32_t num_edges = 0;
+            uint32_t num_nodes;
+            uint32_t num_edges;
             std::vector<std::pair<uint32_t, warthog::graph::edge>> edges;
             std::vector<std::pair<int32_t, int32_t>> xy;
             std::vector<warthog::graph::ECAP_T> in_degree;
@@ -440,7 +459,8 @@ class xy_graph_base
             {
                 uint32_t from_id = e.first;
                 node* from = get_node(from_id);
-                edge_iter eit = from->find_edge(e.second.node_id_);
+                edge_iter eit = from->find_edge(e.second.node_id_, 
+                        from->outgoing_begin(), from->outgoing_end());
 
                 if(eit != from->outgoing_end())
                 {
@@ -627,9 +647,10 @@ gridmap_to_xy_graph(
 // @param enforce_euclidean: arc lengths must be >= euclidean distance
 void
 dimacs_to_xy_graph(
-    warthog::dimacs_parser& dimacs, warthog::graph::xy_graph& g,
-    bool reverse_arcs = false, bool store_incoming_edges = false,
-    bool enforce_euclidean = true);
+        warthog::dimacs_parser& dimacs, warthog::graph::xy_graph& g,
+        bool reverse_arcs=false,
+        bool store_incoming_edges = false,
+        bool enforce_euclidean=false);
 
 void
 write_dimacs(std::ostream& out, warthog::graph::xy_graph& g);

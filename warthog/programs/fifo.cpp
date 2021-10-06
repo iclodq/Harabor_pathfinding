@@ -162,10 +162,10 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
     size_t n_results = reqs.size() / 2;
     // Statistics
     unsigned int n_expanded = 0;
-    unsigned int n_inserted = 0;
     unsigned int n_touched = 0;
-    unsigned int n_updated = 0;
+    unsigned int n_reopen = 0;
     unsigned int n_surplus = 0;
+    unsigned int n_heap_ops = 0;
     unsigned int plen = 0;
     unsigned int finished = 0;
     double t_astar = 0;
@@ -183,8 +183,8 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
     t.start();
 
 #pragma omp parallel num_threads(threads)                               \
-    reduction(+ : t_astar, n_expanded, n_inserted, n_touched, n_updated, \
-              n_surplus, plen, finished)
+    reduction(+ : t_astar, n_expanded, n_touched, n_reopen, \
+              n_surplus, n_heap_ops, plen, finished)
     {
         // Parallel data
         unsigned int thread_count = omp_get_num_threads();
@@ -241,9 +241,9 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
             // Update stasts
             t_astar += sol.time_elapsed_nano_;
             n_expanded += sol.nodes_expanded_;
-            n_inserted += sol.nodes_inserted_;
             n_touched += sol.nodes_touched_;
-            n_updated += sol.nodes_updated_;
+            n_heap_ops += sol.heap_ops_;
+            n_reopen += sol.nodes_reopen_;
             n_surplus += sol.nodes_surplus_;
             plen += sol.path_.size();
             finished += sol.path_.back() == target_id;
@@ -276,8 +276,9 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
     std::ostream out(buf);
 
     debug(conf.verbose, "Spawned a writer on", fifo_out);
-    out << n_expanded << "," << n_inserted << "," << n_touched << ","
-        << n_updated << "," << n_surplus << "," << plen << ","
+    out << n_expanded << "," << n_touched << ","
+        << n_reopen << "," << n_surplus << "," 
+        << n_heap_ops << "," << plen << ","
         << finished << "," << t_read << "," << t_astar << ","
         << t.elapsed_time_nano() << std::endl;
 

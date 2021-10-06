@@ -222,7 +222,7 @@ class depth_first_search : public warthog::search
 			start->init(pi_.instance_id_, warthog::SN_ID_MAX, 
                     0, heuristic_->h(pi_.start_id_, pi_.target_id_));
 			stack_.push_back(dfs_pair(start, 0));
-            sol.nodes_inserted_++;
+            sol.heap_ops_++;
 
             
             if(on_generate_fn_) 
@@ -287,6 +287,7 @@ class depth_first_search : public warthog::search
 
                 for( ; n != 0; expander_->next(n, cost_to_n) )
                 {
+                    sol.nodes_touched_++;
                     // to avoid cycles we store some data that records whether
                     // or not the proposed successor appears on the current branch
                     if( n->get_expanded() && 
@@ -303,7 +304,7 @@ class depth_first_search : public warthog::search
                     if(n->get_f() < cost_cutoff_) 
                     { 
                         stack_.push_back(dfs_pair(n, 0));
-                        sol.nodes_inserted_++;
+                        sol.heap_ops_++;
                         if(on_expand_fn_) { (*on_expand_fn_)(n); }
 
                         #ifndef NDEBUG

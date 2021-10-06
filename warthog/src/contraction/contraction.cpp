@@ -166,7 +166,7 @@ warthog::ch::unpack(uint32_t from_id,
         warthog::graph::edge_iter it_e_succ = succ->outgoing_begin();
         while(true)
         {
-            it_e_succ = succ->find_edge(to_id, it_e_succ);
+            it_e_succ = succ->find_edge(to_id, it_e_succ, succ->outgoing_end());
             if(it_e_succ == succ->outgoing_end()) { break; }
             assert( it_e_succ >= succ->outgoing_begin() &&
                     it_e_succ <= succ->outgoing_end());
@@ -303,8 +303,9 @@ warthog::ch::sod_pruning(
 
                     warthog::graph::node* high_node =
                         g->get_node(high->node_id_);
-                    warthog::graph::edge_iter stall_it =
-                        high_node->find_edge(low->node_id_);
+                    warthog::graph::edge_iter stall_it = 
+                        high_node->find_edge(low->node_id_, 
+                                high_node->outgoing_begin(), high_node->outgoing_end());
                     if(stall_it != high_node->outgoing_end() &&
                         (high->wt_ + stall_it->wt_) < low->wt_)
                     {

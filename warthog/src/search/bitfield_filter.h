@@ -26,10 +26,10 @@ class bitfield_filter
         bitfield_filter(size_t num_nodes);
         virtual ~bitfield_filter();
 
-        // returns true if the successor node specified by @param edge_idx
-        // is being filtered. if the successor is not filtered, returns false
+        // returns true if @param node_id is being filtered
+        // otherwise returns false
         bool
-        filter(sn_id_t node_id, uint32_t edge_idx);
+        filter(sn_id_t node_id);
 
         void
         set_flag_true(sn_id_t node_id);

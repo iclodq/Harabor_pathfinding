@@ -175,7 +175,7 @@ warthog::graph::dimacs_to_xy_graph(
                 << (it - dimacs.edges_begin()) / 1000;
         }
     }
-    g.is_euclidean(enforce_euclidean);
+    //g.is_euclidean(enforce_euclidean);
     if(g.get_verbose()) { std::cout << "edges, converted" << std::endl; }
 
     std::cerr << "edge memory fragmentation: (1=none): "

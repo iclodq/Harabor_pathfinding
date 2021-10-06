@@ -460,7 +460,7 @@ class cpd_search : public warthog::search
         else
         {
             open_->push(start);
-            sol.nodes_inserted_++;
+            sol.heap_ops_++;
         }
 
         // begin expanding
@@ -513,7 +513,6 @@ class cpd_search : public warthog::search
 
                     n->relax(gval, current->get_id());
                     update_k_(n->get_id(), current->get_id());
-                    sol.nodes_updated_++;
                 }
                 // Neither a new node nor an improving path to it
                 else
@@ -542,7 +541,6 @@ class cpd_search : public warthog::search
                 {
                     open_->push(n);
                     trace(pi_.verbose_, "Generating:", *n);
-                    sol.nodes_inserted_++;
                 }
             }
         }
@@ -550,6 +548,7 @@ class cpd_search : public warthog::search
         mytimer.stop();
         sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
         sol.nodes_surplus_ = open_->size();
+        sol.heap_ops_ = open_->get_heap_ops();
 
         DO_ON_DEBUG_IF(pi_.verbose_)
         {

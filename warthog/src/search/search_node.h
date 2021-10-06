@@ -28,9 +28,7 @@ class search_node
 		}
 
 		~search_node()
-		{
-			refcount_--;
-		}
+		{ refcount_--; }
 
 		inline void
 		init(uint32_t search_number,
@@ -39,52 +37,48 @@ class search_node
              warthog::cost_t f,
              warthog::cost_t ub=warthog::COST_MAX)
 		{
-			status_ = 0;
             parent_id_= parent_id;
             f_ = f;
             g_ = g;
             ub_ = ub;
 			search_number_ = search_number;
+            status_ = false;
 		}
 
 		inline uint32_t
-		get_search_number()
-		{
-			return search_number_;
-		}
+		get_search_number() const 
+        { return search_number_; }
 
-		inline void
-		set_search_number(uint32_t search_number)
-		{
-			search_number_ = search_number;
-		}
+        inline void
+        set_search_number(uint32_t search_number)
+        { search_number_ = search_number; }
 
 		inline warthog::sn_id_t
-		get_id() const { return id_; }
+		get_id() const 
+        { return id_; }
 
 		inline void
 		set_id(warthog::sn_id_t id)
-		{
-			id_ = id;
-		}
+		{ id_ = id; }
 
 		inline bool
-		get_expanded() const { return status_; }
+		get_expanded() const 
+        { return status_; }
 
 		inline void
 		set_expanded(bool expanded)
-		{
-            status_ = expanded;
-		}
+		{ status_ = expanded; }
 
 		inline warthog::sn_id_t
-		get_parent() const { return parent_id_; }
+		get_parent() const 
+        { return parent_id_; }
 
 		inline void
 		set_parent(warthog::sn_id_t parent_id) { parent_id_ = parent_id; }
 
 		inline uint32_t
-		get_priority() const { return priority_; }
+		get_priority() const 
+        { return priority_; }
 
 		inline void
 		set_priority(uint32_t priority) { priority_ = priority; }
@@ -238,7 +232,6 @@ class search_node
 		uint32_t priority_; // expansion priority
 
 		uint32_t search_number_;
-
         static uint32_t refcount_;
 };
 

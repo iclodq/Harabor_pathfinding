@@ -219,7 +219,7 @@ class greedy_depth_first_search : public warthog::search
 			start->init(pi_.instance_id_, warthog::SN_ID_MAX, 
                     0, heuristic_->h(pi_.start_id_, pi_.target_id_));
 			stack_.push_back(dfs_pair(start, 0));
-            sol.nodes_inserted_++;
+            sol.heap_ops_++;
 
             
             if(on_generate_fn_) 
@@ -343,7 +343,7 @@ class greedy_depth_first_search : public warthog::search
 
                 n = succ_queue_->pop();
                 stack_.push_back(dfs_pair(n, 0));
-                sol.nodes_inserted_++;
+                sol.heap_ops_++;
                 if(on_expand_fn_) { (*on_expand_fn_)(n); }
 
                 #ifndef NDEBUG

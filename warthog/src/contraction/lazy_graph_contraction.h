@@ -37,6 +37,7 @@
 #include "flexible_astar.h"
 #include "heap.h"
 #include "solution.h"
+#include "bidirectional_graph_expansion_policy.h"
 #include "bidirectional_search.h"
 
 #include <cstdint>
@@ -101,91 +102,27 @@ class lazy_graph_contraction
         warthog::graph::xy_graph* g_;
         std::vector<uint32_t>* order_;
         bool verbose_;
+        std::vector<warthog::graph::edge> shortcuts_;
 
         // node order stuff
         warthog::heap<ch_pair>* heap_;
         warthog::heap_node<ch_pair>* hn_pool_;
 
-        std::vector<std::pair<warthog::graph::node*, warthog::graph::edge>>
-            in_shorts;
-        std::vector<std::pair<warthog::graph::node*, warthog::graph::edge>>
-            out_shorts;
-
         // these objects get recycled across all witness searches
         warthog::solution sol_;
-        std::set<uint32_t> uc_neis_;
 
-        // a variety of "node importance values" are computed for each node
-        // in order to determine the order of contraction
-        struct niv_metrics
-        {
-            niv_metrics()
-            {
-                eadd_ = 0;
-                edel_ = 0;
-                depth_ = 0; 
-                nc_ = 0;
-                hops_added_ = 0;
-                hops_removed_ = 0;
-                level_ = 0;
+        // track the height of each node in the hierarchy 
+        std::vector<uint32_t> height_;
 
-            }
-
-            niv_metrics&
-            operator=(const niv_metrics& other)
-            {
-                eadd_ = other.eadd_;
-                edel_ = other.edel_;
-                depth_ = other.depth_;
-                nc_ = other.nc_;
-                hops_added_ = other.hops_added_;
-                hops_removed_ = other.hops_removed_;
-                level_ = other.level_;
-                return *this;
-            }
-
-            void
-            print(std::ostream& out)
-            {
-                out 
-                    << " depth: " << depth_
-                    << " eadd: " << eadd_ 
-                    << " edel: " << edel_
-                    << " hadd: " << hops_added_
-                    << " hdel: " << hops_removed_;
-            }
-
-            uint32_t eadd_; // edges added by contracting this node
-            uint32_t edel_; // edges deleted by contracting this node
-            uint32_t depth_; // max search space depth
-            uint32_t nc_; // neis contracted (aka "deleted neighbours")
-            uint32_t hops_added_;  // #hops added by contracting this node
-            uint32_t hops_removed_;  // #hops deleted by contracting this node
-            uint32_t level_;  // ch level of the node
-        };
-        niv_metrics* terms_;
-
-        // witness search stuff
         uint32_t ws_max_expansions_; 
-        //warthog::euclidean_heuristic* heuristic_;
         warthog::zero_heuristic* heuristic_;
-        warthog::graph_expansion_policy<warthog::apriori_filter>* fexpander_;
-        warthog::graph_expansion_policy<warthog::apriori_filter>* bexpander_;
-        warthog::apriori_filter* c_filter_; // track contractions 
-        warthog::apriori_filter* u_filter_; // track updates
+        warthog::bidirectional_expander<warthog::ch::bypass_filter>* fexpander_;
+        warthog::bidirectional_expander<warthog::ch::bypass_filter>* bexpander_;
+        warthog::ch::bypass_filter* c_filter_; // track contractions 
+        warthog::apriori_filter* u_filter_; // track neighbours updated
         warthog::bidirectional_search<
-            //warthog::euclidean_heuristic,
             warthog::zero_heuristic,
-            warthog::graph_expansion_policy<warthog::apriori_filter>>* alg_;
-
-//        warthog::graph_expansion_policy<warthog::apriori_filter>* expander_;
-//        warthog::pqueue_min* open_;
-//        warthog::flexible_astar<
-//           warthog::zero_heuristic,
-//           warthog::graph_expansion_policy<warthog::apriori_filter>,
-//           warthog::pqueue_min>* alg2_;
-
-
+            warthog::bidirectional_expander<warthog::ch::bypass_filter>>* alg_;
 
         // metrics
         uint64_t total_expansions_;
@@ -205,10 +142,10 @@ class lazy_graph_contraction
         witness_search(uint32_t from_id, uint32_t to_id, double via_len, bool resume);
 
         int32_t
-        compute_contraction_priority(niv_metrics& niv);
-
-        niv_metrics
         contract_node(uint32_t node_id, bool metrics_only);
+
+        void
+        disconnect_node(uint32_t node_id);
 };
 
 }

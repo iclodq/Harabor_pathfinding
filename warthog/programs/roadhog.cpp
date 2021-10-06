@@ -27,7 +27,6 @@
 #include "euclidean_heuristic.h"
 #include "fch_bb_expansion_policy.h"
 #include "fch_expansion_policy.h"
-#include "fixed_graph_contraction.h"
 #include "flexible_astar.h"
 #include "graph_expansion_policy.h"
 #include "graph_oracle.h"
@@ -86,56 +85,6 @@ help()
     << "\tdfs, cpd, cpd-search\n";
 }
 
-////////////////////////////////////////////////////////////////////////////
-// ----- These two closures were useful once upon a time. Maybe again? ---
-////////////////////////////////////////////////////////////////////////////
-//    std::function<uint32_t(warthog::search_node*)> fn_get_apex =
-//        [&order] (warthog::search_node* n) -> uint32_t
-//        {
-//            while(true)
-//            {
-//                warthog::search_node* p = n->get_parent();
-//                if(!p || order.at(p->get_id()) < order.at(n->get_id()))
-//                { break; }
-//                n = p;
-//            }
-//            return order.at(n->get_id());
-//        };
-//
-//    std::function<uint32_t(uint32_t)> fn_redundant_expansions =
-//        [&fexp, &order, &alg] (uint32_t apex) -> uint32_t
-//        {
-//            std::set<uint32_t> tmp;
-//            for(uint32_t i = 0; i < order.size(); i++)
-//            {
-//                warthog::search_node* n = fexp.get_ptr(i, alg.get_search_id());
-//                if(n && order.at(n->get_id()) > apex)
-//                {
-//                    tmp.insert(n->get_id());
-//                }
-//            }
-//
-//            for(uint32_t j = 0; j < order.size(); j++)
-//            {
-//                warthog::search_node* n = fexp.get_ptr(j, alg.get_search_id());
-//                warthog::search_node* m = n;
-//                while(m)
-//                {
-//                    if(tmp.find(m->get_id()) != tmp.end())
-//                    {
-//                        while(tmp.find(n->get_id()) == tmp.end())
-//                        {
-//                            tmp.insert(n->get_id());
-//                            n = n->get_parent();
-//                        }
-//                        break;
-//                    }
-//                    m = m->get_parent();
-//                }
-//            }
-//            return tmp.size();
-//        };
-
 void
 run_experiments( warthog::search* algo, std::string alg_name,
         warthog::dimacs_parser& parser, std::ostream& out)
@@ -146,7 +95,7 @@ run_experiments( warthog::search* algo, std::string alg_name,
     if(!suppress_header)
     {
         std::cout
-            << "id\talg\texpanded\tinserted\tupdated\ttouched\tsurplus"
+            << "id\talg\texpanded\ttouched\treopen\tsurplus\theap_ops"
             << "\tnanos\tpcost\tplen\tmap\n";
     }
     uint32_t exp_id = 0;
@@ -159,7 +108,7 @@ run_experiments( warthog::search* algo, std::string alg_name,
         warthog::sn_id_t start_id = exp.source;
         warthog::sn_id_t target_id = exp.p2p ? exp.target : warthog::SN_ID_MAX;
         warthog::problem_instance pi(start_id, target_id, verbose);
-        uint32_t expanded=0, inserted=0, updated=0, touched=0, surplus=0;
+        uint32_t expanded=0, reopen=0, heap_ops=0, touched=0, surplus=0;
         double nano_time = DBL_MAX;
         for(uint32_t i = 0; i < nruns; i++)
         {
@@ -167,9 +116,9 @@ run_experiments( warthog::search* algo, std::string alg_name,
             algo->get_path(pi, sol);
 
             expanded += sol.nodes_expanded_;
-            inserted += sol.nodes_inserted_;
+            reopen += sol.nodes_reopen_;
+            heap_ops += sol.heap_ops_;
             touched += sol.nodes_touched_;
-            updated += sol.nodes_updated_;
             surplus += sol.nodes_surplus_;
             nano_time = nano_time < sol.time_elapsed_nano_
                             ?  nano_time : sol.time_elapsed_nano_;
@@ -179,11 +128,10 @@ run_experiments( warthog::search* algo, std::string alg_name,
             << exp_id++ <<"\t"
             << alg_name << "\t"
             << expanded / nruns << "\t"
-            << inserted / nruns << "\t"
-            << updated / nruns << "\t"
             << touched / nruns << "\t"
+            << reopen / nruns << "\t"
             << surplus / nruns << "\t"
-            << nano_time << "\t" /// (double)nruns << "\t"
+            << heap_ops / nruns << "\t"
             << (long long)sol.sum_of_edge_costs_ << "\t"
             << (int32_t)((sol.path_.size() == 0) ? -1 : (int32_t)(sol.path_.size()-1)) << "\t"
             << parser.get_problemfile()
@@ -441,7 +389,7 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
     if(!suppress_header)
     {
         std::cout
-            << "id\talg\texpanded\tinserted\tupdated\ttouched"
+            << "id\talg\texpanded\ttouched\treopen\tsurplus\theap_ops"
             << "\tnanos\tpcost\tplen\tmap\n";
     }
     uint32_t exp_id = 0;
@@ -452,7 +400,7 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
         warthog::dimacs_parser::experiment exp = (*it);
         warthog::solution sol;
         warthog::problem_instance pi(exp.source, warthog::INF32, verbose);
-        uint32_t expanded=0, inserted=0, updated=0, touched=0;
+        uint32_t expanded=0, reopen=0, heap_ops=0, touched=0, surplus=0;
         double nano_time = DBL_MAX;
         for(uint32_t i = 0; i < nruns; i++)
         {
@@ -460,9 +408,10 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
             alg.get_path(pi, sol);
 
             expanded += sol.nodes_expanded_;
-            inserted += sol.nodes_inserted_;
+            heap_ops += sol.heap_ops_;
             touched += sol.nodes_touched_;
-            updated += sol.nodes_updated_;
+            reopen += sol.nodes_reopen_;
+            surplus += sol.nodes_surplus_;
             nano_time = nano_time < sol.time_elapsed_nano_
                             ?  nano_time : sol.time_elapsed_nano_;
         }
@@ -471,12 +420,12 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
             << exp_id++ <<"\t"
             << alg_name << "\t"
             << expanded / nruns << "\t"
-            << inserted / nruns << "\t"
-            << updated / nruns << "\t"
             << touched / nruns << "\t"
-            << nano_time << "\t" /// (double)nruns << "\t"
-            << sol.sum_of_edge_costs_ << "\t"
-            << sol.path_.size() << "\t"
+            << reopen / nruns << "\t"
+            << surplus / nruns << "\t"
+            << heap_ops / nruns << "\t"
+            << (long long)sol.sum_of_edge_costs_ << "\t"
+            << (int32_t)((sol.path_.size() == 0) ? -1 : (int32_t)(sol.path_.size()-1)) << "\t"
             << parser.get_problemfile()
             << std::endl;
     }

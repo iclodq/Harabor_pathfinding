@@ -34,27 +34,22 @@ class pqueue
 	public:
         pqueue(Comparator* cmp, unsigned int size=1024)
             : pqueue(size)
-        { 
-            cmp_ = cmp;
-        }
+        { cmp_ = cmp; }
 
 		pqueue(unsigned int size=1024)
             : maxsize_(size), minqueue_(QType().is_min_), queuesize_(0), 
-            elts_(0)
-        {
-            resize(size);
-        }
+            elts_(0), heap_ops_(0)
+        { resize(size); }
 
         ~pqueue()
-        {
-            delete [] elts_;
-        }
+        { delete [] elts_; }
 
 		// removes all elements from the pqueue
         void
         clear()
-        {
-            queuesize_ = 0;
+        { 
+            queuesize_ = 0; 
+            heap_ops_ = 0;
         }
 
 		// reprioritise the specified element (up or down)
@@ -117,13 +112,13 @@ class pqueue
             return ans;
         }
 
-		// @return true if the priority of the element is 
-		// otherwise
+		// @return true if heap contains search node @param n
+		// and return false if it does not 
 		inline bool
 		contains(warthog::search_node* n)
 		{
-			unsigned int priority = n->get_priority();
-			if(priority < queuesize_ && &*n == &*elts_[priority])
+			unsigned int index = n->get_priority();
+			if(index < queuesize_ && &*n == &*elts_[index])
 			{
 				return true;
 			}
@@ -141,17 +136,17 @@ class pqueue
 			return 0;
 		}
 
+        uint32_t
+        get_heap_ops()
+        { return heap_ops_; }
+
 		inline unsigned int
 		size()
-		{
-			return queuesize_;
-		}
+		{ return queuesize_; }
 
 		inline bool
 		is_minqueue() 
-		{ 
-			return minqueue_; 
-		} 
+		{ return minqueue_; } 
 		
         void 
         print(std::ostream& out)
@@ -176,11 +171,13 @@ class pqueue
 		unsigned int queuesize_;
 		warthog::search_node** elts_;
         Comparator* cmp_;
+        uint32_t heap_ops_;
 
 		// reorders the subpqueue containing elts_[index]
         void 
         heapify_up(unsigned int index)
         {
+            heap_ops_++;
             assert(index < queuesize_);
             while(index > 0)
             {
@@ -199,6 +196,7 @@ class pqueue
         void 
         heapify_down(unsigned int index)
         {
+            heap_ops_++;
             unsigned int first_leaf_index = queuesize_ >> 1;
             while(index < first_leaf_index)
             {
