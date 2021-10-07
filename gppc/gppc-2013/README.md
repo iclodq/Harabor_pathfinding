@@ -12,6 +12,3 @@ https://movingai.com/GPPC/GPPC2013.pdf
 
 Thank you Max and Nathan!
 
-
-
-
