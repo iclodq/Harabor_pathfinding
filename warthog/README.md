@@ -1,4 +1,4 @@
-## Warthog: a pathfinding library ## 
+## Warthog: a pathfinding library 
 ** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list)  
 
 ** Contact: ** daniel dot harabor at monash dot edu  
@@ -27,7 +27,7 @@ graph partitioning library.
 Below we briefly describe the use of the `warthog` binary. For other programs 
 refer to the inbuilt instructions that are printed on execution.\
 
-### Example: Solving grid-based pathfinding problems ###
+### Example: Solving grid-based pathfinding problems 
 
 Once compiled, run bin/warthog for a list of command line parameters. 
 A simple case is the following:
@@ -44,7 +44,7 @@ Metrics are: nodes expanded, nodes generated (i.e. put on open), nodes touched
 (i.e. evaluated, possibly resulting in an priority update), search time 
 in microseconds (wallclock time) and path cost.
 
-### Other options for the warthog program ###
+### Other options for the warthog program 
 
 --alg [name]
 Used to specify a named search algorithm.
