@@ -1,14 +1,39 @@
-==============================================================================
-Warthog: a pathfinding library.
-Author: Daniel Harabor
-Contact: dharabor at google mail
-==============================================================================
+---
+## Warthog: a pathfinding library.
+** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list) 
+** Contact: ** daniel dot harabor at monash dot edu 
 
-To compile: make fast
-To debug: make dev
-To profile: make profile
+---
 
-Once compiled, run ./bin/warthog for a list of command line parameters. 
+To compile: `make fast`
+To debug: `make dev`
+To profile: `make debug`
+
+By default we compile a small set of available programs: 
+"warthog", "roadhog" and "mapf". These can be found and executed from 
+./build/<mktarget>/bin where <mktarget> is the name of the make target .
+
+The full list of programs can be found in the ./programs/ directory. Currently 
+they are as follows:
+
+- `warthog.cpp`: for solving grid-based pathfinding problems
+- `roadhog.cpp`: for solving road-network pathfinding problems
+- `mapf.cpp`: for solving multi-agent pathfinding problems
+- `fifo.cpp`: road-network pathfinding using a FIFO for i/o
+- `make_cpd.cpp`: create a Compressed Path Database for a given input graph
+- `grid2graph.cpp`: convert a gridmap to an xy-graph
+- `dimacs2xy`: convert a DIMACS graph to an xy-graph
+- `dimacs2metis`: convert a DIMACS graph to the input format of the METIS 
+graph partitioning library.
+
+Below we briefly describe the use of the "warthog" binary. For other programs 
+refer to the inbuilt instructions that are printed on execution.
+
+---
+## Example: Solving grid-based pathfinding problems ##
+---
+
+Once compiled, run bin/warthog for a list of command line parameters. 
 A simple case is the following:
 
 ./bin/warthog --scen orz700d.map.scen --alg jps --checkopt
@@ -23,9 +48,10 @@ Metrics are: nodes expanded, nodes generated (i.e. put on open), nodes touched
 (i.e. evaluated, possibly resulting in an priority update), search time 
 in microseconds (wallclock time) and path cost.
 
-==============================================================================
-Program Options
-==============================================================================
+---
+## Other options for the warthog program ##
+--- 
+
 --alg [name]
 Used to specify a named search algorithm.
 
