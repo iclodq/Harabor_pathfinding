@@ -1,7 +1,6 @@
 ## The Warthog Pathfinding Library 
 **Author:** Daniel Harabor and contributors (see CONTRIB for a full list)  
 **Contact:** daniel dot harabor at monash dot edu  
-**Benchmark problems:** visit our [repository](https://bitbucket.org/shortestpathlab/benchmarks).
 ---
 
 To compile: `make fast`  
@@ -25,7 +24,9 @@ they are as follows:
 graph partitioning library.
 
 Below we briefly describe the use of the `warthog` binary. For other programs 
-refer to the inbuilt instructions that are printed on execution.\
+refer to the inbuilt instructions that are printed on execution.  
+
+**Looking for benchmarks to run?** These are kept in a separate [repository](https://bitbucket.org/shortestpathlab/benchmarks).
 
 ### Example: Solving grid-based pathfinding problems 
 
