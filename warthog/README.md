@@ -1,19 +1,16 @@
----
-## Warthog: a pathfinding library.
-** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list) 
-** Contact: ** daniel dot harabor at monash dot edu 
-
----
+## Warthog: a pathfinding library.\
+** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list) \
+** Contact: ** daniel dot harabor at monash dot edu \
 
 To compile: `make fast`
 To debug: `make dev`
 To profile: `make debug`
 
-By default we compile a small set of available programs: 
-"warthog", "roadhog" and "mapf". These can be found and executed from 
-./build/<mktarget>/bin where <mktarget> is the name of the make target .
+By default we compile a small set of solver programs: 
+`warthog`, `roadhog` and `mapf`. These can be found and executed from 
+`./build/<mktarget>/bin` where `<mktarget>` is the name of the make target .
 
-The full list of programs can be found in the ./programs/ directory. Currently 
+The full list of programs can be found in the `./programs/` directory. Currently 
 they are as follows:
 
 - `warthog.cpp`: for solving grid-based pathfinding problems
@@ -27,11 +24,9 @@ they are as follows:
 graph partitioning library.
 
 Below we briefly describe the use of the "warthog" binary. For other programs 
-refer to the inbuilt instructions that are printed on execution.
+refer to the inbuilt instructions that are printed on execution.\
 
----
-## Example: Solving grid-based pathfinding problems ##
----
+### Example: Solving grid-based pathfinding problems ###
 
 Once compiled, run bin/warthog for a list of command line parameters. 
 A simple case is the following:
@@ -48,9 +43,7 @@ Metrics are: nodes expanded, nodes generated (i.e. put on open), nodes touched
 (i.e. evaluated, possibly resulting in an priority update), search time 
 in microseconds (wallclock time) and path cost.
 
----
-## Other options for the warthog program ##
---- 
+### Other options for the warthog program ###
 
 --alg [name]
 Used to specify a named search algorithm.
