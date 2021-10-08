@@ -570,7 +570,7 @@ class xy_graph_base
                 << "#\n"
                 << "# 32bit integer values are used throughout.\n"
                 << "# Identifiers are all zero indexed.\n"
-                << std::endl;
+                << "#" << std::endl;
 
             // header stuff
             // out << "chd 1.0" << std::endl;
@@ -651,10 +651,6 @@ dimacs_to_xy_graph(
         bool reverse_arcs=false,
         bool store_incoming_edges = false,
         bool enforce_euclidean=false);
-
-void
-write_dimacs(std::ostream& out, warthog::graph::xy_graph& g);
-
 }
 }
 

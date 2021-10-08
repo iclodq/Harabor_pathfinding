@@ -7,6 +7,7 @@
 #include <cmath>
 #include <numeric>
 #include <iostream>
+#include <filesystem>
 
 // Reorder the edges of a node to match their bearing wrt North
 //
@@ -115,7 +116,7 @@ main(int argc, char** argv)
         return EINVAL;
     }
 
-    if(gr_file == "")
+    if(co_file == "")
     {
         std::cerr << "err; missing --input [co file] [gr file]\n";
         return EINVAL;
@@ -134,8 +135,18 @@ main(int argc, char** argv)
         orient_edges(g_xy);
     }
 
+    std::filesystem::path gr_path = gr_file;
+    std::filesystem::path co_path = co_file;
     // dump
-    std::cout << g_xy;
+    std::cout 
+        << "# ******************************************************************************\n"
+        << "# This XY graph created with the tool \"dimacs2xy\" from the Warthog pathfinding\n"
+        << "# library (https://bitbucket.org/dharabor/pathfinding).\n"
+        << "# The source input files (in DIMACS format) were: \n"
+        << "# " << gr_path.filename() << "\n"
+        << "# " << co_path.filename() << "\n"
+        << "# ******************************************************************************\n"
+        << g_xy;
     return 0;
 }
 
