@@ -409,8 +409,8 @@ class xy_graph_base
         void
         perturb(std::istream& in)
         {
-            uint32_t num_nodes;
-            uint32_t num_edges;
+            uint32_t num_nodes = 0;
+            uint32_t num_edges = 0;
             std::vector<std::pair<uint32_t, warthog::graph::edge>> edges;
             std::vector<std::pair<int32_t, int32_t>> xy;
             std::vector<warthog::graph::ECAP_T> in_degree;
