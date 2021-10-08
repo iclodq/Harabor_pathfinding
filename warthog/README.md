@@ -1,4 +1,4 @@
-## Warthog: a pathfinding library 
+## The Warthog Pathfinding Library 
 **Author:** Daniel Harabor and contributors (see CONTRIB for a full list)  
 **Contact:** daniel dot harabor at monash dot edu  
 ---
