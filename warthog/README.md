@@ -1,12 +1,13 @@
-## Warthog: a pathfinding library.\
-** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list) \
-** Contact: ** daniel dot harabor at monash dot edu \
+## Warthog: a pathfinding library ## 
+** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list)  
 
-To compile: `make fast`
-To debug: `make dev`
-To profile: `make debug`
+** Contact: ** daniel dot harabor at monash dot edu  
 
-By default we compile a small set of solver programs: 
+To compile: `make fast`  
+To debug: `make dev`  
+To profile: `make debug`  
+
+By default we compile a small set of solver programs:   
 `warthog`, `roadhog` and `mapf`. These can be found and executed from 
 `./build/<mktarget>/bin` where `<mktarget>` is the name of the make target .
 
