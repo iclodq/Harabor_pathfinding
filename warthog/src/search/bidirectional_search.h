@@ -47,7 +47,7 @@ class bidirectional_search  : public warthog::search
             }
 
             exp_cutoff_ = warthog::INF32;
-            cost_cutoff_ = warthog::INF32;
+            cost_cutoff_ = warthog::COST_MAX;
         }
 
         ~bidirectional_search()
@@ -67,7 +67,7 @@ class bidirectional_search  : public warthog::search
         __get_path(warthog::problem_instance& pi, warthog::solution& sol, bool resume=false)
         {
             this->search(sol, pi, resume);
-            if(best_cost_ != warthog::INF32) 
+            if(best_cost_ != warthog::COST_MAX)
             { 
                 sol.sum_of_edge_costs_ = best_cost_;
                 reconstruct_path(sol);
@@ -86,7 +86,7 @@ class bidirectional_search  : public warthog::search
             this->search(sol, pi, resume);
             assert(sol.nodes_expanded_ <= exp_cutoff_);
 
-            if(best_cost_ != warthog::INF32) 
+            if(best_cost_ != warthog::COST_MAX)
             { sol.sum_of_edge_costs_ = best_cost_; }
         }
         
@@ -231,8 +231,8 @@ class bidirectional_search  : public warthog::search
         forward_next()
         {
             warthog::cost_t fwd_min, bwd_min;
-            bwd_min = bopen_->size() ? bopen_->peek()->get_f() : warthog::INF32;
-            fwd_min = fopen_->size() ? fopen_->peek()->get_f() : warthog::INF32;
+            bwd_min = bopen_->size() ? bopen_->peek()->get_f() : warthog::COST_MAX;
+            fwd_min = fopen_->size() ? fopen_->peek()->get_f() : warthog::COST_MAX;
             return fwd_min <= bwd_min;
         }
 
