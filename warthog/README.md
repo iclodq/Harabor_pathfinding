@@ -2,14 +2,14 @@
 ** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list)  
 
 ** Contact: ** daniel dot harabor at monash dot edu  
+---
 
 To compile: `make fast`  
 To debug: `make dev`  
 To profile: `make debug`  
 
-By default we compile a small set of solver programs:   
-`warthog`, `roadhog` and `mapf`. These can be found and executed from 
-`./build/<mktarget>/bin` where `<mktarget>` is the name of the make target .
+By default we compile a small set of solver programs: `warthog`, `roadhog` and `mapf`. These can be found and executed from 
+`./build/<mktarget>/bin` where `<mktarget>` is the name of the make target.
 
 The full list of programs can be found in the `./programs/` directory. Currently 
 they are as follows:
@@ -24,7 +24,7 @@ they are as follows:
 - `dimacs2metis`: convert a DIMACS graph to the input format of the METIS 
 graph partitioning library.
 
-Below we briefly describe the use of the "warthog" binary. For other programs 
+Below we briefly describe the use of the `warthog` binary. For other programs 
 refer to the inbuilt instructions that are printed on execution.\
 
 ### Example: Solving grid-based pathfinding problems ###
