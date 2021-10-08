@@ -1,7 +1,7 @@
 ## The Warthog Pathfinding Library 
 **Author:** Daniel Harabor and contributors (see CONTRIB for a full list)  
 **Contact:** daniel dot harabor at monash dot edu  
-**Benchmark problems:** visit our [repository](https://bitbucket/shortestpathlab/benchmarks).
+**Benchmark problems:** visit our [repository](https://bitbucket.org/shortestpathlab/benchmarks).
 ---
 
 To compile: `make fast`  
