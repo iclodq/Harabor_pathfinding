@@ -1,7 +1,6 @@
 ## Warthog: a pathfinding library 
-** Author: ** Daniel Harabor and contributors (see CONTRIB for a full list)  
-
-** Contact: ** daniel dot harabor at monash dot edu  
+**Author:** Daniel Harabor and contributors (see CONTRIB for a full list)  
+**Contact:** daniel dot harabor at monash dot edu  
 ---
 
 To compile: `make fast`  
