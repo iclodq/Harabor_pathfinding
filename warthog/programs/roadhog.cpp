@@ -11,7 +11,6 @@
 #include "apex_filter.h"
 #include "bb_filter.h"
 #include "bb_labelling.h"
-#include "bch_search.h"
 #include "bch_expansion_policy.h"
 #include "bch_bb_expansion_policy.h"
 #include "bidirectional_graph_expansion_policy.h"
@@ -462,9 +461,10 @@ run_bch_astar(warthog::util::cfg& cfg,
     warthog::euclidean_heuristic h(chd.g_);
     warthog::bch_expansion_policy fexp(chd.g_);
     warthog::bch_expansion_policy bexp (chd.g_, true);
-    warthog::bch_search<
+    warthog::bidirectional_search<
         warthog::euclidean_heuristic,
-        warthog::bch_expansion_policy>
+        warthog::bch_expansion_policy,
+        warthog::bds_traits<warthog::BDS_ALGO::BCH>>
             alg(&fexp, &bexp, &h);
 
     run_experiments(&alg, alg_name, parser, std::cout);
@@ -567,9 +567,10 @@ run_bch_bb(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
     warthog::bch_bb_expansion_policy fexp(&lab, false);
     warthog::bch_bb_expansion_policy bexp (&lab, true);
     warthog::zero_heuristic h;
-    warthog::bch_search<
+    warthog::bidirectional_search<
         warthog::zero_heuristic,
-        warthog::bch_bb_expansion_policy>
+        warthog::bch_bb_expansion_policy,
+        warthog::bds_traits<warthog::BDS_ALGO::BCH>>
             alg(&fexp, &bexp, &h);
 
     run_experiments(&alg, alg_name, parser, std::cout);

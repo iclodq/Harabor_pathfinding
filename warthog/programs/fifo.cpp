@@ -23,8 +23,8 @@
 #include <omp.h>
 #include <json.hpp>
 
+#include "bidirectional_search.h"
 #include "bch_expansion_policy.h"
-#include "bch_search.h"
 #include "cfg.h"
 #include "ch_data.h"
 #include "cpd_extractions.h"
@@ -634,8 +634,9 @@ run_bch()
         warthog::bch_expansion_policy* bexp =
             new warthog::bch_expansion_policy(chd.g_, true);
         warthog::zero_heuristic* h = new warthog::zero_heuristic();
-        alg = new warthog::bch_search<
-            warthog::zero_heuristic, warthog::bch_expansion_policy>
+        alg = new warthog::bidirectional_search<
+            warthog::zero_heuristic, warthog::bch_expansion_policy,
+            warthog::bds_traits<warthog::BDS_ALGO::BCH>>
             (fexp, bexp, h);
     }
 

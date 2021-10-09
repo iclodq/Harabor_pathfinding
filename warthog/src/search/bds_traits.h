@@ -11,6 +11,9 @@
 //  @created 2021-10-09
 //
 
+#include "constants.h"
+#include "search_node.h"
+
 namespace warthog
 {
 
