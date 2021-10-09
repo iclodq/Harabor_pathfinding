@@ -132,6 +132,7 @@ run_experiments( warthog::search* algo, std::string alg_name,
             << reopen / nruns << "\t"
             << surplus / nruns << "\t"
             << heap_ops / nruns << "\t"
+            << nano_time / nruns << "\t"
             << (long long)sol.sum_of_edge_costs_ << "\t"
             << (int32_t)((sol.path_.size() == 0) ? -1 : (int32_t)(sol.path_.size()-1)) << "\t"
             << parser.get_problemfile()
@@ -344,9 +345,10 @@ run_bch(warthog::util::cfg& cfg,
     warthog::bch_expansion_policy fexp(chd.g_);
     warthog::bch_expansion_policy bexp (chd.g_, true);
     warthog::zero_heuristic h;
-    warthog::bch_search<
-        warthog::zero_heuristic,
-        warthog::bch_expansion_policy>
+    warthog::bidirectional_search
+        <warthog::zero_heuristic,
+         warthog::bch_expansion_policy,
+         warthog::bds_traits<warthog::BDS_ALGO::BCH>>
             alg(&fexp, &bexp, &h);
 
     run_experiments(&alg, alg_name, parser, std::cout);
@@ -426,6 +428,7 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
             << reopen / nruns << "\t"
             << surplus / nruns << "\t"
             << heap_ops / nruns << "\t"
+            << nano_time / nruns << "\t"
             << (long long)sol.sum_of_edge_costs_ << "\t"
             << (int32_t)((sol.path_.size() == 0) ? -1 : (int32_t)(sol.path_.size()-1)) << "\t"
             << parser.get_problemfile()
