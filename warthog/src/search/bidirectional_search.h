@@ -501,6 +501,9 @@ class bidirectional_search  : public warthog::search
         }
 };
 
+template<class H, class E> using bhs_search = bidirectional_search<H, E, warthog::bds_traits<BDS_ALGO::BHS>>;
+template<class H, class E> using bdijk_search = bidirectional_search<H, E, warthog::bds_traits<BDS_ALGO::BDIJK>>;
+template<class H, class E> using bch_search = bidirectional_search<H, E, warthog::bds_traits<BDS_ALGO::BCH>>;
 
 }
 
