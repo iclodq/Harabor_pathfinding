@@ -10,6 +10,7 @@
 // @created: 2016-02-14
 //
 
+#include "bds_traits.h"
 #include "constants.h"
 #include "graph_expansion_policy.h"
 #include "xy_graph.h"
@@ -20,8 +21,6 @@
 #include "timer.h"
 #include "zero_heuristic.h"
 
-#include "constants.h"
-
 #include <cstdlib>
 #include <stack>
 #include <cstdint>
@@ -30,21 +29,22 @@
 namespace warthog
 {
 
-template<class H, class E>
+
+template<class H, class E, class SEARCH_TRAITS>
 class bidirectional_search  : public warthog::search
 {
     public:
-        bidirectional_search(E* fexp, E* bexp, H* heuristic) 
+        bidirectional_search(E* fexp, E* bexp, H* heuristic)
             : fexpander_(fexp), bexpander_(bexp), heuristic_(heuristic)
         {
             fopen_ = new pqueue_min(512);
             bopen_ = new pqueue_min(512);
             
-            dijkstra_ = false;
-            if(typeid(*heuristic_) == typeid(warthog::zero_heuristic))
-            {
-                dijkstra_ = true;
-            }
+            //dijkstra_ = false;
+            //if(typeid(*heuristic_) == typeid(warthog::zero_heuristic))
+            //{
+            //    dijkstra_ = true;
+            //}
 
             exp_cutoff_ = warthog::INF32;
             cost_cutoff_ = warthog::COST_MAX;
@@ -144,7 +144,6 @@ class bidirectional_search  : public warthog::search
         E* fexpander_;
         E* bexpander_;
         H* heuristic_;
-        bool dijkstra_;
 
         // early termination limits
         warthog::cost_t cost_cutoff_; 
@@ -278,9 +277,12 @@ class bidirectional_search  : public warthog::search
 
             }
 
-            // initialise or resume the forward search
-            // (only dijkstra search is forward resumable)
-            if(dijkstra_ && resume)
+            // initialise or resume the forward search. this is useful if
+            // the start node is the same across multiple instances.
+            // but resuming only works if the heuristic function is admissible
+            // for the new target as well as the old. Only multi-target algorithms, 
+            // like Dijkstra Search, have this property. 
+            if(resume)
             { 
                 warthog::search_node* fwd_start = 
                     fexpander_->generate_start_node(&pi_);
@@ -308,13 +310,13 @@ class bidirectional_search  : public warthog::search
             }
 
 
-            while(fopen_->size() && bopen_->size())
+            // main expansion loop 
+            // (breaks when it can be proven the problem is not solvable)
+            while(SEARCH_TRAITS::solvable(fopen_->size(), bopen_->size()))
             {
-                // get the current bound
-                warthog::cost_t fwd_bound = fopen_->peek()->get_f();
-                warthog::cost_t bwd_bound = bopen_->peek()->get_f();
-                warthog::cost_t best_bound = dijkstra_ ? 
-                    (fwd_bound + bwd_bound) : std::min(fwd_bound, bwd_bound);
+                // get the current lower bound
+                warthog::cost_t best_bound = 
+                    SEARCH_TRAITS::lowerbound(fopen_->peek(), bopen_->peek());
 
                 // check if we can terminate 
                 if(best_bound >= best_cost_ ||
@@ -347,6 +349,7 @@ class bidirectional_search  : public warthog::search
                 }
             }
 
+            // don't return solutions that exceed the cost limit
             if(best_cost_ > cost_cutoff_)
             {
                 v_ = 0;
@@ -497,6 +500,7 @@ class bidirectional_search  : public warthog::search
             bexpander_->reclaim();
         }
 };
+
 
 }
 

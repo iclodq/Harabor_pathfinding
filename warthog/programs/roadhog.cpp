@@ -281,7 +281,8 @@ run_bi_astar( warthog::util::cfg& cfg,
     warthog::euclidean_heuristic h(&g);
     warthog::bidirectional_search<
         warthog::euclidean_heuristic,
-        warthog::bidirectional_graph_expansion_policy>
+        warthog::bidirectional_graph_expansion_policy,
+        warthog::bds_traits<warthog::BDS_ALGO::BHS>>
             alg(&fexp, &bexp, &h);
 
     run_experiments(&alg, alg_name, parser, std::cout);
@@ -309,7 +310,8 @@ run_bi_dijkstra( warthog::util::cfg& cfg,
     warthog::zero_heuristic h;
     warthog::bidirectional_search<
         warthog::zero_heuristic,
-        warthog::bidirectional_graph_expansion_policy>
+        warthog::bidirectional_graph_expansion_policy,
+        warthog::bds_traits<warthog::BDS_ALGO::BDIJK>>
             alg(&fexp, &bexp, &h);
 
     run_experiments(&alg, alg_name, parser, std::cout);

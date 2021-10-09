@@ -140,7 +140,7 @@ class pqueue
         get_heap_ops()
         { return heap_ops_; }
 
-		inline unsigned int
+		inline uint32_t
 		size()
 		{ return queuesize_; }
 

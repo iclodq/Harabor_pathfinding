@@ -209,7 +209,8 @@ warthog::ch::lazy_graph_contraction::preliminaries(warthog::ch::ch_data* chd)
                 g_, true, c_filter_);
     alg_ = new bidirectional_search< 
                  warthog::zero_heuristic,
-                 warthog::bidirectional_expander<warthog::ch::bypass_filter>>
+                 warthog::bidirectional_expander<warthog::ch::bypass_filter>,
+                 warthog::bds_traits<warthog::BDS_ALGO::BDIJK>>
                      (fexpander_, bexpander_, heuristic_);
     ws_max_expansions_ = warthog::INF32;
 

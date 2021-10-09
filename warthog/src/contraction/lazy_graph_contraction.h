@@ -122,7 +122,8 @@ class lazy_graph_contraction
         warthog::apriori_filter* u_filter_; // track neighbours updated
         warthog::bidirectional_search<
             warthog::zero_heuristic,
-            warthog::bidirectional_expander<warthog::ch::bypass_filter>>* alg_;
+            warthog::bidirectional_expander<warthog::ch::bypass_filter>,
+            warthog::bds_traits<warthog::BDS_ALGO::BDIJK>>* alg_;
 
         // metrics
         uint64_t total_expansions_;
