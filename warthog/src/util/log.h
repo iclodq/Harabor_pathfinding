@@ -10,7 +10,7 @@
  * Otherwise, they will become just empty (or can be easily optimized away)
  *
  * @date Oct 1, 2018
- * @author koldar
+ * @author Massimo Bono
  */
 
 #ifndef LOG_H_
