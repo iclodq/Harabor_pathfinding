@@ -1,5 +1,5 @@
-#ifndef WARTHOG_BDS_TRAITS
-#define WARTHOG_BDS_TRAITS
+#ifndef WARTHOG_BDS_TRAITS_H
+#define WARTHOG_BDS_TRAITS_H
 
 // src/search/bds_traits.h
 //
@@ -29,7 +29,8 @@ BCH
 };
 
 
-// Default behaviours for Bidirectional Search
+// Behaviours for Bidirectional Search. The defaults implement
+// BDS_ALGO::BHS; i.e., Birectional A*
 template<BDS_ALGO A>
 struct bds_traits
 {
@@ -61,7 +62,8 @@ struct bds_traits
     // 
     // @param fqueue_size: the size of the forward queue
     // @param bqueue_size: the size of the backward queue
-    // @return true only if either queue size is zero, else false.
+    // @return true if both queue sizes are non-zero, which indicates
+    // the problem may still be solvable; else false. 
     static inline bool
     solvable(uint32_t fqueue_size, uint32_t bqueue_size)
     {
