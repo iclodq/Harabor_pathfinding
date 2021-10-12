@@ -299,7 +299,7 @@ PYBIND11_MODULE(pyhog, m)
 
                 s.get_path(pi, sol);
 
-                return std::move(sol);
+                return sol;
             },
             "Direct interface: execute search between @param source and @param "
             "target and return the solution object.");
