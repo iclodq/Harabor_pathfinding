@@ -841,34 +841,34 @@ run_cpd_search(warthog::util::cfg& cfg,
     std::string scale = cfg.get_param_value("fscale");
     std::string tlim = cfg.get_param_value("uslim");
     std::string moves = cfg.get_param_value("kmoves");
-    double f_scale;
-    uint32_t us_lim;
-    uint32_t k_moves;
 
     if (scale != "")
     {
+        double f_scale;
         ss << scale;
         ss >> f_scale;
 
         if (f_scale > 0.0)
         {
-            alg.set_quality_cutoff(f_scale);
+            alg.get_search_parameters()->set_w_admissibility(f_scale);
         }
     }
 
     if (tlim != "")
     {
+        uint32_t us_lim;
         ss << tlim;
         ss >> us_lim;
 
         if (us_lim > 0)
         {
-            alg.set_max_us_cutoff(us_lim);
+            alg.get_search_parameters()->set_max_us_cutoff(us_lim);
         }
     }
 
     if (moves != "")
     {
+        uint32_t k_moves;
         ss << moves;
         ss >> k_moves;
 
