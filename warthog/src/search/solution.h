@@ -8,6 +8,8 @@
 // @created: 2017-05-03
 //
 
+#include "search_metrics.h"
+
 #include <vector>
 #include <ostream>
 #include "constants.h"
@@ -18,6 +20,7 @@ namespace warthog
 class solution
 {
     public:
+
         solution()
         { 
             reset (); 
@@ -25,37 +28,14 @@ class solution
         }
 
         solution(const solution& other) :   
-            sum_of_edge_costs_(other.sum_of_edge_costs_), 
-            time_elapsed_nano_(other.time_elapsed_nano_), 
-            nodes_expanded_(other.nodes_expanded_),
-            nodes_touched_(other.nodes_touched_),
-            nodes_surplus_(other.nodes_surplus_),
-            nodes_reopen_(other.nodes_reopen_),
-            heap_ops_(other.heap_ops_),
-            path_(other.path_)
+            met_(other.met_), path_(other.path_)
         { }
-
-        inline void
-        print(std::ostream& out)
-        {
-            print_metrics(out);
-            out << std::endl;
-            print_path(out);
-            out << std::endl;
-        }
 
         inline void
         print_metrics(std::ostream& out)
         {
-            out 
-                << "sum_of_edge_costs=" << sum_of_edge_costs_ 
-                << "time_elapsed_nano=" << time_elapsed_nano_ 
-                << std::endl
-                << "nodes expanded=" << nodes_expanded_ 
-                << " touched = " << nodes_touched_ 
-                << " reopened = " << nodes_reopen_ 
-                << " surplus= " << nodes_surplus_
-                << " heap-ops= " << heap_ops_;
+            out << "sum_of_edge_costs=" << sum_of_edge_costs_;
+            out << met_;
         }
 
         inline void
@@ -69,26 +49,19 @@ class solution
         reset()
         {
             sum_of_edge_costs_ = warthog::COST_MAX;
-            time_elapsed_nano_ = 0;
-            nodes_expanded_ = 0; 
-            nodes_touched_= 0;
-            nodes_surplus_ = 0;
-            nodes_reopen_ = 0;
-            heap_ops_ = 0;
             path_.clear();
+            met_.reset();
         }
 
-        // metrics
-        warthog::cost_t sum_of_edge_costs_;
-        double time_elapsed_nano_;
-        uint32_t nodes_expanded_;
-        uint32_t nodes_touched_;
-        uint32_t nodes_surplus_;
-        uint32_t nodes_reopen_;
-        uint32_t heap_ops_;
+        friend std::ostream& operator<<(
+                std::ostream& str, warthog::solution& sol);
 
-        // the sequence of states that comprise 
-        // a solution path
+        // metrics
+        warthog::search_metrics met_;
+
+        // solution path and its cost
+        // TODO: path doesn't specify edges/actions, only nodes
+        warthog::cost_t sum_of_edge_costs_;
         std::vector<warthog::sn_id_t> path_;
 };
 

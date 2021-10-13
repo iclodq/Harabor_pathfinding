@@ -246,12 +246,12 @@ class flexible_astar: public warthog::search
                 // early termination: in case we want bounded-cost
                 // search or if we want to impose some memory limit
                 if(open_->peek()->get_f() > cost_cutoff_) { break; }
-                if(sol.nodes_expanded_ >= exp_cutoff_) { break; }
+                if(sol.met_.nodes_expanded_ >= exp_cutoff_) { break; }
 
 				warthog::search_node* current = open_->pop();
 				current->set_expanded(true); // NB: set before generating
 				assert(current->get_expanded());
-				sol.nodes_expanded_++;
+				sol.met_.nodes_expanded_++;
 
                 listener_->expand_node(current);
 
@@ -286,7 +286,7 @@ class flexible_astar: public warthog::search
 				{
                     listener_->generate_node(current, n, cost_to_n, edge_id++);
                     warthog::cost_t gval = current->get_g() + cost_to_n;
-                    sol.nodes_touched_++;
+                    sol.met_.nodes_touched_++;
                     
                     if(n->get_search_number() != current->get_search_number())
                     {
@@ -321,7 +321,7 @@ class flexible_astar: public warthog::search
                             // reopen
                             n->set_expanded(false);
                             open_->push(n);
-                            sol.nodes_reopen_++;
+                            sol.met_.nodes_reopen_++;
                         }
                         else
                         {
@@ -363,9 +363,9 @@ class flexible_astar: public warthog::search
 			}
 
 			mytimer.stop();
-			sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
-            sol.nodes_surplus_ = open_->size();
-            sol.heap_ops_ = open_->get_heap_ops();
+			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+            sol.met_.nodes_surplus_ = open_->size();
+            sol.met_.heap_ops_ = open_->get_heap_ops();
 
             #ifndef NDEBUG
             if(pi_.verbose_)

@@ -84,7 +84,7 @@ class bidirectional_search  : public warthog::search
         __get_pathcost(warthog::problem_instance& pi, warthog::solution& sol, bool resume=false)
         {
             this->search(sol, pi, resume);
-            assert(sol.nodes_expanded_ <= exp_cutoff_);
+            assert(sol.met_.nodes_expanded_ <= exp_cutoff_);
 
             if(best_cost_ != warthog::COST_MAX)
             { sol.sum_of_edge_costs_ = best_cost_; }
@@ -321,7 +321,7 @@ class bidirectional_search  : public warthog::search
                 // check if we can terminate 
                 if(best_bound >= best_cost_ ||
                    best_bound > cost_cutoff_ || 
-                   sol.nodes_expanded_ > exp_cutoff_ ||
+                   sol.met_.nodes_expanded_ > exp_cutoff_ ||
                    (time_cutoff_nanos_ > mytimer.elapsed_time_nano() &&
                        best_cost_ <= cost_cutoff_))
                 { 
@@ -358,9 +358,9 @@ class bidirectional_search  : public warthog::search
             }
 
 			mytimer.stop();
-			sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
-            sol.nodes_surplus_ = fopen_->size() + bopen_->size();
-            sol.heap_ops_ = fopen_->get_heap_ops() + bopen_->get_heap_ops();
+			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+            sol.met_.nodes_surplus_ = fopen_->size() + bopen_->size();
+            sol.met_.heap_ops_ = fopen_->get_heap_ops() + bopen_->get_heap_ops();
         }
 
         void
@@ -373,7 +373,7 @@ class bidirectional_search  : public warthog::search
             if(current == 0) { return; }
             current->set_expanded(true);
             expander->expand(current, &pi_);
-            sol.nodes_expanded_++;
+            sol.met_.nodes_expanded_++;
 
             #ifndef NDEBUG
             if(pi_.verbose_)
@@ -381,7 +381,7 @@ class bidirectional_search  : public warthog::search
                 int32_t x, y;
                 expander->get_xy(current->get_id(), x, y);
                 std::cerr 
-                    << sol.nodes_expanded_ 
+                    << sol.met_.nodes_expanded_ 
                     << ". expanding " 
                     << (pi_.target_id_ == tmp_targetid ? "(f)" : "(b)")
                     << " ("<<x<<", "<<y<<")...";
@@ -397,7 +397,7 @@ class bidirectional_search  : public warthog::search
                     n != 0; 
                     expander->next(n, cost_to_n))
             {
-                sol.nodes_touched_++;
+                sol.met_.nodes_touched_++;
                 warthog::cost_t gval = current->get_g() + cost_to_n;
 
                 if(n->get_search_number() != current->get_search_number())

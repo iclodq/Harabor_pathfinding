@@ -108,19 +108,18 @@ run_experiments( warthog::search* algo, std::string alg_name,
         warthog::sn_id_t target_id = exp.p2p ? exp.target : warthog::SN_ID_MAX;
         warthog::problem_instance pi(start_id, target_id, verbose);
         uint32_t expanded=0, reopen=0, heap_ops=0, touched=0, surplus=0;
-        double nano_time = DBL_MAX;
+        double nano_time = 0;
         for(uint32_t i = 0; i < nruns; i++)
         {
             sol.reset();
             algo->get_path(pi, sol);
 
-            expanded += sol.nodes_expanded_;
-            reopen += sol.nodes_reopen_;
-            heap_ops += sol.heap_ops_;
-            touched += sol.nodes_touched_;
-            surplus += sol.nodes_surplus_;
-            nano_time = nano_time < sol.time_elapsed_nano_
-                            ?  nano_time : sol.time_elapsed_nano_;
+            expanded += sol.met_.nodes_expanded_;
+            reopen += sol.met_.nodes_reopen_;
+            heap_ops += sol.met_.heap_ops_;
+            touched += sol.met_.nodes_touched_;
+            surplus += sol.met_.nodes_surplus_;
+            nano_time += sol.met_.time_elapsed_nano_;
         }
 
         out
@@ -404,19 +403,18 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
         warthog::solution sol;
         warthog::problem_instance pi(exp.source, warthog::INF32, verbose);
         uint32_t expanded=0, reopen=0, heap_ops=0, touched=0, surplus=0;
-        double nano_time = DBL_MAX;
+        double nano_time = 0;
         for(uint32_t i = 0; i < nruns; i++)
         {
             sol.reset();
             alg.get_path(pi, sol);
 
-            expanded += sol.nodes_expanded_;
-            heap_ops += sol.heap_ops_;
-            touched += sol.nodes_touched_;
-            reopen += sol.nodes_reopen_;
-            surplus += sol.nodes_surplus_;
-            nano_time = nano_time < sol.time_elapsed_nano_
-                            ?  nano_time : sol.time_elapsed_nano_;
+            expanded += sol.met_.nodes_expanded_;
+            heap_ops += sol.met_.heap_ops_;
+            touched += sol.met_.nodes_touched_;
+            reopen += sol.met_.nodes_reopen_;
+            surplus += sol.met_.nodes_surplus_;
+            nano_time += sol.met_.time_elapsed_nano_;
         }
 
         std::cout

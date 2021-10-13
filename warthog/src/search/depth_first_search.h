@@ -222,7 +222,7 @@ class depth_first_search : public warthog::search
 			start->init(pi_.instance_id_, warthog::SN_ID_MAX, 
                     0, heuristic_->h(pi_.start_id_, pi_.target_id_));
 			stack_.push_back(dfs_pair(start, 0));
-            sol.heap_ops_++;
+            sol.met_.heap_ops_++;
 
             
             if(on_generate_fn_) 
@@ -238,7 +238,7 @@ class depth_first_search : public warthog::search
 			while(stack_.size())
 			{
                 // terminate if we've reached the limit for expanded nodes
-                if(sol.nodes_expanded_ > exp_cutoff_) { break; }
+                if(sol.met_.nodes_expanded_ > exp_cutoff_) { break; }
 
                 // search continues; pop a node off the stack
                 dfs_pair& c_pair = stack_.back();
@@ -255,7 +255,7 @@ class depth_first_search : public warthog::search
                 // as they come out of the expansion policy
 				expander_->expand(current, &pi_);
                 current->set_expanded(true);
-				sol.nodes_expanded_++;
+				sol.met_.nodes_expanded_++;
                 if(on_expand_fn_) { (*on_expand_fn_)(current); }
 
 				#ifndef NDEBUG
@@ -264,7 +264,7 @@ class depth_first_search : public warthog::search
 					int32_t x, y;
                     expander_->get_xy(current->get_id(), x, y);
 					std::cerr 
-                        << sol.nodes_expanded_
+                        << sol.met_.nodes_expanded_
                         << ". expanding ("<<x<<", "<<y<<")...";
 					current->print(std::cerr);
 					std::cerr << std::endl;
@@ -287,7 +287,7 @@ class depth_first_search : public warthog::search
 
                 for( ; n != 0; expander_->next(n, cost_to_n) )
                 {
-                    sol.nodes_touched_++;
+                    sol.met_.nodes_touched_++;
                     // to avoid cycles we store some data that records whether
                     // or not the proposed successor appears on the current branch
                     if( n->get_expanded() && 
@@ -304,7 +304,7 @@ class depth_first_search : public warthog::search
                     if(n->get_f() < cost_cutoff_) 
                     { 
                         stack_.push_back(dfs_pair(n, 0));
-                        sol.heap_ops_++;
+                        sol.met_.heap_ops_++;
                         if(on_expand_fn_) { (*on_expand_fn_)(n); }
 
                         #ifndef NDEBUG
@@ -326,7 +326,7 @@ class depth_first_search : public warthog::search
 			}
 
 			mytimer.stop();
-			sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
 
             #ifndef NDEBUG
             if(pi_.verbose_)

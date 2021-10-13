@@ -47,7 +47,7 @@ class cpd_extractions_base : public warthog::search
             // NB: we store the actual path in addition to simply extracting it
             sol.sum_of_edge_costs_ = 0;
 
-            while(source_id != target_id && sol.nodes_touched_ < max_k_moves_)
+            while(source_id != target_id && sol.met_.nodes_touched_ < max_k_moves_)
             {
                 sol.path_.push_back(source_id);
 
@@ -64,12 +64,12 @@ class cpd_extractions_base : public warthog::search
                 warthog::graph::edge* e = (n->outgoing_begin() + move);
                 source_id = e->node_id_;
                 sol.sum_of_edge_costs_ += e->wt_;
-                sol.nodes_touched_++;
+                sol.met_.nodes_touched_++;
             }
             sol.path_.push_back(source_id);
 
             mytimer.stop();
-            sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+            sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
         }
 
         virtual void
@@ -86,7 +86,7 @@ class cpd_extractions_base : public warthog::search
 
             sol.sum_of_edge_costs_ = 0;
 
-            while(source_id != target_id && sol.nodes_touched_ < max_k_moves_)
+            while(source_id != target_id && sol.met_.nodes_touched_ < max_k_moves_)
             {
                 uint32_t move = oracle_->get_move(source_id, target_id);
                 if (move == warthog::cpd::CPD_FM_NONE)
@@ -101,11 +101,11 @@ class cpd_extractions_base : public warthog::search
                 warthog::graph::edge* e = (n->outgoing_begin() + move);
                 source_id = e->node_id_;
                 sol.sum_of_edge_costs_ += e->wt_;
-                sol.nodes_touched_++;
+                sol.met_.nodes_touched_++;
             }
 
             mytimer.stop();
-            sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+            sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
         }
 
         void

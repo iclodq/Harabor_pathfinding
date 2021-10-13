@@ -325,7 +325,7 @@ class anytime_astar : public warthog::search
 					int32_t x, y;
                     expander_->get_xy(current->get_id(), x, y);
 					std::cerr 
-                        << sol.nodes_expanded_
+                        << sol.met_.nodes_expanded_
                         << (current->get_expanded() ? ". re-expanding " : ". expanding ")
                         << "("<<x<<", "<<y<<")...";
 					current->print(std::cerr);
@@ -335,7 +335,7 @@ class anytime_astar : public warthog::search
 
 				current->set_expanded(true); // NB: set before generating
 				assert(current->get_expanded());
-				sol.nodes_expanded_++;
+				sol.met_.nodes_expanded_++;
                 if(on_expand_fn_) { (*on_expand_fn_)(current); }
 
                 // evaluate the upper and lower bounds for the current node
@@ -357,7 +357,7 @@ class anytime_astar : public warthog::search
                     
                 // other termination criteria 
                 if(current->get_f() > cost_cutoff_) { break; } 
-                if(sol.nodes_expanded_ >= exp_cutoff_) { break; }
+                if(sol.met_.nodes_expanded_ >= exp_cutoff_) { break; }
                 if(mytimer.elapsed_time_nano() >= time_cutoff_nanos_) { break; }
 
 
@@ -369,7 +369,7 @@ class anytime_astar : public warthog::search
 				for(uint32_t i = 0; i < expander_->get_num_successors(); i++)
 				{
                     expander_->get_successor(i, n, cost_to_n);
-                    sol.nodes_touched_++;
+                    sol.met_.nodes_touched_++;
                     if(on_generate_fn_) 
                     { (*on_generate_fn_)(n, current, cost_to_n, edge_id++); }
                     
@@ -480,9 +480,9 @@ class anytime_astar : public warthog::search
 			}
 
 			mytimer.stop();
-			sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
-            sol.nodes_surplus_ = open_->size();
-            sol.heap_ops_ = open_->get_heap_ops();
+			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+            sol.met_.nodes_surplus_ = open_->size();
+            sol.met_.heap_ops_ = open_->get_heap_ops();
 
             #ifndef NDEBUG
             if(pi_.verbose_)

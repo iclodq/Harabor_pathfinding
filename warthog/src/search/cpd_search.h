@@ -251,7 +251,7 @@ class cpd_search : public warthog::search
             stop = true;
         }
 
-        if(sol->nodes_expanded_ >= par_.get_max_expansions_cutoff())
+        if(sol->met_.nodes_expanded_ >= par_.get_max_expansions_cutoff())
         {
             info(pi_.verbose_, "Expanded cutoff", sol->nodes_expanded_, ">",
                   exp_cutoff_);
@@ -409,7 +409,7 @@ class cpd_search : public warthog::search
         else
         {
             open_->push(start);
-            sol.heap_ops_++;
+            sol.met_.heap_ops_++;
         }
 
         // begin expanding
@@ -422,7 +422,7 @@ class cpd_search : public warthog::search
 
             current->set_expanded(true); // NB: set before generating
             assert(current->get_expanded());
-            sol.nodes_expanded_++;
+            sol.met_.nodes_expanded_++;
 
             expander_->expand(current, &pi_);
             listener_->expand_node(current);
@@ -433,7 +433,7 @@ class cpd_search : public warthog::search
                 mytimer.stop();
 
                 info(pi_.verbose_, "[", mytimer.elapsed_time_micro(),"]",
-                    sol.nodes_expanded_, "- Expanding:", *current);
+                    sol.met_.nodes_expanded_, "- Expanding:", *current);
             }
 
             // Generate successors of the current node
@@ -446,7 +446,7 @@ class cpd_search : public warthog::search
             {
                 warthog::cost_t gval = current->get_g() + cost_to_n;
 
-                sol.nodes_touched_++;
+                sol.met_.nodes_touched_++;
                 edge_id++;
                 listener_->generate_node(current, n, gval, edge_id);
 
@@ -495,9 +495,9 @@ class cpd_search : public warthog::search
         }
 
         mytimer.stop();
-        sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
-        sol.nodes_surplus_ = open_->size();
-        sol.heap_ops_ = open_->get_heap_ops();
+        sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+        sol.met_.nodes_surplus_ = open_->size();
+        sol.met_.heap_ops_ = open_->get_heap_ops();
 
         DO_ON_DEBUG_IF(pi_.verbose_)
         {

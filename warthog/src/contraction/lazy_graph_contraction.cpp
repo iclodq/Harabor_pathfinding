@@ -374,7 +374,7 @@ warthog::ch::lazy_graph_contraction::witness_search(
 
     // gogogo
     alg_->__get_pathcost(pi, sol_, resume);
-    total_expansions_ += sol_.nodes_expanded_;
+    total_expansions_ += sol_.met_.nodes_expanded_;
     total_searches_++;
 
     return sol_.sum_of_edge_costs_;
