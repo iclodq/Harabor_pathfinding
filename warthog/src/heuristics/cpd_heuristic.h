@@ -127,10 +127,12 @@ class cpd_heuristic_base
                 uint32_t move_id = cpd_->get_move(c_id, target_id);
 
                 warthog::graph::node* cur = cpd_->get_graph()->get_node(c_id);
+                assert(cur->out_deg() > 0); // Clearer debug message
+                assert(move_id < cur->out_degree());
+
                 warthog::graph::edge* fm = cur->outgoing_begin() + move_id;
                 stack_.push_back(stack_pair(c_id, fm));
                 c_id = fm->node_id_;
-                assert(move_id < cur->out_degree());
             }
 
             // update the cache
