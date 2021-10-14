@@ -96,6 +96,13 @@ debug: CFLAGS += -ggdb -O3 -gdwarf-4 -no-pie -DQUICK_LOG=3
 debug: build/debug/Makefile		## Opti flags with debug symbols
 	+$(MAKE) -C $(<D) $(ACTIONS)
 
+pydev: PYFLAGS += -O0 -DQUICK_LOG=1 -ggdb -gdwarf-4 -no-pie -Wno-unused-variable
+pydev: DIR=build/python
+pydev:							## Pyhog with debug symbols
+	@$(shell mkdir -p $(DIR))
+	@$(shell cp make.pyhog $(DIR)/Makefile)
+	+$(MAKE) -C $(DIR) $(ACTIONS)
+
 python: PYFLAGS += -O3 -DNDEBUG -Wno-unused-variable
 python: DIR=build/python
 python:							## Build Python binding
