@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <errno.h>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 
@@ -14,7 +15,8 @@ help()
        << "Converts from the format used at the Grid-based Path Planning Competition "
        << "\nand the xy_graph format used by the Warthog Pathfinding Library\n"
        << "\n"
-       << "Usage: ./grid2graph [map | scen] [grid file]"
+       << "Usage: ./grid2graph [map] [gridmap file]"
+       << "Usage: ./grid2graph [scen] [scenario file] [gridmap file]"
        << "\n\nParameter descriptions: " 
        << "\n\tmap: convert directly from a grid map to an xy_graph"
        << "\n\tscen: convert a gridmap scenario file into an xy_graph problem file\n";
@@ -24,7 +26,7 @@ help()
 int 
 main(int argc, char** argv)
 {
-    if(argc != 3)
+    if(argc == 0)
     {
 		help();
         exit(0);
@@ -33,13 +35,34 @@ main(int argc, char** argv)
 
     if(strcmp(argv[1], "map") == 0)
     {
+        if(argc != 3)
+        {
+            help();
+            exit(0);
+        }
+
         warthog::gridmap gm(argv[2]);
         warthog::graph::xy_graph g;
         warthog::graph::gridmap_to_xy_graph(&gm, &g);
+
+        std::filesystem::path map_file = std::string(argv[2]);
+        std::cout 
+            << "# ******************************************************************************\n"
+            << "# This XY graph created with the tool \"grid2graph\" from the Warthog pathfinding\n"
+            << "# library (https://bitbucket.org/dharabor/pathfinding).\n"
+            << "# The source input file (in .map format) was: \n"
+            << "# " << map_file.filename() << "\n"
+            << "# ******************************************************************************\n";
         std::cout << g;
     }
     else if(strcmp(argv[1], "scen") == 0)
     {
+        if(argc != 4)
+        {
+            help();
+            exit(0);
+        }
+
         warthog::scenario_manager scenmgr;
         scenmgr.load_scenario(argv[2]);
         if(scenmgr.num_experiments() == 0)
@@ -50,7 +73,7 @@ main(int argc, char** argv)
 
         // we need to convert (x, y) coordinates into graph ids
         // so we load up the associated grid and map ids
-        warthog::gridmap gm(scenmgr.get_experiment(0)->map().c_str());
+        warthog::gridmap gm(argv[3]);
         warthog::gridmap_expansion_policy exp(&gm);
 
         // xy graph ids are assigned by 
