@@ -28,6 +28,7 @@ struct search_parameters
             time_cutoff_ns_ = DBL_MAX;
             w_admissibility_= 1.0;
             eps_admissibility_ = 0.0;
+            verbose_ = false;
         }
 
         // limits the maximum time which is available to find a solution
@@ -87,6 +88,8 @@ struct search_parameters
 
         inline warthog::cost_t
         get_eps_admissibility() { return eps_admissibility_; }
+
+        bool verbose_;
 
     private:
         warthog::cost_t cost_cutoff_;  

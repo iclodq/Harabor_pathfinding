@@ -268,7 +268,7 @@ class flexible_astar: public warthog::search
 					int32_t x, y;
                     expander_->get_xy(current->get_id(), x, y);
 					std::cerr
-                        << sol.nodes_expanded_
+                        << sol.met_.nodes_expanded_
                         << ". expanding ("<<x<<", "<<y<<")...";
 					current->print(std::cerr);
 					std::cerr << std::endl;
