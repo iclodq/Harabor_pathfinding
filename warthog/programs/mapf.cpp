@@ -163,7 +163,7 @@ run_sipp(warthog::scenario_manager& scenmgr, std::string alg_name, std::string p
     //std::deque<warthog::mapf::plan> obstacles;
 
     std::cout 
-        << "id\talg\texpanded\ttouched\treopen\tsurplus\theapops"
+        << "id\talg\texpanded\tgenerated\treopen\tsurplus\theapops"
         << "\tnanos\tpcost\tplen\tmap\n";
 	for(unsigned int i=0; i < scenmgr.num_experiments(); i++)
 	{
@@ -180,7 +180,7 @@ run_sipp(warthog::scenario_manager& scenmgr, std::string alg_name, std::string p
             << i<<"\t" 
             << alg_name << "\t" 
             << sol.met_.nodes_expanded_ << "\t" 
-            << sol.met_.nodes_touched_ << "\t"
+            << sol.met_.nodes_generated_ << "\t"
             << sol.met_.nodes_reopen_ << "\t"
             << sol.met_.nodes_surplus_ << "\t"
             << sol.met_.heap_ops_ << "\t"
@@ -340,7 +340,7 @@ run_jpst(warthog::scenario_manager& scenmgr, std::string alg_name, std::string p
     }
 
     std::cout 
-        << "id\talg\texpanded\ttouched\treopen\tsurplus\theapops"
+        << "id\talg\texpanded\tgenerated\treopen\tsurplus\theapops"
         << "\tnanos\tpcost\tplen\tmap\n";
     for(unsigned int i=0; i < scenmgr.num_experiments(); i++)
     {
@@ -357,7 +357,7 @@ run_jpst(warthog::scenario_manager& scenmgr, std::string alg_name, std::string p
             << i<<"\t" 
             << alg_name << "\t" 
             << sol.met_.nodes_expanded_ << "\t" 
-            << sol.met_.nodes_touched_ << "\t"
+            << sol.met_.nodes_generated_ << "\t"
             << sol.met_.nodes_reopen_ << "\t"
             << sol.met_.nodes_surplus_ << "\t"
             << sol.met_.heap_ops_ << "\t"
@@ -418,7 +418,7 @@ run_cbs_ll(warthog::scenario_manager& scenmgr, std::string alg_name)
     warthog::mapf::plan theplan;
 
     std::cout 
-        << "id\talg\texpanded\ttouched\treopen\tsurplus\theapops"
+        << "id\talg\texpanded\tgenerated\treopen\tsurplus\theapops"
         << "\tnanos\tpcost\tplen\tmap\n";
 	for(unsigned int i=0; i < scenmgr.num_experiments(); i++)
 	{
@@ -434,7 +434,7 @@ run_cbs_ll(warthog::scenario_manager& scenmgr, std::string alg_name)
             << i<<"\t" 
             << alg_name << "\t" 
             << sol.met_.nodes_expanded_ << "\t" 
-            << sol.met_.nodes_touched_ << "\t"
+            << sol.met_.nodes_generated_ << "\t"
             << sol.met_.nodes_reopen_ << "\t"
             << sol.met_.nodes_surplus_ << "\t"
             << sol.met_.heap_ops_ << "\t"

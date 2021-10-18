@@ -94,7 +94,7 @@ SCENARIO("Test CPD A* on a square matrix", "[cpd][square][astar]")
             astar.get_path(pi, sol);
 
             REQUIRE(sol.sum_of_edge_costs_ == cost);
-            REQUIRE(sol.nodes_expanded_ == 0);
+            REQUIRE(sol.met_.nodes_expanded_ == 0);
         }
     }
 
@@ -182,7 +182,7 @@ SCENARIO("Test CPD search on a modified cross.", "[cpd][astar][cross]")
 
             REQUIRE(sol.path_ == optipath);
             REQUIRE(sol.sum_of_edge_costs_ == cost);
-            REQUIRE(sol.nodes_expanded_ <= 1);
+            REQUIRE(sol.met_.nodes_expanded_ <= 1);
         }
     }
 
@@ -200,7 +200,7 @@ SCENARIO("Test CPD search on a modified cross.", "[cpd][astar][cross]")
             astar.get_path(pi, sol);
 
             REQUIRE(sol.path_ == optipath);
-            REQUIRE(sol.nodes_expanded_ <= 1);
+            REQUIRE(sol.met_.nodes_expanded_ <= 1);
         }
     }
 
@@ -222,7 +222,7 @@ SCENARIO("Test CPD search on a modified cross.", "[cpd][astar][cross]")
             REQUIRE(sol.sum_of_edge_costs_ == cost);
             // We actually only expand one node: the start; we early stop when
             // fetching 5 from the queue.
-            REQUIRE(sol.nodes_expanded_ == 1);
+            REQUIRE(sol.met_.nodes_expanded_ == 1);
         }
     }
 
@@ -257,7 +257,7 @@ SCENARIO("Test CPD search on a modified cross.", "[cpd][astar][cross]")
                 warthog::problem_instance pi(start, goal, true);
                 astar.get_path(pi, sol);
 
-                REQUIRE(sol.nodes_expanded_ > 0);
+                REQUIRE(sol.met_.nodes_expanded_ > 0);
             }
         }
 
@@ -271,7 +271,7 @@ SCENARIO("Test CPD search on a modified cross.", "[cpd][astar][cross]")
                 astar.get_path(pi, sol);
 
                 // TODO have the actual number of nodes of some sort?
-                REQUIRE(sol.nodes_expanded_ > 0);
+                REQUIRE(sol.met_.nodes_expanded_ > 0);
             }
         }
     }
@@ -359,7 +359,7 @@ SCENARIO("Test reverse CPD A* on a square matrix", "[reverse][square][astar]")
             astar.get_path(pi, sol);
 
             REQUIRE(sol.sum_of_edge_costs_ == cost);
-            REQUIRE(sol.nodes_expanded_ == 0);
+            REQUIRE(sol.met_.nodes_expanded_ == 0);
         }
     }
 }
@@ -421,7 +421,7 @@ SCENARIO("Test table lookup A* on a square matrix", "[table][square][astar]")
             astar.get_path(pi, sol);
 
             REQUIRE(sol.sum_of_edge_costs_ == cost);
-            REQUIRE(sol.nodes_expanded_ == 0);
+            REQUIRE(sol.met_.nodes_expanded_ == 0);
         }
     }
 }

@@ -397,7 +397,7 @@ class bidirectional_search  : public warthog::search
                     n != 0; 
                     expander->next(n, cost_to_n))
             {
-                sol.met_.nodes_touched_++;
+                sol.met_.nodes_generated_++;
                 warthog::cost_t gval = current->get_g() + cost_to_n;
 
                 if(n->get_search_number() != current->get_search_number())

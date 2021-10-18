@@ -162,7 +162,7 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
     size_t n_results = reqs.size() / 2;
     // Statistics
     unsigned int n_expanded = 0;
-    unsigned int n_touched = 0;
+    unsigned int n_generated = 0;
     unsigned int n_reopen = 0;
     unsigned int n_surplus = 0;
     unsigned int n_heap_ops = 0;
@@ -183,7 +183,7 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
     t.start();
 
 #pragma omp parallel num_threads(threads)                               \
-    reduction(+ : t_astar, n_expanded, n_touched, n_reopen, \
+    reduction(+ : t_astar, n_expanded, n_generated, n_reopen, \
               n_surplus, n_heap_ops, plen, finished)
     {
         // Parallel data
@@ -239,12 +239,12 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
             alg->get_path(pi, sol);
 
             // Update stasts
-            t_astar += sol.time_elapsed_nano_;
-            n_expanded += sol.nodes_expanded_;
-            n_touched += sol.nodes_touched_;
-            n_heap_ops += sol.heap_ops_;
-            n_reopen += sol.nodes_reopen_;
-            n_surplus += sol.nodes_surplus_;
+            t_astar += sol.met_.time_elapsed_nano_;
+            n_expanded += sol.met_.nodes_expanded_;
+            n_generated += sol.met_.nodes_generated_;
+            n_heap_ops += sol.met_.heap_ops_;
+            n_reopen += sol.met_.nodes_reopen_;
+            n_surplus += sol.met_.nodes_surplus_;
             plen += sol.path_.size();
             finished += sol.path_.back() == target_id;
         }
@@ -276,7 +276,7 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
     std::ostream out(buf);
 
     debug(conf.verbose, "Spawned a writer on", fifo_out);
-    out << n_expanded << "," << n_touched << ","
+    out << n_expanded << "," << n_generated << ","
         << n_reopen << "," << n_surplus << "," 
         << n_heap_ops << "," << plen << ","
         << finished << "," << t_read << "," << t_astar << ","

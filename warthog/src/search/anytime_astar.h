@@ -369,7 +369,7 @@ class anytime_astar : public warthog::search
 				for(uint32_t i = 0; i < expander_->get_num_successors(); i++)
 				{
                     expander_->get_successor(i, n, cost_to_n);
-                    sol.met_.nodes_touched_++;
+                    sol.met_.nodes_generated_++;
                     if(on_generate_fn_) 
                     { (*on_generate_fn_)(n, current, cost_to_n, edge_id++); }
                     

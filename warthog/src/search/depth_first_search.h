@@ -287,7 +287,7 @@ class depth_first_search : public warthog::search
 
                 for( ; n != 0; expander_->next(n, cost_to_n) )
                 {
-                    sol.met_.nodes_touched_++;
+                    sol.met_.nodes_generated_++;
                     // to avoid cycles we store some data that records whether
                     // or not the proposed successor appears on the current branch
                     if( n->get_expanded() && 

@@ -23,7 +23,7 @@ struct search_metrics
     {
         time_elapsed_nano_ = other.time_elapsed_nano_;
         nodes_expanded_ = other.nodes_expanded_;
-        nodes_touched_ = other.nodes_touched_;
+        nodes_generated_ = other.nodes_generated_;
         nodes_surplus_ = other.nodes_surplus_;
         nodes_reopen_ = other.nodes_reopen_;
         heap_ops_ = other.heap_ops_;
@@ -35,7 +35,7 @@ struct search_metrics
     {
         time_elapsed_nano_ = 0;
         nodes_expanded_ = 0; 
-        nodes_touched_= 0;
+        nodes_generated_= 0;
         nodes_surplus_ = 0;
         nodes_reopen_ = 0;
         heap_ops_ = 0;
@@ -43,7 +43,7 @@ struct search_metrics
     
     double time_elapsed_nano_;
     uint32_t nodes_expanded_;
-    uint32_t nodes_touched_;
+    uint32_t nodes_generated_;
     uint32_t nodes_surplus_;
     uint32_t nodes_reopen_;
     uint32_t heap_ops_;

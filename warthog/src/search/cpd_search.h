@@ -13,17 +13,16 @@
 // @created: 26/02/20
 //
 
-#include "dummy_listener.h"
 #include "constants.h"
 #include "cpool.h"
-#include "log.h"
 #include "pqueue.h"
 #include "problem_instance.h"
 #include "search.h"
-#include "search_parameters.h"
 #include "solution.h"
 #include "timer.h"
 #include "vec_io.h"
+#include "log.h"
+#include "dummy_listener.h"
 
 #include <functional>
 #include <iostream>
@@ -48,8 +47,12 @@ class cpd_search : public warthog::search
         heuristic_(heuristic), expander_(expander), open_(queue),
         listener_(listener)
     {
+        cost_cutoff_ = DBL_MAX;
+        exp_cutoff_ = UINT32_MAX;
+        time_cutoff_ = DBL_MAX;
         max_k_moves_ = UINT32_MAX;
         pi_.instance_id_ = UINT32_MAX;
+        quality_cutoff_ = 0.0;
         k_moves_ =
             std::vector<uint32_t>(expander_->get_g()->get_num_nodes(), 0);
     }
@@ -114,7 +117,7 @@ class cpd_search : public warthog::search
     // return a list of the nodes expanded during the last search
     // @param coll: an empty list
     void
-    get_closed_list(std::vector<warthog::search_node*>& coll)
+    closed_list(std::vector<warthog::search_node*>& coll)
     {
         for(size_t i = 0; i < expander_->get_node_pool_size(); i++)
         {
@@ -136,7 +139,52 @@ class cpd_search : public warthog::search
         return ret->get_search_number() == pi_.instance_id_ ? ret : 0;
     }
 
-    // HACKHACKHACKHACKHACKHACKHACKHACKHACKHACKHACKHACKHACKHACKHACKHACK
+    // apply @param fn to every node on the closed list
+    void
+    apply_to_closed(std::function<void(warthog::search_node*)>& fn)
+    {
+        for(size_t i = 0; i < expander_->get_nodes_pool_size(); i++)
+        {
+            warthog::search_node* current = expander_->generate(i);
+            if(current->get_search_number() == pi_.instance_id_)
+            { fn(current); }
+        }
+    }
+
+    // set a cost-cutoff to run a bounded-cost A* search.
+    // the search terminates when the target is found or the f-cost
+    // limit is reached.
+    inline void
+    set_cost_cutoff(warthog::cost_t cutoff) { cost_cutoff_ = cutoff; }
+
+    inline warthog::cost_t
+    get_cost_cutoff() { return cost_cutoff_; }
+
+    // set a cutoff on the maximum number of node expansions.
+    // the search terminates when the target is found or when
+    // the limit is reached
+    inline void
+    set_max_expansions_cutoff(uint32_t cutoff) { exp_cutoff_ = cutoff; }
+
+    inline uint32_t
+    get_max_expansions_cutoff() { return exp_cutoff_; }
+
+    // Set a time limit cutoff
+    inline void
+    set_max_time_cutoff(double cutoff) { time_cutoff_ = cutoff; }
+
+    inline void
+    set_max_us_cutoff(double cutoff) { set_max_time_cutoff(cutoff * 1e3); }
+
+    inline void
+    set_max_ms_cutoff(double cutoff) { set_max_time_cutoff(cutoff * 1e6); }
+
+    inline void
+    set_max_s_cutoff(double cutoff) { set_max_time_cutoff(cutoff * 1e9); }
+
+    inline double
+    get_max_time_cutoff() { return time_cutoff_; }
+
     // Set a k-radius cut-off -- stop expanding nodes further than k moves away
     // from the start.
     inline void
@@ -144,6 +192,13 @@ class cpd_search : public warthog::search
 
     inline uint32_t
     get_max_k_moves() { return max_k_moves_; }
+
+    // Set a quality cut-off, if the LB is within xx% of the UB we can stop
+    inline void
+    set_quality_cutoff(double cutoff) { quality_cutoff_ = cutoff; }
+
+    inline double
+    get_quality_cutoff() { return quality_cutoff_; }
 
     void
     set_listener(L* listener)
@@ -156,12 +211,6 @@ class cpd_search : public warthog::search
     H*
     get_heuristic()
     { return heuristic_; }
-
-    warthog::search_parameters* 
-    get_search_parameters() 
-    {
-        return &par_;
-    }
 
     virtual inline size_t
     mem()
@@ -185,11 +234,14 @@ class cpd_search : public warthog::search
     Q* open_;
     L* listener_;
     warthog::problem_instance pi_;
-    warthog::search_parameters par_;
 
     // early termination limits
+    warthog::cost_t cost_cutoff_;   // Fixed upper bound
+    uint32_t exp_cutoff_;           // Number of iterations
+    double time_cutoff_;            // Time limit in nanoseconds
     uint32_t max_k_moves_;          // Max "distance" from target
     std::vector<uint32_t> k_moves_; // "Distance" from target
+    double quality_cutoff_;
 
     // no copy ctor
     cpd_search(const cpd_search& other) { }
@@ -244,21 +296,20 @@ class cpd_search : public warthog::search
         mytimer->stop();
         // early termination: in case we want bounded-cost
         // search or if we want to impose some memory limit
-        if(current->get_f() > par_.get_max_cost_cutoff())
+        if(current->get_f() > cost_cutoff_)
         {
             info(pi_.verbose_, "Cost cutoff", current->get_f(), ">",
                   cost_cutoff_);
             stop = true;
         }
-
-        if(sol->met_.nodes_expanded_ >= par_.get_max_expansions_cutoff())
+        if(sol->met_.nodes_expanded_ >= exp_cutoff_)
         {
-            info(pi_.verbose_, "Expanded cutoff", sol->nodes_expanded_, ">",
+            info(pi_.verbose_, "Expanded cutoff", sol->.met_.nodes_expanded_, ">",
                   exp_cutoff_);
             stop = true;
         }
         // Exceeded time limit
-        if (mytimer->elapsed_time_nano() > par_.get_max_time_cutoff())
+        if (mytimer->elapsed_time_nano() > time_cutoff_)
         {
             info(pi_.verbose_, "Time cutoff", mytimer->elapsed_time_nano(),
                   ">", time_cutoff_);
@@ -274,7 +325,7 @@ class cpd_search : public warthog::search
 
         if (incumbent != nullptr && incumbent->get_ub() < warthog::COST_MAX)
         {
-            if (current->get_f() * par_.get_w_admissibility() > incumbent->get_ub())
+            if (current->get_f() * (1 + quality_cutoff_) > incumbent->get_ub())
             {
                 info(pi_.verbose_, "Quality cutoff", current->get_f(), "x",
                       quality_cutoff_ + 1, ">", incumbent->get_ub());
@@ -400,7 +451,7 @@ class cpd_search : public warthog::search
         debug(pi_.verbose_, "Start node:", *start);
 
         mytimer.stop();
-        if (mytimer.elapsed_time_nano() > par_.get_max_time_cutoff())
+        if (mytimer.elapsed_time_nano() > time_cutoff_)
         {
             // Bail without an answer if we exceed the time limit after the
             // first path extraction.
@@ -446,7 +497,7 @@ class cpd_search : public warthog::search
             {
                 warthog::cost_t gval = current->get_g() + cost_to_n;
 
-                sol.met_.nodes_touched_++;
+                sol.met_.nodes_generated_++;
                 edge_id++;
                 listener_->generate_node(current, n, gval, edge_id);
 

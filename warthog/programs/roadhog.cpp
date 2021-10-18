@@ -35,6 +35,7 @@
 #include "solution.h"
 #include "timer.h"
 #include "workload_manager.h"
+//#include "unidirectional_search.h"
 #include "zero_heuristic.h"
 
 #include "getopt.h"
@@ -94,7 +95,7 @@ run_experiments( warthog::search* algo, std::string alg_name,
     if(!suppress_header)
     {
         std::cout
-            << "id\talg\texpanded\ttouched\treopen\tsurplus\theap_ops"
+            << "id\talg\texpanded\tgenerated\treopen\tsurplus\theap_ops"
             << "\tnanos\tpcost\tplen\tmap\n";
     }
     uint32_t exp_id = 0;
@@ -107,7 +108,7 @@ run_experiments( warthog::search* algo, std::string alg_name,
         warthog::sn_id_t start_id = exp.source;
         warthog::sn_id_t target_id = exp.p2p ? exp.target : warthog::SN_ID_MAX;
         warthog::problem_instance pi(start_id, target_id, verbose);
-        uint32_t expanded=0, reopen=0, heap_ops=0, touched=0, surplus=0;
+        uint32_t expanded=0, reopen=0, heap_ops=0, generated=0, surplus=0;
         double nano_time = 0;
         for(uint32_t i = 0; i < nruns; i++)
         {
@@ -117,7 +118,7 @@ run_experiments( warthog::search* algo, std::string alg_name,
             expanded += sol.met_.nodes_expanded_;
             reopen += sol.met_.nodes_reopen_;
             heap_ops += sol.met_.heap_ops_;
-            touched += sol.met_.nodes_touched_;
+            generated += sol.met_.nodes_generated_;
             surplus += sol.met_.nodes_surplus_;
             nano_time += sol.met_.time_elapsed_nano_;
         }
@@ -126,7 +127,7 @@ run_experiments( warthog::search* algo, std::string alg_name,
             << exp_id++ <<"\t"
             << alg_name << "\t"
             << expanded / nruns << "\t"
-            << touched / nruns << "\t"
+            << generated / nruns << "\t"
             << reopen / nruns << "\t"
             << surplus / nruns << "\t"
             << heap_ops / nruns << "\t"
@@ -391,7 +392,7 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
     if(!suppress_header)
     {
         std::cout
-            << "id\talg\texpanded\ttouched\treopen\tsurplus\theap_ops"
+            << "id\talg\texpanded\tgenerated\treopen\tsurplus\theap_ops"
             << "\tnanos\tpcost\tplen\tmap\n";
     }
     uint32_t exp_id = 0;
@@ -402,7 +403,7 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
         warthog::dimacs_parser::experiment exp = (*it);
         warthog::solution sol;
         warthog::problem_instance pi(exp.source, warthog::INF32, verbose);
-        uint32_t expanded=0, reopen=0, heap_ops=0, touched=0, surplus=0;
+        uint32_t expanded=0, reopen=0, heap_ops=0, generated=0, surplus=0;
         double nano_time = 0;
         for(uint32_t i = 0; i < nruns; i++)
         {
@@ -411,7 +412,7 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
 
             expanded += sol.met_.nodes_expanded_;
             heap_ops += sol.met_.heap_ops_;
-            touched += sol.met_.nodes_touched_;
+            generated += sol.met_.nodes_generated_;
             reopen += sol.met_.nodes_reopen_;
             surplus += sol.met_.nodes_surplus_;
             nano_time += sol.met_.time_elapsed_nano_;
@@ -421,7 +422,7 @@ run_bch_backwards_only(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
             << exp_id++ <<"\t"
             << alg_name << "\t"
             << expanded / nruns << "\t"
-            << touched / nruns << "\t"
+            << generated / nruns << "\t"
             << reopen / nruns << "\t"
             << surplus / nruns << "\t"
             << heap_ops / nruns << "\t"
@@ -848,7 +849,7 @@ run_cpd_search(warthog::util::cfg& cfg,
 
         if (f_scale > 0.0)
         {
-            alg.get_search_parameters()->set_w_admissibility(f_scale);
+            alg.get_heuristic()->set_hscale(f_scale);
         }
     }
 
@@ -860,7 +861,7 @@ run_cpd_search(warthog::util::cfg& cfg,
 
         if (us_lim > 0)
         {
-            alg.get_search_parameters()->set_max_us_cutoff(us_lim);
+            alg.set_max_us_cutoff(us_lim);
         }
     }
 
@@ -877,6 +878,117 @@ run_cpd_search(warthog::util::cfg& cfg,
     }
 
     run_experiments(&alg, alg_name, parser, std::cout);
+}
+
+void
+run_new_cpdsearch(warthog::util::cfg& cfg,
+    warthog::dimacs_parser& parser, std::string alg_name)
+{
+//    warthog::graph::xy_graph g;
+//    std::ifstream ifs;
+//    // We first load the xy_graph and its diff as we need them to be *read* in
+//    // reverse order.
+//    std::string xy_filename = cfg.get_param_value("input");
+//    if(xy_filename == "")
+//    {
+//        std::cerr << "parameter is missing: --input graph.xy [graph.xy.diff]"
+//                  << "[graph.xy.cpd]]\n";
+//        return;
+//    }
+//
+//    ifs.open(xy_filename);
+//    if (!ifs.good())
+//    {
+//        std::cerr << "Could not open xy-graph: " << xy_filename << std::endl;
+//        return;
+//    }
+//
+//    ifs >> g;
+//    ifs.close();
+//
+//    // Check if we have a second parameter in the --input
+//    std::string diff_filename = cfg.get_param_value("input");
+//    if (diff_filename == "")
+//    {
+//        diff_filename = xy_filename + ".diff";
+//    }
+//
+//    ifs.open(diff_filename);
+//    if (!ifs.good())
+//    {
+//        std::cerr <<
+//            "Could not open diff-graph: " << diff_filename << std::endl;
+//        return;
+//    }
+//
+//    g.perturb(ifs);
+//    ifs.close();
+//
+//    // read the cpd
+//    warthog::cpd::graph_oracle_base<warthog::cpd::FORWARD> oracle(&g);
+//    std::string cpd_filename = cfg.get_param_value("input");
+//    if(cpd_filename == "")
+//    {
+//        cpd_filename = xy_filename + ".cpd";
+//    }
+//
+//    ifs.open(cpd_filename);
+//    if(ifs.is_open())
+//    {
+//        ifs >> oracle;
+//        ifs.close();
+//    }
+//    else
+//    {
+//        std::cerr << "Could not find CPD file '" << cpd_filename << "'\n";
+//        return;
+//    }
+//
+//    warthog::simple_graph_expansion_policy expander(&g);
+//    warthog::cpd_heuristic_base<warthog::cpd::FORWARD> h(&oracle, 1.0);
+//    warthog::pqueue_min open;
+//
+//    warthog::unidirectional_search<
+//        warthog::cpd_heuristic_base<warthog::cpd::FORWARD>,
+//        warthog::simple_graph_expansion_policy,
+//        warthog::pqueue_min,
+//        warthog::dummy_listener,
+//        warthog::admissibility_criteria::w_admissible, 
+//        warthog::feasibility_criteria::until_cutoff,
+//        warthog::reopen_policy::no>
+//            alg(&h, &expander, &open);
+//
+//    // Set options for CPD searh
+//    std::stringstream ss;
+//    std::string scale = cfg.get_param_value("fscale");
+//    std::string tlim = cfg.get_param_value("uslim");
+//    warthog::search_parameters par;
+//
+//    if (scale != "")
+//    {
+//        double f_scale;
+//        ss << scale;
+//        ss >> f_scale;
+//
+//        if (f_scale > 0.0)
+//        {
+//            alg.get_parameters()->set_w_admissibility(f_scale);
+//        }
+//    }
+//
+//    if (tlim != "")
+//    {
+//        uint32_t us_lim;
+//        ss << tlim;
+//        ss >> us_lim;
+//
+//        if (us_lim > 0)
+//        {
+//            alg.get_parameters()->set_max_us_cutoff(us_lim);
+//        }
+//    }
+//
+//    run_experiments(&alg, alg_name, parser, std::cout);
 }
 
 template<warthog::cpd::symbol SYM>
@@ -1111,6 +1223,10 @@ run_dimacs(warthog::util::cfg& cfg)
     else if(alg_name == "cpd-dfs")
     {
         run_cpd_dfs(cfg, parser, alg_name);
+    }
+    else if(alg_name == "new-cpdsearch")
+    {
+        run_new_cpdsearch(cfg, parser, alg_name);
     }
     else
     {

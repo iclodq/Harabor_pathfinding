@@ -286,7 +286,7 @@ class flexible_astar: public warthog::search
 				{
                     listener_->generate_node(current, n, cost_to_n, edge_id++);
                     warthog::cost_t gval = current->get_g() + cost_to_n;
-                    sol.met_.nodes_touched_++;
+                    sol.met_.nodes_generated_++;
                     
                     if(n->get_search_number() != current->get_search_number())
                     {
