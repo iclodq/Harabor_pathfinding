@@ -35,7 +35,7 @@
 #include "solution.h"
 #include "timer.h"
 #include "workload_manager.h"
-//#include "unidirectional_search.h"
+#include "unidirectional_search.h"
 #include "zero_heuristic.h"
 
 #include "getopt.h"
@@ -880,117 +880,6 @@ run_cpd_search(warthog::util::cfg& cfg,
     run_experiments(&alg, alg_name, parser, std::cout);
 }
 
-void
-run_new_cpdsearch(warthog::util::cfg& cfg,
-    warthog::dimacs_parser& parser, std::string alg_name)
-{
-//    warthog::graph::xy_graph g;
-//    std::ifstream ifs;
-//    // We first load the xy_graph and its diff as we need them to be *read* in
-//    // reverse order.
-//    std::string xy_filename = cfg.get_param_value("input");
-//    if(xy_filename == "")
-//    {
-//        std::cerr << "parameter is missing: --input graph.xy [graph.xy.diff]"
-//                  << "[graph.xy.cpd]]\n";
-//        return;
-//    }
-//
-//    ifs.open(xy_filename);
-//    if (!ifs.good())
-//    {
-//        std::cerr << "Could not open xy-graph: " << xy_filename << std::endl;
-//        return;
-//    }
-//
-//    ifs >> g;
-//    ifs.close();
-//
-//    // Check if we have a second parameter in the --input
-//    std::string diff_filename = cfg.get_param_value("input");
-//    if (diff_filename == "")
-//    {
-//        diff_filename = xy_filename + ".diff";
-//    }
-//
-//    ifs.open(diff_filename);
-//    if (!ifs.good())
-//    {
-//        std::cerr <<
-//            "Could not open diff-graph: " << diff_filename << std::endl;
-//        return;
-//    }
-//
-//    g.perturb(ifs);
-//    ifs.close();
-//
-//    // read the cpd
-//    warthog::cpd::graph_oracle_base<warthog::cpd::FORWARD> oracle(&g);
-//    std::string cpd_filename = cfg.get_param_value("input");
-//    if(cpd_filename == "")
-//    {
-//        cpd_filename = xy_filename + ".cpd";
-//    }
-//
-//    ifs.open(cpd_filename);
-//    if(ifs.is_open())
-//    {
-//        ifs >> oracle;
-//        ifs.close();
-//    }
-//    else
-//    {
-//        std::cerr << "Could not find CPD file '" << cpd_filename << "'\n";
-//        return;
-//    }
-//
-//    warthog::simple_graph_expansion_policy expander(&g);
-//    warthog::cpd_heuristic_base<warthog::cpd::FORWARD> h(&oracle, 1.0);
-//    warthog::pqueue_min open;
-//
-//    warthog::unidirectional_search<
-//        warthog::cpd_heuristic_base<warthog::cpd::FORWARD>,
-//        warthog::simple_graph_expansion_policy,
-//        warthog::pqueue_min,
-//        warthog::dummy_listener,
-//        warthog::admissibility_criteria::w_admissible, 
-//        warthog::feasibility_criteria::until_cutoff,
-//        warthog::reopen_policy::no>
-//            alg(&h, &expander, &open);
-//
-//    // Set options for CPD searh
-//    std::stringstream ss;
-//    std::string scale = cfg.get_param_value("fscale");
-//    std::string tlim = cfg.get_param_value("uslim");
-//    warthog::search_parameters par;
-//
-//    if (scale != "")
-//    {
-//        double f_scale;
-//        ss << scale;
-//        ss >> f_scale;
-//
-//        if (f_scale > 0.0)
-//        {
-//            alg.get_parameters()->set_w_admissibility(f_scale);
-//        }
-//    }
-//
-//    if (tlim != "")
-//    {
-//        uint32_t us_lim;
-//        ss << tlim;
-//        ss >> us_lim;
-//
-//        if (us_lim > 0)
-//        {
-//            alg.get_parameters()->set_max_us_cutoff(us_lim);
-//        }
-//    }
-//
-//    run_experiments(&alg, alg_name, parser, std::cout);
-}
-
 template<warthog::cpd::symbol SYM>
 void
 run_cpd(warthog::util::cfg& cfg,
@@ -1223,10 +1112,6 @@ run_dimacs(warthog::util::cfg& cfg)
     else if(alg_name == "cpd-dfs")
     {
         run_cpd_dfs(cfg, parser, alg_name);
-    }
-    else if(alg_name == "new-cpdsearch")
-    {
-        run_new_cpdsearch(cfg, parser, alg_name);
     }
     else
     {
