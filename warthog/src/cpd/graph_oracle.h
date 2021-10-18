@@ -226,6 +226,8 @@ class graph_oracle_base
                 << "wrote to disk " << row_count
                 << " rows and "
                 << run_count << " runs. "
+                << "(" << ((sizeof(warthog::cpd::rle_run32) * run_count) >> 20) 
+                << " MB)."
                 << " time: " << (double)mytimer.elapsed_time_nano() / 1e9
                 << " s \n";
             return out;
