@@ -8,6 +8,8 @@ std::ostream& operator<<(std::ostream& str, warthog::search_metrics& met)
         << " touched=" << met.nodes_generated_ 
         << " reopened=" << met.nodes_reopen_ 
         << " surplus=" << met.nodes_surplus_
-        << " heap-ops=" << met.heap_ops_;
+        << " heap-ops=" << met.heap_ops_
+        << " lb=" << met.lb_
+        << " ub=" << met.ub_;
     return str;
 }

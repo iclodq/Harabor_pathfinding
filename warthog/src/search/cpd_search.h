@@ -304,7 +304,7 @@ class cpd_search : public warthog::search
         }
         if(sol->met_.nodes_expanded_ >= exp_cutoff_)
         {
-            info(pi_.verbose_, "Expanded cutoff", sol->.met_.nodes_expanded_, ">",
+            info(pi_.verbose_, "Expanded cutoff", sol->met_.nodes_expanded_, ">",
                   exp_cutoff_);
             stop = true;
         }

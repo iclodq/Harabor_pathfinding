@@ -9,6 +9,7 @@
 // @created: 2021-10-13
 //
 
+#include "constants.h"
 #include <iostream>
 
 namespace warthog
@@ -27,6 +28,8 @@ struct search_metrics
         nodes_surplus_ = other.nodes_surplus_;
         nodes_reopen_ = other.nodes_reopen_;
         heap_ops_ = other.heap_ops_;
+        lb_ = other.lb_;
+        ub_ = other.ub_;
         return *this;
     }
 
@@ -39,6 +42,8 @@ struct search_metrics
         nodes_surplus_ = 0;
         nodes_reopen_ = 0;
         heap_ops_ = 0;
+        lb_ = warthog::COST_MAX;
+        ub_ = warthog::COST_MAX;
     }
     
     double time_elapsed_nano_;
@@ -47,6 +52,10 @@ struct search_metrics
     uint32_t nodes_surplus_;
     uint32_t nodes_reopen_;
     uint32_t heap_ops_;
+
+    // bounds established during the search
+    warthog::cost_t lb_;
+    warthog::cost_t ub_;
 
     //friend std::ostream& operator<<(std::ostream& str, warthog::search_metrics& met);
 };

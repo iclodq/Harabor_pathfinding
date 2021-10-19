@@ -21,7 +21,6 @@
 #include "constants.h"
 #include "dimacs_parser.h"
 #include "euclidean_heuristic.h"
-#include "forward.h"
 #include "graph.h"
 #include "gridmap_expansion_policy.h"
 #include "util/timer.h"

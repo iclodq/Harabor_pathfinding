@@ -17,6 +17,7 @@ namespace warthog
 {
 
 typedef void (*xyFn)(uint32_t id, int32_t& x, int32_t& y);
+
 class euclidean_heuristic
 {
     public:
@@ -30,18 +31,13 @@ class euclidean_heuristic
         h(double x, double y, double x2, double y2);
 
         void
-        set_hscale(double hscale);
-
-        double
-        get_hscale();
+        h(warthog::heuristic_value* hv);
 
         size_t
         mem(); 
 
-        private:
-        warthog::graph::xy_graph* g_;
-        double hscale_;
-
+    private:
+            warthog::graph::xy_graph* g_;
 };
 
 }

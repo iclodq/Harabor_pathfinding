@@ -24,6 +24,7 @@ class expansion_policy;
 class euclidean_heuristic;
 class gridmap;
 class gridmap_expansion_policy;
+class heuristic_value;
 class problem_instance;
 class search_node;
 class solution;

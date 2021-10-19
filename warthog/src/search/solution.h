@@ -9,6 +9,7 @@
 //
 
 #include "search_metrics.h"
+#include "search_node.h"
 
 #include <vector>
 #include <ostream>
@@ -48,6 +49,7 @@ class solution
         void
         reset()
         {
+            s_node_ = 0;
             sum_of_edge_costs_ = warthog::COST_MAX;
             path_.clear();
             met_.reset();
@@ -56,11 +58,13 @@ class solution
         friend std::ostream& operator<<(
                 std::ostream& str, warthog::solution& sol);
 
-        // metrics
+        // search performance metrics 
         warthog::search_metrics met_;
 
-        // solution path and its cost
-        // TODO: path doesn't specify edges/actions, only nodes
+        // the solution itself. we store the incumbent node 
+        // which produced the solution and the concrete path,
+        // from start to target
+        warthog::search_node* s_node_;
         warthog::cost_t sum_of_edge_costs_;
         std::vector<warthog::sn_id_t> path_;
 };

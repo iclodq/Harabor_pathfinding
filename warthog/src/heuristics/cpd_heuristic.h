@@ -16,7 +16,9 @@
 #include "constants.h"
 #include "forward.h"
 #include "graph_oracle.h"
+#include "heuristic_value.h"
 #include "helpers.h"
+#include "log.h"
 #include "xy_graph.h"
 
 #include <climits>
@@ -74,6 +76,16 @@ class cpd_heuristic_base
         warthog::cpd::graph_oracle*
         get_oracle()
         { return cpd_; }
+
+        inline void
+        h(warthog::heuristic_value* hv)
+        {
+            h(hv->from_, hv->to_, hv->lb_, hv->ub_);
+            hv->feasible_ = true;
+            
+            // write out the ub path
+            if(hv->ub_path_) { write_ub(hv); } 
+        }
 
         inline warthog::cost_t
         h(warthog::sn_id_t start_id, warthog::sn_id_t target_id)
@@ -189,6 +201,25 @@ class cpd_heuristic_base
         {
             return cache_.at(c_id).target_id_ == target_id
                 && cache_.at(c_id).graph_id_ == cpd_->get_graph()->get_id();
+        }
+
+        void
+        write_ub(warthog::heuristic_value* hv)
+        {
+            hv->ub_path_->push_back(hv->from_);
+            warthog::sn_id_t next = hv->from_;
+            while (next != hv->to_)
+            {
+                next = get_move(next, hv->to_);
+
+                if (next == warthog::SN_ID_MAX)
+                {
+                    error("Cannot rebuild path from ", next);
+                    return;
+                }
+
+                hv->ub_path_->push_back(next);
+            }
         }
 
         warthog::cpd::graph_oracle_base<T>* cpd_;

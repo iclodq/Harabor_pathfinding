@@ -22,7 +22,7 @@ class search_node
 		search_node(warthog::sn_id_t id = warthog::SN_ID_MAX) :
             id_(id), parent_id_(warthog::SN_ID_MAX),
             g_(warthog::COST_MAX), f_(warthog::COST_MAX), ub_(warthog::COST_MAX),
-            status_(0), priority_(warthog::INF32), search_number_(0)
+            status_(0), priority_(warthog::INF32), search_number_(UINT32_MAX)
 		{
 			refcount_++;
 		}
