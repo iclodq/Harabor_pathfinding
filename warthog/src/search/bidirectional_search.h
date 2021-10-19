@@ -357,7 +357,6 @@ class bidirectional_search  : public warthog::search
                 best_cost_ = warthog::COST_MAX;
             }
 
-			mytimer.stop();
 			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
             sol.met_.nodes_surplus_ = fopen_->size() + bopen_->size();
             sol.met_.heap_ops_ = fopen_->get_heap_ops() + bopen_->get_heap_ops();

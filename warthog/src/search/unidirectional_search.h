@@ -306,14 +306,9 @@ class unidirectional_search
                     }
                     trace(pi->verbose_, "Dominated;", *n);
                 }
-                // TODO: this stop thing is a bit annoying. 
-                // implement a cumulative time function? 
-                // as in, time elapsed since the last start
-                mytimer.stop();
                 sol->met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
             }
 
-            mytimer.stop();
             sol->met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
             sol->met_.nodes_surplus_ = open_->size();
             sol->met_.heap_ops_ = open_->get_heap_ops();

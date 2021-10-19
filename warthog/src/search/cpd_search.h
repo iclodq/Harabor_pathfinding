@@ -293,7 +293,6 @@ class cpd_search : public warthog::search
     {
         bool stop = false;
 
-        mytimer->stop();
         // early termination: in case we want bounded-cost
         // search or if we want to impose some memory limit
         if(current->get_f() > cost_cutoff_)
@@ -309,9 +308,11 @@ class cpd_search : public warthog::search
             stop = true;
         }
         // Exceeded time limit
+
+        double elapsed_time = mytimer->elapsed_time_nano();
         if (mytimer->elapsed_time_nano() > time_cutoff_)
         {
-            info(pi_.verbose_, "Time cutoff", mytimer->elapsed_time_nano(),
+            info(pi_.verbose_, "Time cutoff", elapsed_time,
                   ">", time_cutoff_);
             stop = true;
         }
@@ -450,7 +451,6 @@ class cpd_search : public warthog::search
              "- k-move =", max_k_moves_, "- quality =", quality_cutoff_);
         debug(pi_.verbose_, "Start node:", *start);
 
-        mytimer.stop();
         if (mytimer.elapsed_time_nano() > time_cutoff_)
         {
             // Bail without an answer if we exceed the time limit after the
@@ -481,8 +481,6 @@ class cpd_search : public warthog::search
             // Incorrect timings reported otherwise
             DO_ON_DEBUG
             {
-                mytimer.stop();
-
                 info(pi_.verbose_, "[", mytimer.elapsed_time_micro(),"]",
                     sol.met_.nodes_expanded_, "- Expanding:", *current);
             }
@@ -545,7 +543,6 @@ class cpd_search : public warthog::search
             }
         }
 
-        mytimer.stop();
         sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
         sol.met_.nodes_surplus_ = open_->size();
         sol.met_.heap_ops_ = open_->get_heap_ops();

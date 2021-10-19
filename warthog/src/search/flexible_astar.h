@@ -362,7 +362,6 @@ class flexible_astar: public warthog::search
 				}
 			}
 
-			mytimer.stop();
 			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
             sol.met_.nodes_surplus_ = open_->size();
             sol.met_.heap_ops_ = open_->get_heap_ops();

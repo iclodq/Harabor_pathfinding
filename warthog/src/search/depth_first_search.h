@@ -325,7 +325,6 @@ class depth_first_search : public warthog::search
                 }
 			}
 
-			mytimer.stop();
 			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
 
             #ifndef NDEBUG

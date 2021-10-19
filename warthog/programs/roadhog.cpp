@@ -212,7 +212,6 @@ run_astar_bb(warthog::util::cfg& cfg,
                 << label_filename << std::endl;
         }
         ofs.close();
-        t.stop();
         std::cerr << "done. time " << t.elapsed_time_nano() / 1e9 << " s\n";
 
     }
@@ -532,35 +531,6 @@ run_bch_bb(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
             << "you could try to generate it with "
             << "--alg fch-bb " << pct_dijkstra << "\n";
         return;
-
-        //warthog::util::workload_manager workload(chd.g_->get_num_nodes());
-        //double cutoff = (((double)pct_dijkstra)/100);
-        //uint32_t min_level = (uint32_t)(chd.level_->size()*(1-cutoff));
-        //for(size_t i = 0; i < chd.g_->get_num_nodes(); i++)
-        //{
-        //    if(chd.level_->at(i) >= min_level)
-        //    { workload.set_flag((uint32_t)i, true); }
-        //}
-
-        //lab.precompute(&workload);
-
-        //warthog::timer t;
-        //t.start();
-        //std::cerr << "saving precompute data to "
-        //    << label_filename << "...\n";
-
-        //std::ofstream out(label_filename,
-        //        std::ios_base::out|std::ios_base::binary);
-        //out << lab;
-        //if(!out.good())
-        //{
-        //    std::cerr << "\nerror trying to write to file "
-        //        << label_filename << std::endl;
-        //}
-        //out.close();
-        //t.stop();
-        //std::cerr << "done. time " << t.elapsed_time_nano() / 1e9 << " s\n";
-
     }
 
     warthog::bch_bb_expansion_policy fexp(&lab, false);
@@ -710,7 +680,6 @@ run_fch_bb(warthog::util::cfg& cfg, warthog::dimacs_parser& parser,
                 << label_filename << std::endl;
         }
         out.close();
-        t.stop();
         std::cerr << "done. time " << t.elapsed_time_nano() / 1e9 << " s\n";
 
     }

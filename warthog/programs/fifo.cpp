@@ -249,14 +249,10 @@ run_search(conf_fn& apply_conf, config& conf, const std::string& fifo_out,
             finished += sol.path_.back() == target_id;
         }
 
-        t_thread.stop();
-
 #pragma omp critical
         trace(conf.verbose, "[", thread_id, "] Processed", to - from,
               "trips in", t_thread.elapsed_time_micro(), "us.");
     }
-
-    t.stop();
 
     user(conf.verbose, "Processed", n_results, "in", t.elapsed_time_micro(),
          "us");
@@ -395,7 +391,6 @@ reader(conf_fn& apply_conf, warthog::graph::xy_graph* g)
 
             g->perturb(edges);
         }
-        t.stop();
 
         trace(conf.verbose, "Read", int(lines.size() / 2), "queries in ",
               t.elapsed_time_micro(), "us");

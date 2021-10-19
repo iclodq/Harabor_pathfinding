@@ -68,7 +68,6 @@ class cpd_extractions_base : public warthog::search
             }
             sol.path_.push_back(source_id);
 
-            mytimer.stop();
             sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
         }
 
@@ -104,7 +103,6 @@ class cpd_extractions_base : public warthog::search
                 sol.met_.nodes_generated_++;
             }
 
-            mytimer.stop();
             sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
         }
 

@@ -172,14 +172,12 @@ warthog::label::dfs_labelling::precompute(
     warthog::helpers::parallel_compute(
             thread_compute_fn, &shared,
             workload->num_flags_set());
-    t.stop();
     std::cerr << "done. time " << t.elapsed_time_nano() / 1e9 << " s\n";
 
     t.start();
     std::cerr << "computing dfs labels...\n";
     this->compute_dfs_labels(workload); // single threaded
     std::cerr << "done. time " << t.elapsed_time_nano() / 1e9 << " s\n";
-    t.stop();
 }
 
 void

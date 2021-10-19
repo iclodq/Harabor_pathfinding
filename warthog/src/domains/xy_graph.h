@@ -540,12 +540,11 @@ class xy_graph_base
                 }
             }
 
-            mytimer.stop();
             std::cerr << "graph, loaded.\n";
             std::cerr << "read " << num_nodes << " nodes"
                     << " and read " << num_edges << " outgoing edges"
                     << ". total time "
-                    << (double)mytimer.elapsed_time_nano() / 1e9 << " s"
+                    << (double)mytimer.elapsed_time_sec() << " s"
                     << std::endl;
 
             return in;
@@ -595,9 +594,8 @@ class xy_graph_base
                 }
             }
 
-            mytimer.stop();
             std::cerr << "wrote xy_graph; time "
-                    << ((double)mytimer.elapsed_time_nano() / 1e9) << " s"
+                    << ((double)mytimer.elapsed_time_sec()) << " s"
                     << std::endl;
 
             return out;

@@ -166,7 +166,6 @@ warthog::label::bb_labelling::precompute(
     warthog::helpers::parallel_compute(
             thread_compute_fn, &shared, 
             workload->num_flags_set());
-    t.stop();
     std::cerr << "done. time " << t.elapsed_time_nano() / 1e9 << " s\n";
 }
 

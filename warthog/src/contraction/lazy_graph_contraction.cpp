@@ -128,8 +128,6 @@ warthog::ch::lazy_graph_contraction::contract(
             }
         }
 
-        mytimer.stop();
-
         num_expansions = total_expansions_ - num_expansions;
         num_searches = total_searches_ - num_searches;
         num_lazy = total_lazy_updates_ - num_lazy;
@@ -138,8 +136,6 @@ warthog::ch::lazy_graph_contraction::contract(
         {
             t_last = mytimer.get_time_micro();
             std::cerr
-                //<< "\r "
-                //<< (int)((order_.size() / (double)g_->get_num_nodes()) * 100)
                 << "time " << (int)((t_last - t_begin)/1000000) << "s"
                 << " prog " << order_->size()
                 << " nid " << best_id 
@@ -149,7 +145,6 @@ warthog::ch::lazy_graph_contraction::contract(
                 << " #witness " << num_searches
                 << " #updates " << num_lazy
                 << " #expansions " << num_expansions
-                //<< "; micros: " << (int32_t)mytimer.elapsed_time_micro();
                 << std::endl;
         }
     }

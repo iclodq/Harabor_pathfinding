@@ -188,7 +188,6 @@ make_cpd(warthog::graph::xy_graph &g, warthog::cpd::graph_oracle_base<S> &cpd,
     // convert the column order into a map: from vertex id to its ordered index
     cpd.value_index_swap_array();
 
-    t.stop();
     info(verbose, "total preproc time (seconds):", t.elapsed_time_sec());
 
     std::ofstream ofs(cpd_filename);

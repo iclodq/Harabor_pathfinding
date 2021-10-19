@@ -16,7 +16,6 @@
 #define WARTHOG_TIMER_H
 
 #ifdef OS_MAC
-//#include <CoreServices/CoreServices.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 
@@ -30,26 +29,27 @@ namespace warthog
 class timer
 {
 
-#ifdef OS_MAC
-  uint64_t start_time;
-  uint64_t stop_time;
-  mach_timebase_info_data_t timebase;
-#else
-	timespec stop_time;
-	timespec start_time;
-#endif
-
 public:
 	timer();
 	void reset();
 	void start();
-	void stop();
 	double elapsed_time_nano();
 	double elapsed_time_micro();
 	double elapsed_time_sec();
-	double get_time_nano();
-	inline double get_time_micro() { return get_time_nano() / 1000.0; }
-	inline double get_time_sec() { return get_time_nano() / 1e9f; }
+    double get_time_nano();
+    inline double get_time_micro() { return get_time_nano() / 1000.0; }
+    inline double get_time_sec() { return get_time_nano() / 1e9f; }
+
+
+private:
+#ifdef OS_MAC
+  uint64_t start_time;
+  mach_timebase_info_data_t timebase;
+#else
+	timespec start_time;
+#endif
+
+
 };
 
 }

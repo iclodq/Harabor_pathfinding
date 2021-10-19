@@ -360,7 +360,6 @@ class greedy_depth_first_search : public warthog::search
                 #endif
 			}
 
-			mytimer.stop();
 			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
 
             #ifndef NDEBUG
