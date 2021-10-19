@@ -1,4 +1,6 @@
 # -*- mode: makefile -*-
+#
+##@ Targets
 
 main: bin/warthog bin/roadhog bin/mapf ## Default compilation
 
@@ -42,3 +44,6 @@ test/%: ../../test/%.cpp $(warthog) $(extra) $(EXTRA_OBJ)
 	@echo "linking..."
 	@$(shell mkdir -p $(@D))
 	$(CXX) $< -o $@ -lwarthog -lwarthog-extra $(CFLAGS) $(D_LIBS) $(D_INCLUDES)
+
+# Used for help
+##@ Programs
