@@ -26,15 +26,9 @@ If you find this code useful, please cite our paper:
 }
 ```
 
-### Compilation pre-requisites ###
-
-JVM 1.8, bash and make
-
-
 ### Compilation instructions ####
 
-Please note the following prerequisites: 
-**JVM 1.8, bash and make**
+Please note the following prerequisites: **JVM 1.8, bash and make**
 
 From a terminal, type "make" in the directory with all the sources (usually 
 this is the same directory containing this file)
