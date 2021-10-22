@@ -70,26 +70,30 @@ grid-optiomal paths for the same set of instances. To invole that algorithm:
 Output from the program is in the form of semi-colon-separated statistics 
 which are printed for every problem instance. Descriptions of the columns:
 
-> exp - [integer] the experiment id 
-> alg - [string]  the name of the algorithm
-> wallt_micro - [integer] wall-clock time in microseconds
-> runt_micro - [integer] actual running time (i.e. cpu-time) in microseconds
-> expanded - [integer] nodes expanded
-> generated - [integer] nodes generated 
-> heapops - [integer] number of heap operations (insert, delete, relax)
-> start - [xy-coordinate] id of the start node
-> target - [xy-coordinate] id of the target node
-> gridcost - [double] the cost of the grid-optimal path between start and target
-> realcost - [double] the cost of the optimal path between start and target
-> map - [string] the name of the map on which the experiment was run
+```
+exp - [integer] the experiment id 
+alg - [string]  the name of the algorithm
+wallt_micro - [integer] wall-clock time in microseconds
+runt_micro - [integer] actual running time (i.e. cpu-time) in microseconds
+expanded - [integer] nodes expanded
+generated - [integer] nodes generated 
+heapops - [integer] number of heap operations (insert, delete, relax)
+start - [xy-coordinate] id of the start node
+target - [xy-coordinate] id of the target node
+gridcost - [double] the cost of the grid-optimal path between start and target
+realcost - [double] the cost of the optimal path between start and target
+map - [string] the name of the map on which the experiment was run
+```
 
 ### Examples ###
 
-> > java -cp ./ ScenarioRunner -ANYA AcrossTheCape.map.scen
-> 
-> exp;alg;wallt_micro;runt_micro;expanded;generated;heapops;start;target; gridcost;realcost;map
-> 0;AnyaSearch;2453;2392;2;6;7;(283,492);(286,497); 6.24264;5.830951894845301; AcrosstheCape.map
-> ... 
-> etc
+```
+> java -cp ./ ScenarioRunner -ANYA AcrossTheCape.map.scen
+
+exp;alg;wallt_micro;runt_micro;expanded;generated;heapops;start;target; gridcost;realcost;map
+0;AnyaSearch;2453;2392;2;6;7;(283,492);(286,497); 6.24264;5.830951894845301; AcrosstheCape.map
+... 
+etc
+```
 
 
