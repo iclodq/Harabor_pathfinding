@@ -4,6 +4,7 @@ This repository containts C++ codes for Polyanya: a compromise-free
 pathfinding algorithm for navigation meshes. If you find this code 
 useful, please cite our paper as follows:
 
+```
 @inproceedings{DBLP:conf/ijcai/CuiHG17,
   author    = {Michael Cui and
                Daniel Damir Harabor and
@@ -21,8 +22,9 @@ useful, please cite our paper as follows:
   biburl    = {https://dblp.org/rec/bib/conf/ijcai/CuiHG17},
   bibsource = {dblp computer science bibliography, https://dblp.org}
 }
+```
 
-# Compiling
+## Compiling
 
 Run `make all` in the root directory (or `make fast` to compile with
 optimisations). This has been tested with recent versions of g++ (5+) on
@@ -30,7 +32,7 @@ recent versions of Linux (Ubuntu 16.04+, Arch Linux). This should
 build `bin/scenariorunner` and `bin/test`.
 
 
-# Example usage
+## Example usage
 
 After compiling, you can run a small example (Arena from Dragon Age: Origins)
 with the command below:
@@ -62,7 +64,7 @@ In the `utils` folder,
 will convert a grid map of Arena from Dragon Age: Origins to a CDT mesh, output
 to standard output.
 
-## CDT to M-CDT
+### CDT to M-CDT
 
 In the `utils` folder,
 
