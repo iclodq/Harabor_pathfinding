@@ -28,6 +28,8 @@ If you find this code useful, please cite our paper:
 
 ### Compilation pre-requisites ###
 
+JVM 1.8, bash and make
+
 
 ### Compilation instructions ####
 
