@@ -66,11 +66,11 @@ class bidirectional_search  : public warthog::search
         void
         __get_path(warthog::problem_instance& pi, warthog::solution& sol, bool resume=false)
         {
-            this->search(sol, pi, resume);
+            this->search(&pi, &sol, resume);
             if(best_cost_ != warthog::COST_MAX)
             { 
                 sol.sum_of_edge_costs_ = best_cost_;
-                reconstruct_path(sol);
+                reconstruct_path(&pi, &sol);
             }
         }
         
@@ -83,7 +83,7 @@ class bidirectional_search  : public warthog::search
         void
         __get_pathcost(warthog::problem_instance& pi, warthog::solution& sol, bool resume=false)
         {
-            this->search(sol, pi, resume);
+            this->search(&pi, &sol, resume);
             assert(sol.met_.nodes_expanded_ <= exp_cutoff_);
 
             if(best_cost_ != warthog::COST_MAX)
@@ -107,14 +107,6 @@ class bidirectional_search  : public warthog::search
 
         inline uint32_t 
         get_max_expansions_cutoff() { return exp_cutoff_; } 
-
-        warthog::search_node* 
-        get_search_node(uint32_t id, int direction=0)
-        {
-            if(direction == 0)
-                return fexpander_->get_ptr(id, pi_.instance_id_);
-            return bexpander_->get_ptr(id, pi_.instance_id_);
-        }
 
         inline void
         set_time_cutoff(uint64_t nanos)
@@ -157,11 +149,9 @@ class bidirectional_search  : public warthog::search
         warthog::search_node* v_;
         warthog::search_node* w_;
         warthog::cost_t best_cost_;
-        warthog::problem_instance pi_;
-        uint32_t last_start_id_;
 
         void
-        reconstruct_path(warthog::solution& sol)
+        reconstruct_path(warthog::problem_instance* pi, warthog::solution* sol)
         {
             if(v_ && (&*v_ == &*bexpander_->generate(v_->get_id())))
             {
@@ -173,16 +163,16 @@ class bidirectional_search  : public warthog::search
             warthog::search_node* current = v_;
             while(current)
             {
-               sol.path_.push_back(current->get_id());
+               sol->path_.push_back(current->get_id());
                current = current->get_parent() == warthog::NO_PARENT ? 0 : 
                    fexpander_->generate(current->get_parent());
             }
-            std::reverse(sol.path_.begin(), sol.path_.end());
+            std::reverse(sol->path_.begin(), sol->path_.end());
 
             #ifndef NDEBUG
-            if(pi_.verbose_)
+            if(pi->verbose_)
             {
-                for(auto& state : sol.path_)
+                for(auto& state : sol->path_)
                 {
                     int32_t x, y;
                     fexpander_->get_xy(state, x, y);
@@ -206,7 +196,7 @@ class bidirectional_search  : public warthog::search
             while(current)
             {  
                #ifndef NDEBUG
-                if(pi_.verbose_)
+                if(pi->verbose_)
                 {
                     int32_t x, y;
                     bexpander_->get_xy(current->get_id(), x, y);
@@ -217,7 +207,7 @@ class bidirectional_search  : public warthog::search
                 }
                #endif
 
-               sol.path_.push_back(current->get_id());
+               sol->path_.push_back(current->get_id());
                current = current->get_parent() == warthog::NO_PARENT ? 0 : 
                    bexpander_->generate(current->get_parent());
             }
@@ -236,16 +226,16 @@ class bidirectional_search  : public warthog::search
         }
 
         void 
-        search(warthog::solution& sol, warthog::problem_instance& pi_new, bool resume)
+        search(warthog::problem_instance* pi, warthog::solution* sol, bool resume)
         {
             warthog::timer mytimer;
             mytimer.start();
 
             #ifndef NDEBUG
-            if(pi_.verbose_)
+            if(pi->verbose_)
             {
                 std::cerr << "bidirectional_search. ";
-                pi_new.print(std::cerr);
+                pi->print(std::cerr);
                 std::cerr << std::endl;
             }
             #endif
@@ -253,27 +243,26 @@ class bidirectional_search  : public warthog::search
             best_cost_ = warthog::COST_MAX;
             v_ = 0;
             w_ = 0;
-            pi_ = pi_new;
-            sol.reset();
-            uint32_t fwd_instance_id = pi_.instance_id_;
-            uint32_t bwd_instance_id = pi_.instance_id_;
+            sol->reset();
+            uint32_t fwd_instance_id = pi->instance_id_;
+            uint32_t bwd_instance_id = pi->instance_id_;
 
             // check for valid start and target
-            if(!bexpander_->generate_start_node(&pi_)  ||
-               !bexpander_->generate_target_node(&pi_) ||
-               !fexpander_->generate_start_node(&pi_)  ||
-               !fexpander_->generate_target_node(&pi_))
+            if(!bexpander_->generate_start_node(pi)  ||
+               !bexpander_->generate_target_node(pi) ||
+               !fexpander_->generate_start_node(pi)  ||
+               !fexpander_->generate_target_node(pi))
             { return; } 
             
             // initialise the backward search
             { 
-                bexpander_->generate_target_node(&pi_)->init(
+                bexpander_->generate_target_node(pi)->init(
                     bwd_instance_id, warthog::NO_PARENT, 0,
                     heuristic_->h(
-                        bexpander_->generate_target_node(&pi_)->get_id(),
-                        bexpander_->generate_start_node(&pi_)->get_id()));
+                        bexpander_->generate_target_node(pi)->get_id(),
+                        bexpander_->generate_start_node(pi)->get_id()));
                 bopen_->clear();
-                bopen_->push(bexpander_->generate_target_node(&pi_));
+                bopen_->push(bexpander_->generate_target_node(pi));
 
             }
 
@@ -285,9 +274,9 @@ class bidirectional_search  : public warthog::search
             if(resume)
             { 
                 warthog::search_node* fwd_start = 
-                    fexpander_->generate_start_node(&pi_);
+                    fexpander_->generate_start_node(pi);
                 warthog::search_node* fwd_target = 
-                    fexpander_->generate_target_node(&pi_);
+                    fexpander_->generate_target_node(pi);
                 if( fwd_target->get_search_number() == 
                      fwd_start->get_search_number() )
                 {
@@ -300,13 +289,13 @@ class bidirectional_search  : public warthog::search
             }
             else
             {
-                fexpander_->generate_start_node(&pi_)->init(
+                fexpander_->generate_start_node(pi)->init(
                     fwd_instance_id, warthog::NO_PARENT, 0,
                     heuristic_->h(
-                        fexpander_->generate_start_node(&pi_)->get_id(), 
-                        fexpander_->generate_target_node(&pi_)->get_id()));
+                        fexpander_->generate_start_node(pi)->get_id(), 
+                        fexpander_->generate_target_node(pi)->get_id()));
                 fopen_->clear();
-                fopen_->push(fexpander_->generate_start_node(&pi_));
+                fopen_->push(fexpander_->generate_start_node(pi));
             }
 
 
@@ -321,7 +310,7 @@ class bidirectional_search  : public warthog::search
                 // check if we can terminate 
                 if(best_bound >= best_cost_ ||
                    best_bound > cost_cutoff_ || 
-                   sol.met_.nodes_expanded_ > exp_cutoff_ ||
+                   sol->met_.nodes_expanded_ > exp_cutoff_ ||
                    (time_cutoff_nanos_ > mytimer.elapsed_time_nano() &&
                        best_cost_ <= cost_cutoff_))
                 { 
@@ -333,19 +322,15 @@ class bidirectional_search  : public warthog::search
                 {
                     warthog::search_node* current = fopen_->pop();
                     expand(current, fopen_, fexpander_, bexpander_, 
-                            pi_.target_id_, sol, 
-                            v_, w_, 
-                            fwd_instance_id, 
-                            bwd_instance_id);
+                            pi, sol, pi->target_, v_, w_, 
+                            fwd_instance_id, bwd_instance_id);
                 }
                 else 
                 {
                     warthog::search_node* current = bopen_->pop();
                     expand(current, bopen_, bexpander_, fexpander_, 
-                            pi_.start_id_, sol, 
-                            w_, v_, 
-                            bwd_instance_id, 
-                            fwd_instance_id);
+                            pi, sol, pi->start_, w_, v_, 
+                            bwd_instance_id, fwd_instance_id);
                 }
             }
 
@@ -357,32 +342,33 @@ class bidirectional_search  : public warthog::search
                 best_cost_ = warthog::COST_MAX;
             }
 
-			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
-            sol.met_.nodes_surplus_ = fopen_->size() + bopen_->size();
-            sol.met_.heap_ops_ = fopen_->get_heap_ops() + bopen_->get_heap_ops();
+			sol->met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+            sol->met_.nodes_surplus_ = fopen_->size() + bopen_->size();
+            sol->met_.heap_ops_ = fopen_->get_heap_ops() + bopen_->get_heap_ops();
         }
 
         void
         expand( warthog::search_node* current, 
                 warthog::pqueue_min* open, E* expander, E* reverse_expander, 
-                warthog::sn_id_t tmp_targetid, warthog::solution& sol,
+                warthog::problem_instance* pi, warthog::solution* sol,
+                warthog::sn_id_t tmp_targetid, 
                 warthog::search_node*& fwd_meet, warthog::search_node*& bwd_meet,
                 uint32_t fwd_instance_id, uint32_t bwd_instance_id)
         {
             if(current == 0) { return; }
             current->set_expanded(true);
-            expander->expand(current, &pi_);
-            sol.met_.nodes_expanded_++;
+            expander->expand(current, pi);
+            sol->met_.nodes_expanded_++;
 
             #ifndef NDEBUG
-            if(pi_.verbose_)
+            if(pi->verbose_)
             {
                 int32_t x, y;
                 expander->get_xy(current->get_id(), x, y);
                 std::cerr 
-                    << sol.met_.nodes_expanded_ 
+                    << sol->met_.nodes_expanded_ 
                     << ". expanding " 
-                    << (pi_.target_id_ == tmp_targetid ? "(f)" : "(b)")
+                    << (pi->target_ == tmp_targetid ? "(f)" : "(b)")
                     << " ("<<x<<", "<<y<<")...";
                 current->print(std::cerr);
                 std::cerr << std::endl;
@@ -396,7 +382,7 @@ class bidirectional_search  : public warthog::search
                     n != 0; 
                     expander->next(n, cost_to_n))
             {
-                sol.met_.nodes_generated_++;
+                sol->met_.nodes_generated_++;
                 warthog::cost_t gval = current->get_g() + cost_to_n;
 
                 if(n->get_search_number() != current->get_search_number())
@@ -407,7 +393,7 @@ class bidirectional_search  : public warthog::search
                             gval + heuristic_->h(n->get_id(), tmp_targetid));
                     open->push(n);
                     #ifndef NDEBUG
-                    if(pi_.verbose_)
+                    if(pi->verbose_)
                     {
                         int32_t x, y;
                         expander->get_xy(n->get_id(), x, y);
@@ -435,7 +421,7 @@ class bidirectional_search  : public warthog::search
                     }
 
                     #ifndef NDEBUG
-                    if(pi_.verbose_)
+                    if(pi->verbose_)
                     {
                         int32_t x, y;
                         expander->get_xy(n->get_id(), x, y);
@@ -450,7 +436,7 @@ class bidirectional_search  : public warthog::search
                 else
                 {
                     #ifndef NDEBUG
-                    if(pi_.verbose_)
+                    if(pi->verbose_)
                     {
                         int32_t x, y;
                         expander->get_xy(n->get_id(), x, y);
@@ -476,7 +462,7 @@ class bidirectional_search  : public warthog::search
                         best_cost_ = n->get_g() + rev_n->get_g();
 
                         #ifndef NDEBUG
-                        if(pi_.verbose_)
+                        if(pi->verbose_)
                         {
                             int32_t x, y;
                             expander->get_xy(n->get_id(), x, y);

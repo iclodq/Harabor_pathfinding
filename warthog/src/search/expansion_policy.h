@@ -148,7 +148,7 @@ class expansion_policy
         bool
         is_target(warthog::search_node* n, warthog::problem_instance* pi)
         {
-            return n->get_id() == pi->target_id_;
+            return n->get_id() == pi->target_;
         }
 
         // get a search_node memory pointer associated with @param node_id. 

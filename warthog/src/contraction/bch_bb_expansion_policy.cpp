@@ -95,7 +95,7 @@ warthog::bch_bb_expansion_policy::generate_start_node(
 {
     // update the filter with the new target location
     uint32_t t_graph_id = 
-        lab_->get_ch_data()->g_->to_graph_id((uint32_t)pi->target_id_);
+        lab_->get_ch_data()->g_->to_graph_id((uint32_t)pi->target_);
     if(t_graph_id != warthog::INF32) 
     { 
         lab_->get_ch_data()->g_->get_xy(t_graph_id, tx_, ty_);
@@ -103,7 +103,7 @@ warthog::bch_bb_expansion_policy::generate_start_node(
 
     // generate the start node
     uint32_t s_graph_id = 
-        lab_->get_ch_data()->g_->to_graph_id((uint32_t)pi->start_id_);
+        lab_->get_ch_data()->g_->to_graph_id((uint32_t)pi->start_);
     if(s_graph_id == warthog::INF32) { return 0; }
     return generate(s_graph_id);
 }
@@ -113,7 +113,7 @@ warthog::bch_bb_expansion_policy::generate_target_node(
         warthog::problem_instance* pi)
 {
     uint32_t t_graph_id = 
-        lab_->get_ch_data()->g_->to_graph_id((uint32_t)pi->target_id_);
+        lab_->get_ch_data()->g_->to_graph_id((uint32_t)pi->target_);
     if(t_graph_id == warthog::INF32) { return 0; }
 
     // update the filter with the new target location

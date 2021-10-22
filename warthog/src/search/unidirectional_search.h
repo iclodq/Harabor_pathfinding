@@ -90,14 +90,14 @@ class unidirectional_search
                 if(current->get_parent() == warthog::SN_ID_MAX) break;
                 current = expander_->generate(current->get_parent());
             }
-            assert(sol->path_.back() == pi->start_id_);
+            assert(sol->path_.back() == pi->start_);
             std::reverse(sol->path_.begin(), sol->path_.end());
 
             // extract the rest of the path, from incumbent to target
-            if(sol->s_node_->get_id() != pi->target_id_)
+            if(sol->s_node_->get_id() != pi->target_)
             {
                 heuristic_value hv;
-                hv(sol->s_node_->get_id(), pi->target_id_, &sol->path_);
+                hv(sol->s_node_->get_id(), pi->target_, &sol->path_);
                 heuristic_->h(&hv);
             }
 
@@ -171,7 +171,7 @@ class unidirectional_search
                    warthog::search_parameters* par,
                    warthog::solution* sol)
         {
-            warthog::heuristic_value hv(n->get_id(), pi->target_id_);
+            warthog::heuristic_value hv(n->get_id(), pi->target_);
             heuristic_->h(&hv);
 
             // NB: unlikely, but node cost  overflow could occur 
@@ -185,7 +185,7 @@ class unidirectional_search
                     (gval * hv.feasible_) + hv.ub_);
 
             // update the incumbent solution
-            bool is_target = n->get_id() == pi->target_id_;
+            bool is_target = n->get_id() == pi->target_;
             if((is_target || hv.feasible_) && gval < sol->sum_of_edge_costs_)
             { 
                 sol->s_node_ = n;
@@ -216,7 +216,8 @@ class unidirectional_search
 
             // initialise the start node and push to OPEN
             {
-            if(pi->start_id_ == warthog::SN_ID_MAX) { return; }
+            if(pi->start_ == warthog::SN_ID_MAX) { return; }
+
             warthog::search_node* start = expander_->generate_start_node(pi);
             if(!start) { return; } 
 

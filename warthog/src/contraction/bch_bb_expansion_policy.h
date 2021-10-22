@@ -13,13 +13,13 @@
 #include "domains/xy_graph.h"
 #include "label/dfs_labelling.h"
 #include "search/expansion_policy.h"
+#include "search/problem_instance.h"
 
 #include <vector>
 
 namespace warthog{
 
 class bb_filter;
-class problem_instance;
 class search_node;
 
 class bch_bb_expansion_policy : public  expansion_policy

@@ -23,7 +23,6 @@
 
 namespace warthog{
 
-class problem_instance;
 class search_node;
 
 template< class FILTER >
@@ -122,7 +121,7 @@ class bidirectional_expander //: public  expansion_policy
         inline warthog::search_node* 
         generate_start_node(warthog::problem_instance* pi)
         {
-            uint32_t s_graph_id = g_->to_graph_id((uint32_t)pi->start_id_);
+            uint32_t s_graph_id = g_->to_graph_id((uint32_t)pi->start_);
             if(s_graph_id == warthog::INF32) { return 0; }
             return generate(s_graph_id);
         }
@@ -130,7 +129,7 @@ class bidirectional_expander //: public  expansion_policy
             inline warthog::search_node*
             generate_target_node(warthog::problem_instance* pi)
         {
-            uint32_t t_graph_id = g_->to_graph_id((uint32_t)pi->target_id_);
+            uint32_t t_graph_id = g_->to_graph_id((uint32_t)pi->target_);
             if(t_graph_id == warthog::INF32) { return 0; }
             return generate(t_graph_id);
         }
@@ -142,7 +141,7 @@ class bidirectional_expander //: public  expansion_policy
         bool
         is_target(warthog::search_node* n, warthog::problem_instance* pi)
         {
-            return n->get_id() == pi->target_id_;
+            return n->get_id() == pi->target_;
         }
 
         inline warthog::search_node*

@@ -1,6 +1,6 @@
 //
-// Run CPD extractions, it is assumed there exists a path from `start_id` to
-// `target_id`, we have a few (debug) checks but that's all.
+// Run CPD extractions, it is assumed there exists a path from `start` to
+// `target`, we have a few (debug) checks but that's all.
 //
 #ifndef __CPD_EXTRACTIONS_H_
 #define __CPD_EXTRACTIONS_H_
@@ -41,17 +41,17 @@ class cpd_extractions_base : public warthog::search
             warthog::timer mytimer;
             mytimer.start();
 
-            warthog::sn_id_t source_id = pi.start_id_;
-            warthog::sn_id_t target_id = pi.target_id_;
+            warthog::sn_id_t source_id = pi.start_;
+            warthog::sn_id_t target = pi.target_;
 
             // NB: we store the actual path in addition to simply extracting it
             sol.sum_of_edge_costs_ = 0;
 
-            while(source_id != target_id && sol.met_.nodes_generated_ < max_k_moves_)
+            while(source_id != target && sol.met_.nodes_generated_ < max_k_moves_)
             {
                 sol.path_.push_back(source_id);
 
-                uint32_t move = oracle_->get_move(source_id, target_id);
+                uint32_t move = oracle_->get_move(source_id, target);
                 if (move == warthog::cpd::CPD_FM_NONE)
                 {
                     error("Could not find path", pi);
@@ -80,14 +80,14 @@ class cpd_extractions_base : public warthog::search
             warthog::timer mytimer;
             mytimer.start();
 
-            warthog::sn_id_t source_id = pi.start_id_;
-            warthog::sn_id_t target_id = pi.target_id_;
+            warthog::sn_id_t source_id = pi.start_;
+            warthog::sn_id_t target = pi.target_;
 
             sol.sum_of_edge_costs_ = 0;
 
-            while(source_id != target_id && sol.met_.nodes_generated_ < max_k_moves_)
+            while(source_id != target && sol.met_.nodes_generated_ < max_k_moves_)
             {
-                uint32_t move = oracle_->get_move(source_id, target_id);
+                uint32_t move = oracle_->get_move(source_id, target);
                 if (move == warthog::cpd::CPD_FM_NONE)
                 {
                     error("Could not find path", pi);

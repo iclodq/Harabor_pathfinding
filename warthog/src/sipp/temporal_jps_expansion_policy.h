@@ -52,9 +52,9 @@ class temporal_jps_expansion_policy
         {
             warthog::sipp::safe_interval start_si = 
                 jpst_gm_->get_safe_interval(
-                    (uint32_t)pi->start_id_, 0);
+                    (uint32_t)pi->start_, 0);
             if(start_si.s_time_ != 0) { return 0; }
-            return generate(pi->start_id_);
+            return generate(pi->start_);
         }
 
         // the target node in SIPP is an xy location which 
@@ -71,14 +71,14 @@ class temporal_jps_expansion_policy
         warthog::search_node*
         generate_target_node(warthog::problem_instance* pi)
         {
-            uint32_t xy_id = (pi->target_id_ & UINT32_MAX);
+            uint32_t xy_id = (pi->target_ & UINT32_MAX);
             uint32_t gm_id = jpst_gm_->gm_->to_padded_id(xy_id);
             if(!jpst_gm_->gm_->get_label(gm_id))
             {
                 return 0; // target is an obstacle
             }
             target_gm_id_ = gm_id;
-            return generate(pi->target_id_);
+            return generate(pi->target_);
         }
 
         // returns true if @param n is the target node and false otherwise.
@@ -94,7 +94,7 @@ class temporal_jps_expansion_policy
         bool
         is_target(warthog::search_node* n, warthog::problem_instance* pi)
         {
-            return (n->get_id() & UINT32_MAX) == (pi->target_id_ & UINT32_MAX);
+            return (n->get_id() & UINT32_MAX) == (pi->target_ & UINT32_MAX);
         }
 
 

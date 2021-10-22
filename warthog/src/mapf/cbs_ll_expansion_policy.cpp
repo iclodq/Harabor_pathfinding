@@ -120,8 +120,8 @@ warthog::cbs_ll_expansion_policy::generate_start_node(
         warthog::problem_instance* pi)
 { 
     warthog::sn_id_t max_id = map_->header_width() * map_->header_height();
-    if(pi->start_id_ >= max_id) { return 0; }
-    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->start_id_);
+    if(pi->start_ >= max_id) { return 0; }
+    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->start_);
     if(map_->get_label(padded_id) == 0) { return 0; }
     return __generate(padded_id, 0);
 }
@@ -131,12 +131,12 @@ warthog::cbs_ll_expansion_policy::generate_target_node(
         warthog::problem_instance* pi)
 {
     warthog::sn_id_t max_id = map_->header_width() * map_->header_height();
-    if(pi->target_id_ >= max_id) { return 0; }
+    if(pi->target_ >= max_id) { return 0; }
 
     // precompute h-values
-    h_->set_current_target(pi->target_id_);
+    h_->set_current_target(pi->target_);
 
-    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->target_id_);
+    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->target_);
     if(map_->get_label(padded_id) == 0) { return 0; }
     return __generate(padded_id, 0);
 }

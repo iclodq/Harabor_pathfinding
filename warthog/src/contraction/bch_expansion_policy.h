@@ -17,13 +17,13 @@
 
 #include "contraction.h"
 #include "expansion_policy.h"
+#include "problem_instance.h"
 #include "xy_graph.h"
 
 #include <vector>
 
 namespace warthog{
 
-class problem_instance;
 class search_node;
 
 class bch_expansion_policy : public  expansion_policy

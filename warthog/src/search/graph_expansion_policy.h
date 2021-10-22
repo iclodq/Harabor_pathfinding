@@ -143,7 +143,7 @@ class graph_expansion_policy
         warthog::search_node* 
         generate_start_node(warthog::problem_instance* pi)
         {
-            uint32_t s_graph_id = g_->to_graph_id((uint32_t)pi->start_id_);
+            uint32_t s_graph_id = g_->to_graph_id((uint32_t)pi->start_);
             if(s_graph_id == warthog::INF32) { return 0; }
             return &nodepool_[s_graph_id];
         }
@@ -152,12 +152,12 @@ class graph_expansion_policy
         generate_target_node(warthog::problem_instance* pi)
         {
             // convert from external id to internal id
-            uint32_t t_graph_id = g_->to_graph_id((uint32_t)pi->target_id_);
+            uint32_t t_graph_id = g_->to_graph_id((uint32_t)pi->target_);
             if(t_graph_id == warthog::INF32) { return 0; }
             
             // also update the filter with the new target location
             if(filter_)
-            { filter_->set_target((uint32_t)pi->target_id_); }
+            { filter_->set_target((uint32_t)pi->target_); }
 
             // generate the search node
             return &nodepool_[t_graph_id];
@@ -172,7 +172,7 @@ class graph_expansion_policy
         bool
         is_target(warthog::search_node* n, warthog::problem_instance* pi)
         {
-            return n->get_id() == pi->target_id_;
+            return n->get_id() == pi->target_;
         }
 
         inline uint32_t 

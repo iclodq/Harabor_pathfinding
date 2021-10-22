@@ -51,7 +51,6 @@ class cpd_search : public warthog::search
         exp_cutoff_ = UINT32_MAX;
         time_cutoff_ = DBL_MAX;
         max_k_moves_ = UINT32_MAX;
-        pi_.instance_id_ = UINT32_MAX;
         quality_cutoff_ = 0.0;
         k_moves_ =
             std::vector<uint32_t>(expander_->get_g()->get_num_nodes(), 0);
@@ -61,12 +60,11 @@ class cpd_search : public warthog::search
 
     virtual void
     get_pathcost(
-        warthog::problem_instance& instance, warthog::solution& sol)
+        warthog::problem_instance& pi, warthog::solution& sol)
     {
         sol.reset();
-        pi_ = instance;
 
-        warthog::search_node* target = search(sol);
+        warthog::search_node* target = search(&pi, &sol);
         if(target)
         {
             sol.sum_of_edge_costs_ = target->get_g();
@@ -74,18 +72,17 @@ class cpd_search : public warthog::search
     }
 
     virtual void
-    get_path(warthog::problem_instance& instance, warthog::solution& sol)
+    get_path(warthog::problem_instance& pi, warthog::solution& sol)
     {
         sol.reset();
-        pi_ = instance;
 
-        warthog::search_node* target = search(sol);
+        warthog::search_node* target = search(&pi, &sol);
         if(target)
         {
             sol.sum_of_edge_costs_ = target->get_g();
 
             // follow backpointers to extract the path
-            assert(expander_->is_target(target, &pi_));
+            assert(expander_->is_target(target, &pi));
             warthog::search_node* current = target;
             while(true)
             {
@@ -93,9 +90,9 @@ class cpd_search : public warthog::search
                 if(current->get_parent() == warthog::SN_ID_MAX) break;
                 current = expander_->generate(current->get_parent());
             }
-            assert(sol.path_.back() == pi_.start_id_);
+            assert(sol.path_.back() == pi.start_);
 
-            DO_ON_DEBUG_IF(pi_.verbose_)
+            DO_ON_DEBUG_IF(pi.verbose_)
             {
                 for(auto& node_id : sol.path_)
                 {
@@ -105,50 +102,13 @@ class cpd_search : public warthog::search
                             << "final path: (" << x << ", " << y << ")...";
                     warthog::search_node* n =
                             expander_->generate(node_id);
-                    assert(n->get_search_number() == pi_.instance_id_);
+                    assert(n->get_search_number() == pi.instance_id_);
                     n->print(std::cerr);
                     std::cerr << std::endl;
                 }
             }
         }
         std::reverse(sol.path_.begin(), sol.path_.end());
-    }
-
-    // return a list of the nodes expanded during the last search
-    // @param coll: an empty list
-    void
-    closed_list(std::vector<warthog::search_node*>& coll)
-    {
-        for(size_t i = 0; i < expander_->get_node_pool_size(); i++)
-        {
-            warthog::search_node* current = expander_->generate(i);
-            if(current->get_search_number() == pi_.instance_id_)
-            {
-                coll.push_back(current);
-            }
-        }
-    }
-
-    // return a pointer to the warthog::search_node object associated
-    // with node @param id. If this node was not generate during the
-    // last search instance, 0 is returned instead
-    warthog::search_node*
-    get_generated_node(warthog::sn_id_t id)
-    {
-        warthog::search_node* ret = expander_->generate(id);
-        return ret->get_search_number() == pi_.instance_id_ ? ret : 0;
-    }
-
-    // apply @param fn to every node on the closed list
-    void
-    apply_to_closed(std::function<void(warthog::search_node*)>& fn)
-    {
-        for(size_t i = 0; i < expander_->get_nodes_pool_size(); i++)
-        {
-            warthog::search_node* current = expander_->generate(i);
-            if(current->get_search_number() == pi_.instance_id_)
-            { fn(current); }
-        }
     }
 
     // set a cost-cutoff to run a bounded-cost A* search.
@@ -233,7 +193,6 @@ class cpd_search : public warthog::search
     E* expander_;
     Q* open_;
     L* listener_;
-    warthog::problem_instance pi_;
 
     // early termination limits
     warthog::cost_t cost_cutoff_;   // Fixed upper bound
@@ -275,7 +234,7 @@ class cpd_search : public warthog::search
 
             if (n->get_f() >= bound)
             {
-                debug(pi_.verbose_, "Prune by f-val:", n->get_f());
+                debug(pi->verbose_, "Prune by f-val:", n->get_f());
                 prune = true;
             }
             // TODO Do we need to make a case where we have an incumbent's UB
@@ -288,6 +247,7 @@ class cpd_search : public warthog::search
     bool
     early_stop_(warthog::search_node* current,
                 warthog::search_node* incumbent,
+                warthog::problem_instance* pi, 
                 warthog::solution* sol,
                 warthog::timer* mytimer)
     {
@@ -297,13 +257,13 @@ class cpd_search : public warthog::search
         // search or if we want to impose some memory limit
         if(current->get_f() > cost_cutoff_)
         {
-            info(pi_.verbose_, "Cost cutoff", current->get_f(), ">",
+            info(pi->verbose_, "Cost cutoff", current->get_f(), ">",
                   cost_cutoff_);
             stop = true;
         }
         if(sol->met_.nodes_expanded_ >= exp_cutoff_)
         {
-            info(pi_.verbose_, "Expanded cutoff", sol->met_.nodes_expanded_, ">",
+            info(pi->verbose_, "Expanded cutoff", sol->met_.nodes_expanded_, ">",
                   exp_cutoff_);
             stop = true;
         }
@@ -312,7 +272,7 @@ class cpd_search : public warthog::search
         double elapsed_time = mytimer->elapsed_time_nano();
         if (mytimer->elapsed_time_nano() > time_cutoff_)
         {
-            info(pi_.verbose_, "Time cutoff", elapsed_time,
+            info(pi->verbose_, "Time cutoff", elapsed_time,
                   ">", time_cutoff_);
             stop = true;
         }
@@ -320,7 +280,7 @@ class cpd_search : public warthog::search
         // CPD terms, we have an "unperturbed path."
         if (current->get_f() == current->get_ub())
         {
-            info(pi_.verbose_, "Early stop");
+            info(pi->verbose_, "Early stop");
             stop = true;
         }
 
@@ -328,7 +288,7 @@ class cpd_search : public warthog::search
         {
             if (current->get_f() * (1 + quality_cutoff_) > incumbent->get_ub())
             {
-                info(pi_.verbose_, "Quality cutoff", current->get_f(), "x",
+                info(pi->verbose_, "Quality cutoff", current->get_f(), "x",
                       quality_cutoff_ + 1, ">", incumbent->get_ub());
                 stop = true;
             }
@@ -336,7 +296,7 @@ class cpd_search : public warthog::search
 
         if (k_moves_.at(current->get_id()) >= max_k_moves_)
         {
-            info(pi_.verbose_,
+            info(pi->verbose_,
                  "Reached maximum radius", k_moves_.at(current->get_id()));
             stop = true;
         }
@@ -353,7 +313,7 @@ class cpd_search : public warthog::search
     {
         k_moves_.at(n_id) = k_moves_.at(p_id) + 1;
 
-        debug(pi_.verbose_, "Node", n_id, "set to k=", k_moves_.at(n_id));
+        debug(pi->verbose_, "Node", n_id, "set to k=", k_moves_.at(n_id));
     }
 
     /**
@@ -363,12 +323,13 @@ class cpd_search : public warthog::search
     void
     generate_node_(warthog::search_node* current,
                    warthog::search_node* n,
-                   warthog::cost_t gval)
+                   warthog::cost_t gval, 
+                   warthog::problem_instance* pi)
     {
         warthog::cost_t hval;
         warthog::cost_t ub;
 
-        heuristic_->h(n->get_id(), pi_.target_id_, hval, ub);
+        heuristic_->h(n->get_id(), pi->target_, hval, ub);
 
         // Only update the UB if we have one
         if (ub < warthog::COST_MAX) { ub += gval; }
@@ -381,14 +342,15 @@ class cpd_search : public warthog::search
     }
 
     void
-    update_incumbent_(warthog::search_node* &incumbent, warthog::search_node* n)
+    update_incumbent_(warthog::search_node* &incumbent, warthog::search_node* n, 
+            warthog::problem_instance* pi)
     {
         // if n_i is a goal node
-        if(expander_->is_target(n, &pi_))
+        if(expander_->is_target(n, pi))
         {
             incumbent = n;
             incumbent->set_ub(n->get_g());
-            debug(pi_.verbose_,
+            debug(pi->verbose_,
                   "New path to target:", n->get_id(), "=", n->get_g());
         }
         else if (n->get_ub() < warthog::COST_MAX)
@@ -396,13 +358,13 @@ class cpd_search : public warthog::search
             // Found a new incumbent
             if (incumbent == nullptr)
             {
-                debug(pi_.verbose_, "Found UB:", n->get_id(), "=", n->get_ub());
+                debug(pi->verbose_, "Found UB:", n->get_id(), "=", n->get_ub());
                 incumbent = n;
             }
             // Better incumbent
             else if (n->get_ub() < incumbent->get_ub())
             {
-                debug(pi_.verbose_, "Update UB:", n->get_id(), "=", n->get_ub());
+                debug(pi->verbose_, "Update UB:", n->get_id(), "=", n->get_ub());
                 incumbent = n;
             }
         }
@@ -410,7 +372,7 @@ class cpd_search : public warthog::search
 
     // TODO refactor node information inside Stats
     warthog::search_node*
-    search(warthog::solution& sol)
+    search(warthog::problem_instance* pi, warthog::solution* sol)
     {
         warthog::timer mytimer;
         mytimer.start();
@@ -420,69 +382,69 @@ class cpd_search : public warthog::search
         warthog::search_node* incumbent = nullptr;
 
         // get the internal target id
-        if(pi_.target_id_ != warthog::SN_ID_MAX)
+        if(pi->target_ != warthog::SN_ID_MAX)
         {
             warthog::search_node* target =
-                    expander_->generate_target_node(&pi_);
+                    expander_->generate_target_node(pi);
             if(!target) { return nullptr; } // invalid target location
-            pi_.target_id_ = target->get_id();
+            pi->target_ = target->get_id();
         }
 
         // initialise and push the start node
-        if(pi_.start_id_ == warthog::SN_ID_MAX) { return nullptr; }
-        start = expander_->generate_start_node(&pi_);
+        if(pi->start_ == warthog::SN_ID_MAX) { return nullptr; }
+        start = expander_->generate_start_node(pi);
         if(!start) { return nullptr; } // invalid start location
-        pi_.start_id_ = start->get_id();
+        pi->start_ = start->get_id();
 
         // This heuristic also returns its upper bound
         warthog::cost_t start_h;
         warthog::cost_t start_ub;
-        heuristic_->h(pi_.start_id_, pi_.target_id_, start_h, start_ub);
+        heuristic_->h(pi->start_, pi->target_, start_h, start_ub);
 
         // `hscale` is contained in the heuristic
-        start->init(pi_.instance_id_, warthog::SN_ID_MAX, 0, start_h, start_ub);
+        start->init(pi->instance_id_, warthog::SN_ID_MAX, 0, start_h, start_ub);
 
         // Start node has no parent
         k_moves_.at(start->get_id()) = 0;
         listener_->generate_node(0, start, 0, UINT32_MAX);
 
-        user(pi_.verbose_, pi_);
-        info(pi_.verbose_, "cut-off =", cost_cutoff_, "- tlim =", time_cutoff_,
+        user(pi->verbose_, pi);
+        info(pi->verbose_, "cut-off =", cost_cutoff_, "- tlim =", time_cutoff_,
              "- k-move =", max_k_moves_, "- quality =", quality_cutoff_);
-        debug(pi_.verbose_, "Start node:", *start);
+        debug(pi->verbose_, "Start node:", *start);
 
         if (mytimer.elapsed_time_nano() > time_cutoff_)
         {
             // Bail without an answer if we exceed the time limit after the
             // first path extraction.
-            info(pi_.verbose_, "Time cutoff before start of search.");
+            info(pi->verbose_, "Time cutoff before start of search.");
         }
         else
         {
             open_->push(start);
-            sol.met_.heap_ops_++;
+            sol->met_.heap_ops_++;
         }
 
         // begin expanding
         while(open_->size())
         {
             warthog::search_node* current = open_->pop();
-            update_incumbent_(incumbent, current);
+            update_incumbent_(incumbent, current, pi);
 
-            if (early_stop_(current, incumbent, &sol, &mytimer)) { break; }
+            if (early_stop_(current, incumbent, pi, sol, &mytimer)) { break; }
 
             current->set_expanded(true); // NB: set before generating
             assert(current->get_expanded());
-            sol.met_.nodes_expanded_++;
+            sol->met_.nodes_expanded_++;
 
-            expander_->expand(current, &pi_);
+            expander_->expand(current, pi);
             listener_->expand_node(current);
 
             // Incorrect timings reported otherwise
             DO_ON_DEBUG
             {
-                info(pi_.verbose_, "[", mytimer.elapsed_time_micro(),"]",
-                    sol.met_.nodes_expanded_, "- Expanding:", *current);
+                info(pi->verbose_, "[", mytimer.elapsed_time_micro(),"]",
+                    sol->met_.nodes_expanded_, "- Expanding:", *current);
             }
 
             // Generate successors of the current node
@@ -495,14 +457,14 @@ class cpd_search : public warthog::search
             {
                 warthog::cost_t gval = current->get_g() + cost_to_n;
 
-                sol.met_.nodes_generated_++;
+                sol->met_.nodes_generated_++;
                 edge_id++;
                 listener_->generate_node(current, n, gval, edge_id);
 
                 // Generate new search nodes
                 if(n->get_search_number() != current->get_search_number())
                 {
-                    generate_node_(current, n, gval);
+                    generate_node_(current, n, gval, pi);
                 }
                 // if n_i \in OPEN u CLOSED and g(n_i) > g(n) + c(n, n_i)
                 else if (gval < n->get_g())
@@ -515,7 +477,7 @@ class cpd_search : public warthog::search
                 // Neither a new node nor an improving path to it
                 else
                 {
-                    trace(pi_.verbose_, "Closed;", *n);
+                    trace(pi->verbose_, "Closed;", *n);
                     continue;
                 }
 
@@ -524,7 +486,7 @@ class cpd_search : public warthog::search
                 // pruned, then touched and pruned before being updated.
                 if (should_prune_(incumbent, n))
                 {
-                    trace(pi_.verbose_, "Pruning:", *n);
+                    trace(pi->verbose_, "Pruning:", *n);
                     continue;
                 }
 
@@ -532,43 +494,43 @@ class cpd_search : public warthog::search
                 if(open_->contains(n))
                 {
                     open_->decrease_key(n);
-                    trace(pi_.verbose_, "Updating:", *n);
+                    trace(pi->verbose_, "Updating:", *n);
                 }
                 // if n_i \in CLOSED
                 else
                 {
                     open_->push(n);
-                    trace(pi_.verbose_, "Generating:", *n);
+                    trace(pi->verbose_, "Generating:", *n);
                 }
             }
         }
 
-        sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
-        sol.met_.nodes_surplus_ = open_->size();
-        sol.met_.heap_ops_ = open_->get_heap_ops();
+        sol->met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+        sol->met_.nodes_surplus_ = open_->size();
+        sol->met_.heap_ops_ = open_->get_heap_ops();
 
-        DO_ON_DEBUG_IF(pi_.verbose_)
+        DO_ON_DEBUG_IF(pi->verbose_)
         {
             if(incumbent == nullptr)
             {
-                warning(pi_.verbose_, "Search failed; no solution exists.");
+                warning(pi->verbose_, "Search failed; no solution exists.");
             }
             else
             {
-                user(pi_.verbose_, "Best incumbent", *incumbent);
+                user(pi->verbose_, "Best incumbent", *incumbent);
             }
         }
 
         // In case the incumbent is not the target, this means we found a better
         // path by *following the heuristic*, so we rebuild it in the same way.
-        while (incumbent != nullptr && !expander_->is_target(incumbent, &pi_))
+        while (incumbent != nullptr && !expander_->is_target(incumbent, pi))
         {
             warthog::sn_id_t p_id = incumbent->get_id();
-            warthog::sn_id_t n_id = heuristic_->get_move(p_id, pi_.target_id_);
+            warthog::sn_id_t n_id = heuristic_->get_move(p_id, pi->target_);
 
             if (n_id == warthog::SN_ID_MAX)
             {
-                // warning(pi_.verbose_, "Cannot rebuild path from", p_id);
+                // warning(pi->verbose_, "Cannot rebuild path from", p_id);
                 std::cerr << "Cannot rebuild path from " << p_id << std::endl;
                 incumbent = nullptr;
             }
@@ -579,7 +541,7 @@ class cpd_search : public warthog::search
                 warthog::cost_t ub;
                 warthog::cost_t gval;
 
-                heuristic_->h(n_id, pi_.target_id_, lb, ub);
+                heuristic_->h(n_id, pi->target_, lb, ub);
                 // The g-value of the next node is the g-value of the current
                 // one plus the difference in their heuristic costs.
                 //
@@ -595,7 +557,7 @@ class cpd_search : public warthog::search
 
                 n->init(incumbent->get_search_number(),
                         p_id, gval, gval + lb, gval + ub);
-                debug(pi_.verbose_, "Rebuild", *n);
+                debug(pi->verbose_, "Rebuild", *n);
                 incumbent = n;
             }
         }

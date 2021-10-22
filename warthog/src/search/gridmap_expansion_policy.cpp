@@ -89,8 +89,8 @@ warthog::gridmap_expansion_policy::generate_start_node(
         warthog::problem_instance* pi)
 { 
     uint32_t max_id = map_->header_width() * map_->header_height();
-    if((uint32_t)pi->start_id_ >= max_id) { return 0; }
-    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->start_id_);
+    if((uint32_t)pi->start_ >= max_id) { return 0; }
+    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->start_);
     if(map_->get_label(padded_id) == 0) { return 0; }
     return generate(padded_id);
 }
@@ -100,8 +100,8 @@ warthog::gridmap_expansion_policy::generate_target_node(
         warthog::problem_instance* pi)
 {
     uint32_t max_id = map_->header_width() * map_->header_height();
-    if((uint32_t)pi->target_id_ >= max_id) { return 0; }
-    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->target_id_);
+    if((uint32_t)pi->target_ >= max_id) { return 0; }
+    uint32_t padded_id = map_->to_padded_id((uint32_t)pi->target_);
     if(map_->get_label(padded_id) == 0) { return 0; }
     return generate(padded_id);
 }

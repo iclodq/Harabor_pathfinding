@@ -323,7 +323,7 @@ class graph_oracle_base
         compute_row(uint32_t source_id, warthog::search* dijk,
                     std::vector<warthog::cpd::fm_coll> &s_row)
         {
-            warthog::problem_instance problem(source_id);
+            warthog::problem_instance problem(source_id, warthog::SN_ID_MAX);
             warthog::solution sol;
 
             std::fill(s_row.begin(), s_row.end(), warthog::cpd::CPD_FM_NONE);

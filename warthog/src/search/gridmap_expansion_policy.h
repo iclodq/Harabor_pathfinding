@@ -22,6 +22,7 @@
 
 #include "expansion_policy.h"
 #include "gridmap.h"
+#include "problem_instance.h"
 #include "search_node.h"
 
 #include <memory>
@@ -29,7 +30,6 @@
 namespace warthog
 {
 
-class problem_instance;
 class gridmap_expansion_policy : public expansion_policy
 {
 	public:

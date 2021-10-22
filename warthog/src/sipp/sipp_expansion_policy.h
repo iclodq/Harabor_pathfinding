@@ -58,9 +58,9 @@ class sipp_expansion_policy
         {
             warthog::sipp::safe_interval start_si = 
                 sipp_map_->get_safe_interval(
-                    (uint32_t)pi->start_id_, 0);
+                    (uint32_t)pi->start_, 0);
             if(start_si.s_time_ != 0) { return 0; }
-            return generate(pi->start_id_);
+            return generate(pi->start_);
         }
 
         // the target node in SIPP is an xy location which 
@@ -77,7 +77,7 @@ class sipp_expansion_policy
         warthog::search_node*
         generate_target_node(warthog::problem_instance* pi)
         {
-            uint32_t xy_id = (pi->target_id_ & INT32_MAX);
+            uint32_t xy_id = (pi->target_ & INT32_MAX);
             if(!sipp_map_->gm_->get_label(sipp_map_->gm_->to_padded_id(xy_id)))
             {
                 return 0; // target is an obstacle
@@ -95,8 +95,8 @@ class sipp_expansion_policy
             //    if(ivals.at(i).e_time_ == warthog::COST_MAX)
             //    {
             //        warthog::sn_id_t tmp_id = i;
-            //        pi->target_id_ = (tmp_id << 32) + xy_id;
-            //        return generate((warthog::sn_id_t)pi->target_id_);
+            //        pi->target_ = (tmp_id << 32) + xy_id;
+            //        return generate((warthog::sn_id_t)pi->target_);
             //    }
             //}
             //return 0; // no such target
@@ -117,9 +117,9 @@ class sipp_expansion_policy
         is_target(warthog::search_node* n, warthog::problem_instance* pi)
         {
             uint32_t xy_id = (n->get_id() & INT32_MAX);
-            return xy_id == pi->target_id_;
+            return xy_id == pi->target_;
 
-            //return n->get_id() == pi->target_id_;
+            //return n->get_id() == pi->target_;
         }
 
 

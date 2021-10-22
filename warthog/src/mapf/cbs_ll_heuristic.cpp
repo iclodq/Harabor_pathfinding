@@ -41,9 +41,9 @@ warthog::cbs_ll_heuristic::~cbs_ll_heuristic()
 }
 
 void
-warthog::cbs_ll_heuristic::set_current_target(warthog::sn_id_t target_id)
+warthog::cbs_ll_heuristic::set_current_target(warthog::sn_id_t target)
 {
-    uint32_t target_xy_id = (uint32_t)target_id;
+    uint32_t target_xy_id = (uint32_t)target;
     std::unordered_map<uint32_t, uint32_t>::iterator it = t_map_.find(target_xy_id);
 
     // already have precomputed h-values for this target
@@ -55,12 +55,12 @@ warthog::cbs_ll_heuristic::set_current_target(warthog::sn_id_t target_id)
 
     // new target; precompute h-values from scratch
     t_index_ = (uint32_t)t_map_.size();
-    t_map_[(uint32_t)target_id] = t_index_;
+    t_map_[(uint32_t)target] = t_index_;
     h_.push_back(std::vector<warthog::cost_t>());
     h_[t_index_].resize(gm_sz_, warthog::INF32);
 
     sol_->reset();
-    warthog::problem_instance problem(target_id);
+    warthog::problem_instance problem(target, warthog::SN_ID_MAX);
     alg_->get_pathcost(problem, *sol_);
 }
 

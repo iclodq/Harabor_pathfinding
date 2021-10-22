@@ -101,7 +101,7 @@ class cbs_ll_expansion_policy
         {
             // agents must arrive at the xy location of the target
             uint32_t xy_id = (uint32_t)(n->get_id() & UINT32_MAX);
-            if(xy_id != (uint32_t)pi->target_id_) { return false; }
+            if(xy_id != (uint32_t)pi->target_) { return false; }
 
             // ENABLE THIS CODE FOR MAPF TARGET CONDITION
             //uint32_t arrival_time = (uint32_t)(n->get_id() >> 32);

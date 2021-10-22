@@ -6,41 +6,29 @@
 namespace warthog
 {
 
-class problem_instance
+template <typename STATE>
+class problem_instance_base
 {
 	public:
-        problem_instance(
-                warthog::sn_id_t startid, 
-                warthog::sn_id_t targetid=warthog::SN_ID_MAX, 
-                bool verbose=0) :
-            start_id_(startid), 
-            target_id_(targetid), 
+        problem_instance_base(STATE start, STATE target, bool verbose=0) :
+            start_(start), 
+            target_(target), 
             instance_id_(instance_counter_++),
             verbose_(verbose),
             extra_params_(0)
 
         { }
 
-		problem_instance() :
-            start_id_(warthog::SN_ID_MAX),
-            target_id_(warthog::SN_ID_MAX),
-            instance_id_(instance_counter_++),
-            verbose_(0),
-            extra_params_(0)
-        { }
-
-
-		problem_instance(const warthog::problem_instance& other)
+		problem_instance_base(const warthog::problem_instance_base<STATE>&other)
         {
-            this->start_id_ = other.start_id_;
-            this->target_id_ = other.target_id_;
-            //this->instance_id_ = other.instance_id_;
+            this->start_ = other.start_;
+            this->target_ = other.target_;
             this->instance_id_ = instance_counter_++;
             this->verbose_ = other.verbose_;
             this->extra_params_ = other.extra_params_;
         }
 
-		~problem_instance() { }
+		~problem_instance_base() { }
 
         void
         reset()
@@ -48,12 +36,11 @@ class problem_instance
             instance_id_ = instance_counter_++;
         }
 
-		warthog::problem_instance&
-		operator=(const warthog::problem_instance& other)
+		warthog::problem_instance_base<STATE>&
+		operator=(const warthog::problem_instance_base<STATE>& other)
         {
-            this->start_id_ = other.start_id_;
-            this->target_id_ = other.target_id_;
-            //this->instance_id_ = other.instance_id_;
+            this->start_ = other.start_;
+            this->target_ = other.target_;
             this->instance_id_ = instance_counter_++;
             this->verbose_ = other.verbose_;
             this->extra_params_ = other.extra_params_;
@@ -63,13 +50,13 @@ class problem_instance
         void
         print(std::ostream& out)
         {
-            out << "problem instance; start_id = " << start_id_ << " "
-                << " target_id " << target_id_ << " " << " search_id "
+            out << "problem instance; start = " << start_ << " "
+                << " target " << target_ << " " << " search_id "
                 << instance_id_;
         }
 
-		warthog::sn_id_t start_id_;
-		warthog::sn_id_t target_id_;
+		STATE start_;
+		STATE target_;
 		uint32_t instance_id_;
         bool verbose_;
 
@@ -81,6 +68,10 @@ class problem_instance
 
 };
 
+template <typename T>
+uint32_t warthog::problem_instance_base<T>::instance_counter_ = UINT32_MAX;
+
+typedef problem_instance_base<warthog::sn_id_t> problem_instance;
 
 }
 

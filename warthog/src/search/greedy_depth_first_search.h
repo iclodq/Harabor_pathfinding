@@ -51,7 +51,6 @@ class greedy_depth_first_search : public warthog::search
             exp_cutoff_ = UINT32_MAX;
             on_generate_fn_ = 0;
             on_expand_fn_ = 0;
-            pi_.instance_id_ = UINT32_MAX;
             stack_.reserve(4096);
 		}
 
@@ -59,13 +58,12 @@ class greedy_depth_first_search : public warthog::search
 
         virtual void
 		get_pathcost(
-                warthog::problem_instance& instance, warthog::solution& sol)
+                warthog::problem_instance& pi, warthog::solution& sol)
         {
 
             sol.reset();
-            pi_ = instance;
 
-			warthog::search_node* target = search(sol);
+			warthog::search_node* target = search(&pi, &sol);
 			if(target)
 			{
                 sol.sum_of_edge_costs_ = target->get_g();
@@ -73,12 +71,11 @@ class greedy_depth_first_search : public warthog::search
         }
 
         virtual void
-		get_path(warthog::problem_instance& instance, warthog::solution& sol)
+		get_path(warthog::problem_instance& pi, warthog::solution& sol)
 		{
             sol.reset();
-            pi_ = instance;
 
-			warthog::search_node* target = search(sol);
+			warthog::search_node* target = search(&pi, &sol);
 			if(target)
 			{
                 sol.sum_of_edge_costs_ = target->get_g();
@@ -165,7 +162,6 @@ class greedy_depth_first_search : public warthog::search
 		H* heuristic_;
 		E* expander_;
 		Q* succ_queue_;
-        warthog::problem_instance pi_;
 
         std::vector<dfs_pair> stack_;
 
@@ -191,7 +187,7 @@ class greedy_depth_first_search : public warthog::search
 		operator=(const greedy_depth_first_search& other) { return *this; }
 
 		warthog::search_node*
-		search(warthog::solution& sol)
+		search(warthog::problem_instance* pi, warthog::solution* sol)
 		{
 			warthog::timer mytimer;
 			mytimer.start();
@@ -201,25 +197,25 @@ class greedy_depth_first_search : public warthog::search
 			warthog::search_node* target = 0;
 
             // get the internal target id
-            if(pi_.target_id_ != warthog::SN_ID_MAX)
+            if(pi->target_ != warthog::SN_ID_MAX)
             { 
                 warthog::search_node* target = 
-                    expander_->generate_target_node(&pi_);
+                    expander_->generate_target_node(pi);
                 if(!target) { return 0; } // invalid target location
-                pi_.target_id_ = target->get_id();
+                pi->target_ = target->get_id();
 
             }
 
             // initialise and push the start node
-            if(pi_.start_id_ == warthog::SN_ID_MAX) { return 0; }
-            start = expander_->generate_start_node(&pi_);
+            if(pi->start_ == warthog::SN_ID_MAX) { return 0; }
+            start = expander_->generate_start_node(pi);
             if(!start) { return 0; } // invalid start location
-            pi_.start_id_ = start->get_id();
+            pi->start_ = start->get_id();
 
-			start->init(pi_.instance_id_, warthog::SN_ID_MAX, 
-                    0, heuristic_->h(pi_.start_id_, pi_.target_id_));
+			start->init(pi->instance_id_, warthog::SN_ID_MAX, 
+                    0, heuristic_->h(pi->start_, pi->target_));
 			stack_.push_back(dfs_pair(start, 0));
-            sol.met_.heap_ops_++;
+            sol->met_.heap_ops_++;
 
             
             if(on_generate_fn_) 
@@ -228,36 +224,36 @@ class greedy_depth_first_search : public warthog::search
 
 
 			#ifndef NDEBUG
-			if(pi_.verbose_) { pi_.print(std::cerr); std:: cerr << "\n";}
+			if(pi->verbose_) { pi->print(std::cerr); std:: cerr << "\n";}
 			#endif
 
             // begin expanding
 			while(stack_.size())
 			{
                 // terminate if we've reached the limit for expanded nodes
-                if(sol.met_.nodes_expanded_ > exp_cutoff_) { break; }
+                if(sol->met_.nodes_expanded_ > exp_cutoff_) { break; }
 
                 dfs_pair& c_pair = stack_.back();
 				warthog::search_node* current = c_pair.first;
                 current->set_expanded(true);
-				sol.met_.nodes_expanded_++;
+				sol->met_.nodes_expanded_++;
 
                 if(on_expand_fn_) { (*on_expand_fn_)(current); }
 
                 // goal test
-                if(expander_->is_target(current, &pi_))
+                if(expander_->is_target(current, pi))
                 {
                     target = current;
                     break;
                 }
                     
 				#ifndef NDEBUG
-				if(pi_.verbose_)
+				if(pi->verbose_)
 				{
 					int32_t x, y;
                     expander_->get_xy(current->get_id(), x, y);
 					std::cerr 
-                        << sol.met_.nodes_expanded_
+                        << sol->met_.nodes_expanded_
                         << ". expanding ("<<x<<", "<<y<<")...";
 					current->print(std::cerr);
 					std::cerr << std::endl;
@@ -266,7 +262,7 @@ class greedy_depth_first_search : public warthog::search
 
                 // we process successors in order, from first to last
                 // as they come out of the expansion policy
-				expander_->expand(current, &pi_);
+				expander_->expand(current, pi);
 
 				warthog::search_node* n = 0;
 				warthog::cost_t cost_to_n = 0;
@@ -283,7 +279,7 @@ class greedy_depth_first_search : public warthog::search
                         n->get_search_number() == current->get_search_number() )
                     {
                         #ifndef NDEBUG
-                        if(pi_.verbose_)
+                        if(pi->verbose_)
                         {
                             std::cerr <<
                                 "pruned (cycle) ";
@@ -294,13 +290,13 @@ class greedy_depth_first_search : public warthog::search
 
                     warthog::cost_t gval = current->get_g() + cost_to_n;
                     n->init(current->get_search_number(), current->get_id(),
-                        gval, gval + heuristic_->h(n->get_id(),pi_.target_id_));
+                        gval, gval + heuristic_->h(n->get_id(),pi->target_));
 
                     // only generate successors below the f-value threshold
                     if(n->get_f() > cost_cutoff_) 
                     { 
                         #ifndef NDEBUG
-                        if(pi_.verbose_)
+                        if(pi->verbose_)
                         {
                             std::cerr <<
                                 "pruned (bound) ";
@@ -310,14 +306,14 @@ class greedy_depth_first_search : public warthog::search
                     #ifndef NDEBUG
                     else
                     {
-                        if(pi_.verbose_)
+                        if(pi->verbose_)
                         {
                             std::cerr <<
                                 "candidate  ";
                         }
                     }
 
-                    if(pi_.verbose_)
+                    if(pi->verbose_)
                     {
                         int32_t nx, ny;
                         expander_->get_xy(n->get_id(), nx, ny);
@@ -343,11 +339,11 @@ class greedy_depth_first_search : public warthog::search
 
                 n = succ_queue_->pop();
                 stack_.push_back(dfs_pair(n, 0));
-                sol.met_.heap_ops_++;
+                sol->met_.heap_ops_++;
                 if(on_expand_fn_) { (*on_expand_fn_)(n); }
 
                 #ifndef NDEBUG
-                if(pi_.verbose_)
+                if(pi->verbose_)
                 {
                     int32_t nx, ny;
                     expander_->get_xy(n->get_id(), nx, ny);
@@ -360,10 +356,10 @@ class greedy_depth_first_search : public warthog::search
                 #endif
 			}
 
-			sol.met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
+			sol->met_.time_elapsed_nano_ = mytimer.elapsed_time_nano();
 
             #ifndef NDEBUG
-            if(pi_.verbose_)
+            if(pi->verbose_)
             {
                 if(target == 0) 
                 {

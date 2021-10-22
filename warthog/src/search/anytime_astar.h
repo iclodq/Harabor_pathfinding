@@ -78,7 +78,7 @@ class anytime_astar : public warthog::search
 			if(incumbent)
 			{
                 sol.sum_of_edge_costs_ = incumbent->get_g() + 
-                    heuristic_->ub(incumbent->get_id(), pi_.target_id_);
+                    heuristic_->ub(incumbent->get_id(), pi_.target_);
             }
         }
 
@@ -95,7 +95,7 @@ class anytime_astar : public warthog::search
                     incumbent->get_g() + 
                     heuristic_->ub(
                             incumbent->get_id(), 
-                            pi_.target_id_);
+                            pi_.target_);
 
 				// follow backpointers to extract the path from start -> incumbent
                 warthog::search_node* current = incumbent;
@@ -129,7 +129,7 @@ class anytime_astar : public warthog::search
             {
                 uint32_t tmp_id = sol.path_.back();
                 warthog::sn_id_t next_id = 
-                    heuristic_->get_move(tmp_id, pi_.target_id_);
+                    heuristic_->get_move(tmp_id, pi_.target_);
                 if(next_id == warthog::SN_ID_MAX) 
                 { break; }
                 sol.path_.push_back(next_id);
@@ -282,26 +282,26 @@ class anytime_astar : public warthog::search
             warthog::cost_t incumbent_ub = warthog::COST_MAX;
 
             // get the internal target id
-            if(pi_.target_id_ != warthog::SN_ID_MAX)
+            if(pi_.target_ != warthog::SN_ID_MAX)
             { 
                 warthog::search_node* target = 
                     expander_->generate_target_node(&pi_);
                 if(!target) { return 0; } // invalid target location
-                pi_.target_id_ = target->get_id();
+                pi_.target_ = target->get_id();
             }
 
             // initialise and push the start node
-            if(pi_.start_id_ == warthog::SN_ID_MAX) { return 0; }
+            if(pi_.start_ == warthog::SN_ID_MAX) { return 0; }
             start = expander_->generate_start_node(&pi_);
             if(!start) { return 0; } // invalid start location
-            pi_.start_id_ = start->get_id();
+            pi_.start_ = start->get_id();
 
 			start->init(pi_.instance_id_, warthog::SN_ID_MAX, 
-                    0, heuristic_->h(pi_.start_id_, pi_.target_id_));
+                    0, heuristic_->h(pi_.start_, pi_.target_));
 
             incumbent = start;
-            incumbent_lb = heuristic_->h(pi_.start_id_, pi_.target_id_);
-            incumbent_ub = heuristic_->ub(pi_.start_id_, pi_.target_id_);
+            incumbent_lb = heuristic_->h(pi_.start_, pi_.target_);
+            incumbent_ub = heuristic_->ub(pi_.start_, pi_.target_);
 
 			open_->push(start);
             
@@ -341,10 +341,10 @@ class anytime_astar : public warthog::search
                 // evaluate the upper and lower bounds for the current node
                 warthog::cost_t current_ub = 
                     current->get_g() +
-                    heuristic_->ub(current->get_id(), pi_.target_id_);
+                    heuristic_->ub(current->get_id(), pi_.target_);
                 warthog::cost_t current_lb = 
                     current->get_g() + 
-                    heuristic_->h(current->get_id(), pi_.target_id_);
+                    heuristic_->h(current->get_id(), pi_.target_);
 
                 // terminate if we closed the gap
                 if(current_ub == current_lb)
@@ -378,9 +378,9 @@ class anytime_astar : public warthog::search
                     {
 						warthog::cost_t gval = current->get_g() + cost_to_n;
                         warthog::cost_t hval = 
-                            heuristic_->h(n->get_id(),pi_.target_id_);
+                            heuristic_->h(n->get_id(),pi_.target_);
                         warthog::cost_t ub_val = 
-                            heuristic_->ub(n->get_id(),pi_.target_id_);
+                            heuristic_->ub(n->get_id(),pi_.target_);
 
                         // sometimes we can prune successors by upperbound
                         if(incumbent_ub < (gval + hval)) { continue; }
@@ -421,9 +421,9 @@ class anytime_astar : public warthog::search
                     {
                         warthog::cost_t gval = current->get_g() + cost_to_n;
                         warthog::cost_t hval = 
-                            heuristic_->h(n->get_id(),pi_.target_id_);
+                            heuristic_->h(n->get_id(),pi_.target_);
                         warthog::cost_t ub_val = 
-                            heuristic_->h(n->get_id(),pi_.target_id_);
+                            heuristic_->h(n->get_id(),pi_.target_);
 
                         // check if relaxing the g-value improves the upperbound
                         if((gval + ub_val) < incumbent_ub)

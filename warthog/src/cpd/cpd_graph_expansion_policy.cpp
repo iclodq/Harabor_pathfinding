@@ -9,7 +9,7 @@ warthog::cpd_graph_expansion_policy::expand(
     warthog::graph::xy_graph* g = oracle_->get_graph();
     warthog::graph::node* graph_node = g->get_node(current->get_id());
 
-    uint32_t move_id = oracle_->get_move(current->get_id(), pi->target_id_);
+    uint32_t move_id = oracle_->get_move(current->get_id(), pi->target_);
     assert(move_id < graph_node->out_degree());
 
     warthog::graph::edge* fm = graph_node->outgoing_begin() + move_id;
@@ -20,7 +20,7 @@ warthog::search_node*
 warthog::cpd_graph_expansion_policy::generate_start_node(warthog::problem_instance* pi)
 {
     warthog::graph::xy_graph* g = oracle_->get_graph();
-    uint32_t s_graph_id = g->to_graph_id((uint32_t)pi->start_id_);
+    uint32_t s_graph_id = g->to_graph_id((uint32_t)pi->start_);
     if(s_graph_id == warthog::INF32) { return 0; }
     return generate(s_graph_id);
 }
@@ -30,7 +30,7 @@ warthog::cpd_graph_expansion_policy::generate_target_node(warthog::problem_insta
 {
     // convert from external id to internal id
     warthog::graph::xy_graph* g = oracle_->get_graph();
-    uint32_t t_graph_id = g->to_graph_id((uint32_t)pi->target_id_);
+    uint32_t t_graph_id = g->to_graph_id((uint32_t)pi->target_);
     if(t_graph_id == warthog::INF32) { return 0; }
     
     // generate the search node
