@@ -93,7 +93,7 @@ class expansion_policy
 		}
 
         inline size_t 
-        num_successors() { return neis_->size(); } 
+        get_num_successors() { return neis_->size(); } 
 
 		virtual size_t
 		mem()

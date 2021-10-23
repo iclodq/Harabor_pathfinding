@@ -252,17 +252,14 @@ class unidirectional_search
                 trace(pi->verbose_, "Expanding:", *current);
 
                 // Generate successors of the current node
-                warthog::cost_t cost_to_n = 0;
-                uint32_t edge_id = 0;
-                warthog::search_node* n;
-                for(expander_->first(n, cost_to_n);
-                    n != nullptr;
-                    expander_->next(n, cost_to_n))
+                warthog::search_node* n=nullptr;
+                warthog::cost_t cost_to_n = warthog::COST_MAX;
+                for(uint32_t i=0; i < expander_->get_num_successors(); i++)
                 {
-                    edge_id++;
+                    expander_->get_successor(i, n, cost_to_n);
                     sol->met_.nodes_generated_++;
                     warthog::cost_t gval = current->get_g() + cost_to_n;
-                    listener_->generate_node(current, n, gval, edge_id);
+                    listener_->generate_node(current, n, gval, i);
 
                     // Generate new search nodes, provided they're not 
                     // dominated by the current upperbound
