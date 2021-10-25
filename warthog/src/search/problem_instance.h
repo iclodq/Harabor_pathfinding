@@ -6,6 +6,8 @@
 namespace warthog
 {
 
+static uint32_t instance_counter_ = UINT32_MAX;
+
 template <typename STATE>
 class problem_instance_base
 {
@@ -13,7 +15,7 @@ class problem_instance_base
         problem_instance_base(STATE start, STATE target, bool verbose=0) :
             start_(start), 
             target_(target), 
-            instance_id_(instance_counter_++),
+            instance_id_(++instance_counter_),
             verbose_(verbose),
             extra_params_(0)
 
@@ -63,13 +65,7 @@ class problem_instance_base
         // stuff we might want to pass in
         void* extra_params_;
 
-        private:
-            static uint32_t instance_counter_;
-
 };
-
-template <typename T>
-uint32_t warthog::problem_instance_base<T>::instance_counter_ = UINT32_MAX;
 
 typedef problem_instance_base<warthog::sn_id_t> problem_instance;
 
