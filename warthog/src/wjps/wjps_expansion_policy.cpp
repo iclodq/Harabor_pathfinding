@@ -163,7 +163,7 @@ warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::prob
     }
     if (extra_[id].successors_ & warthog::jps::SOUTH) {
         double cost = vertical_cost(nb.h);
-        add_neighbour(generate(nb.n), cost);
+        add_neighbour(generate(nb.s), cost);
         reach(id, nb.s, warthog::jps::SOUTH, node->get_g() + cost, pi);
     }
     if (extra_[id].successors_ & warthog::jps::SOUTHEAST) {
