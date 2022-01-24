@@ -31,6 +31,7 @@
 #include "labelled_gridmap.h"
 #include "sipp_expansion_policy.h"
 #include "vl_gridmap_expansion_policy.h"
+#include "wjps_expansion_policy.h"
 #include "zero_heuristic.h"
 
 #include "getopt.h"
@@ -69,7 +70,7 @@ help()
     << "Invoking the program this way solves all instances in [scen file] with algorithm [alg]\n"
     << "Currently recognised values for [alg]:\n"
     << "\tcbs_ll, cbs_ll_w, dijkstra, astar, astar_wgm, astar4c, sipp\n"
-    << "\tsssp, jps, jps2, jps+, jps2+, jps, jps4c\n"
+    << "\tsssp, jps, jps2, jps+, jps2+, jps, jps4c, wjps\n"
     << "\tdfs, gdfs\n\n"
     << ""
     << "The following are valid parameters for GENERATING instances:\n"
@@ -418,6 +419,30 @@ run_wgm_astar(warthog::scenario_manager& scenmgr, std::string mapname, std::stri
 }
 
 void
+run_wjps(warthog::scenario_manager& scenmgr, std::string alg_name)
+{
+    warthog::vl_gridmap map(scenmgr.get_experiment(0)->map().c_str());
+	warthog::wjps_expansion_policy expander(map);
+	warthog::octile_heuristic heuristic(map.width(), map.height());
+    warthog::pqueue_min open;
+    
+    // cheapest terrain (movingai benchmarks) has ascii value '.'; we scale
+    // all heuristic values accordingly (otherwise the heuristic doesn't 
+    // impact f-values much and search starts to behave like dijkstra)
+    heuristic.set_hscale('.');
+
+	warthog::flexible_astar<
+		warthog::octile_heuristic,
+	   	warthog::wjps_expansion_policy,
+        warthog::pqueue_min> 
+            astar(&heuristic, &expander, &open);
+
+    run_experiments(&astar, alg_name, scenmgr, 
+            verbose, checkopt, std::cout);
+	std::cerr << "done. total memory: "<< astar.mem() + scenmgr.mem() << "\n";
+}
+
+void
 run_wgm_sssp(warthog::scenario_manager& scenmgr, std::string mapname, std::string alg_name)
 {
     warthog::vl_gridmap map(mapname.c_str());
@@ -608,6 +633,11 @@ main(int argc, char** argv)
     else if(alg == "astar_wgm")
     {
         run_wgm_astar(scenmgr, mapname, alg); 
+    }
+
+    else if(alg == "wjps")
+    {
+        run_wjps(scenmgr, alg); 
     }
 
     else if(alg == "sssp")

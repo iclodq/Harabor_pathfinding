@@ -9,7 +9,7 @@ EXTRA_OBJ = $(EXTRA_SRC:%.cpp=obj/%.o)
 D_WARTHOG_INCLUDES = -I../../src/ -I../../src/domains -I../../src/util			\
 	-I../../src/search -I../../src/experimental -I../../src/heuristics				\
 	-I../../src/jps -I../../src/contraction -I../../src/label -I../../src/memory	\
-	-I../../src/mapf -I../../src/sys -I../../src/sipp -I../../src/cpd				\
+	-I../../src/mapf -I../../src/sys -I../../src/sipp -I../../src/cpd -I../../src/wjps	\
 	-I../../third_party -I../../extra
 
 D_INCLUDES = $(D_WARTHOG_INCLUDES) -I/usr/include -I/usr/local/include
