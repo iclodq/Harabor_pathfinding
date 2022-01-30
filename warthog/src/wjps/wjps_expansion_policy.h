@@ -58,6 +58,15 @@ public:
     virtual warthog::search_node*
     generate_target_node(warthog::problem_instance* pi);
 
+    virtual inline size_t
+    mem()
+    {
+        return expansion_policy::mem() + sizeof(*this) + map_.mem()
+                + expander_.mem() + pqueue_.mem()
+                + sizeof(wjps_extra) * map_.width() * map_.height()
+                + 8 * sizeof(uint8_t) * NBHOOD_TABLE_SIZE;
+    }
+
 private:
     void reach(
         uint32_t from, uint32_t to,
