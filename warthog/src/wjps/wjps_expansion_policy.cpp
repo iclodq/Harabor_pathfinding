@@ -100,7 +100,7 @@ warthog::wjps_expansion_policy::generate_start_node(warthog::problem_instance* p
     }
     if (map_.get_label(nb.w)) {
         extra.successors_ |= warthog::jps::WEST;
-        prospect(padded_id, nb.e, warthog::jps::WEST, horizontal_cost(nb.w), pi);
+        prospect(padded_id, nb.w, warthog::jps::WEST, horizontal_cost(nb.w), pi);
     }
 
     return generate(padded_id);
@@ -220,7 +220,7 @@ void warthog::wjps_expansion_policy::reach(
     } else if (
         from_node->get_search_number() == to_node->get_search_number() && g == to_node->get_g()
     ) {
-        // intersect successor set
+        extra.successors_ &= nbhood_successors(to, direction);
     }
 }
 
@@ -234,7 +234,7 @@ void warthog::wjps_expansion_policy::prospect(
 
     wjps_extra& extra = get_extra(to, pi);
     bool is_preferred_dir = (direction & ORTHO_DIRS) && (extra.moving_direction_ & ~ORTHO_DIRS);
-    if (g < extra.prospective_g_ || is_preferred_dir) {
+    if (g < extra.prospective_g_ || (g == extra.prospective_g_ && is_preferred_dir)) {
         // remove successor from other
         extra_[extra.prospective_parent_].successors_ &= ~extra.moving_direction_;
         // establish new parent
