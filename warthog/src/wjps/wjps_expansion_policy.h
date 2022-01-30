@@ -114,6 +114,31 @@ private:
         };
     }
 
+    inline bool locally_uniform(nbhood_labels nb) {
+        return map_.get_label(nb.nw) == map_.get_label(nb.h) &&
+                map_.get_label(nb.n) == map_.get_label(nb.h) &&
+                map_.get_label(nb.ne) == map_.get_label(nb.h) &&
+                map_.get_label(nb.w) == map_.get_label(nb.h) &&
+                map_.get_label(nb.ne) == map_.get_label(nb.h) &&
+                map_.get_label(nb.sw) == map_.get_label(nb.h) &&
+                map_.get_label(nb.s) == map_.get_label(nb.h) &&
+                map_.get_label(nb.se) == map_.get_label(nb.h);
+    }
+
+    void jump_west(
+        uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi);
+    void jump_east(
+        uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi);
+    void jump_north(
+        uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi);
+    void jump_south(
+        uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi);
+
+    void jump_nw(nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi);
+    void jump_ne(nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi);
+    void jump_sw(nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi);
+    void jump_se(nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi);
+
     vl_gridmap& map_;
     warthog::dbword costs_[3];
     wjps_extra* extra_;
