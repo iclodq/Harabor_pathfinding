@@ -166,8 +166,10 @@ void warthog::wjps_expansion_policy::jump_west(
         cost += horizontal_cost(nb.w);
         nb = nbhood(nb.w);
     }
-    add_neighbour(generate(nb.h), cost);
-    reach(from, nb.h, warthog::jps::WEST, g + cost, pi);
+    if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::WEST) != 0) {
+        add_neighbour(generate(nb.h), cost);
+        reach(from, nb.h, warthog::jps::WEST, g + cost, pi);
+    }
 }
 
 void warthog::wjps_expansion_policy::jump_east(
@@ -179,8 +181,10 @@ void warthog::wjps_expansion_policy::jump_east(
         cost += horizontal_cost(nb.h);
         nb = nbhood(nb.e);
     }
-    add_neighbour(generate(nb.h), cost);
-    reach(from, nb.h, warthog::jps::EAST, g + cost, pi);
+    if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::EAST) != 0) {
+        add_neighbour(generate(nb.h), cost);
+        reach(from, nb.h, warthog::jps::EAST, g + cost, pi);
+    }
 }
 
 void warthog::wjps_expansion_policy::jump_north(
@@ -192,8 +196,10 @@ void warthog::wjps_expansion_policy::jump_north(
         cost += vertical_cost(nb.n);
         nb = nbhood(nb.n);
     }
-    add_neighbour(generate(nb.h), cost);
-    reach(from, nb.h, warthog::jps::NORTH, g + cost, pi);
+    if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::NORTH) != 0) {
+        add_neighbour(generate(nb.h), cost);
+        reach(from, nb.h, warthog::jps::NORTH, g + cost, pi);
+    }
 }
 
 void warthog::wjps_expansion_policy::jump_south(
@@ -205,8 +211,10 @@ void warthog::wjps_expansion_policy::jump_south(
         cost += vertical_cost(nb.h);
         nb = nbhood(nb.s);
     }
-    add_neighbour(generate(nb.h), cost);
-    reach(from, nb.h, warthog::jps::SOUTH, g + cost, pi);
+    if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::SOUTH) != 0) {
+        add_neighbour(generate(nb.h), cost);
+        reach(from, nb.h, warthog::jps::SOUTH, g + cost, pi);
+    }
 }
 
 void warthog::wjps_expansion_policy::jump_nw(
