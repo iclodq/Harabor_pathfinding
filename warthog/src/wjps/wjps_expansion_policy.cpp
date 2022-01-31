@@ -326,7 +326,9 @@ void warthog::wjps_expansion_policy::prospect(
     bool is_preferred_dir = (direction & ORTHO_DIRS) && (extra.moving_direction_ & ~ORTHO_DIRS);
     if (g < extra.prospective_g_ || (g == extra.prospective_g_ && is_preferred_dir)) {
         // remove successor from other
-        extra_[extra.prospective_parent_].successors_ &= ~extra.moving_direction_;
+        if (extra.prospective_parent_ != from) {
+            extra_[extra.prospective_parent_].successors_ &= ~extra.moving_direction_;
+        }
         // establish new parent
         extra.prospective_g_ = g;
         extra.prospective_parent_ = from;
