@@ -160,12 +160,10 @@ warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::prob
 void warthog::wjps_expansion_policy::jump_west(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    cost += horizontal_cost(nb.w);
-    nb = nbhood(nb.w);
-    while (locally_uniform(nb) && nb.h != pi->target_id_) {
+    do {
         cost += horizontal_cost(nb.w);
         nb = nbhood(nb.w);
-    }
+    } while (locally_uniform(nb) && nb.h != pi->target_id_);
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::WEST) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::WEST, g + cost, pi);
@@ -175,12 +173,10 @@ void warthog::wjps_expansion_policy::jump_west(
 void warthog::wjps_expansion_policy::jump_east(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    cost += horizontal_cost(nb.h);
-    nb = nbhood(nb.e);
-    while (locally_uniform(nb) && nb.h != pi->target_id_) {
+    do {
         cost += horizontal_cost(nb.h);
         nb = nbhood(nb.e);
-    }
+    } while (locally_uniform(nb) && nb.h != pi->target_id_);
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::EAST) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::EAST, g + cost, pi);
@@ -190,12 +186,10 @@ void warthog::wjps_expansion_policy::jump_east(
 void warthog::wjps_expansion_policy::jump_north(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    cost += vertical_cost(nb.n);
-    nb = nbhood(nb.n);
-    while (locally_uniform(nb) && nb.h != pi->target_id_) {
+    do {
         cost += vertical_cost(nb.n);
         nb = nbhood(nb.n);
-    }
+    } while (locally_uniform(nb) && nb.h != pi->target_id_);
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::NORTH) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::NORTH, g + cost, pi);
@@ -205,12 +199,10 @@ void warthog::wjps_expansion_policy::jump_north(
 void warthog::wjps_expansion_policy::jump_south(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    cost += vertical_cost(nb.h);
-    nb = nbhood(nb.s);
-    while (locally_uniform(nb) && nb.h != pi->target_id_) {
+    do {
         cost += vertical_cost(nb.h);
         nb = nbhood(nb.s);
-    }
+    } while (locally_uniform(nb) && nb.h != pi->target_id_);
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::SOUTH) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::SOUTH, g + cost, pi);
