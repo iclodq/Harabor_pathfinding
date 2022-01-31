@@ -11,6 +11,7 @@ namespace warthog
 
 struct wjps_extra
 {
+    uint8_t successor_sets_[8];
     uint32_t search_number_;
     warthog::jps::direction moving_direction_;
     uint8_t successors_;
@@ -63,8 +64,7 @@ public:
     {
         return expansion_policy::mem() + sizeof(*this) + map_.mem()
                 + expander_.mem() + pqueue_.mem()
-                + sizeof(wjps_extra) * map_.width() * map_.height()
-                + 8 * sizeof(uint8_t) * NBHOOD_TABLE_SIZE;
+                + sizeof(wjps_extra) * map_.width() * map_.height();
     }
 
 private:
@@ -94,19 +94,19 @@ private:
     }
 
     inline double diagonal_cost(uint32_t nw_corner) {
-        double sum = costs_[map_.get_label(nw_corner)]
-                + costs_[map_.get_label(nw_corner + 1)]
-                + costs_[map_.get_label(nw_corner + map_.width())]
-                + costs_[map_.get_label(nw_corner + map_.width() + 1)];
+        double sum = map_.get_label(nw_corner)
+                + map_.get_label(nw_corner + 1)
+                + map_.get_label(nw_corner + map_.width())
+                + map_.get_label(nw_corner + map_.width() + 1);
         return sum * warthog::DBL_ROOT_TWO / 4.0;
     }
 
     inline double vertical_cost(uint32_t north) {
-        return (costs_[map_.get_label(north)] + costs_[map_.get_label(north + map_.width())]) / 2.0;
+        return (map_.get_label(north) + map_.get_label(north + map_.width())) / 2.0;
     }
 
     inline double horizontal_cost(uint32_t west) {
-        return (costs_[map_.get_label(west)] + costs_[map_.get_label(west + 1)]) / 2.0;
+        return (map_.get_label(west) + map_.get_label(west + 1)) / 2.0;
     }
 
     inline nbhood_labels nbhood(uint32_t around) {
@@ -149,18 +149,12 @@ private:
     void jump_se(nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi);
 
     vl_gridmap& map_;
-    warthog::dbword costs_[3];
     wjps_extra* extra_;
 
-    uint8_t* tables_[8];
     vl_gridmap local_map_;
     vl_gridmap_expansion_policy expander_;
     pqueue_min pqueue_;
     nbhood_labels local_nb_;
-
-    static constexpr size_t NBHOOD_TABLE_SIZE = 3 * 3 * 3 *
-                                                3 * 3 * 3 *
-                                                3 * 3 * 3;
 };
 
 }

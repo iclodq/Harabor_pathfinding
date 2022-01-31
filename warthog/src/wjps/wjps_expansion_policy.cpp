@@ -5,33 +5,10 @@ warthog::wjps_expansion_policy::wjps_expansion_policy(vl_gridmap& map)
     : expansion_policy(map.height()*map.width()),
     map_(map), local_map_(3, 3), expander_(&local_map_)
 {
-    for (int j = 0; j < 8; j++) {
-        tables_[j] = new uint8_t[NBHOOD_TABLE_SIZE];
-        for (size_t i = 0; i < NBHOOD_TABLE_SIZE; i++) {
-            tables_[j][i] = warthog::jps::ALL;
-        }
-    }
-
     extra_ = new wjps_extra[map.width() * map.height()];
-    int next_cost = 1;
-    costs_[0] = 0;
     for (uint32_t id = 0; id < map.width()*map.height(); id++) {
-        auto cost = map.get_label(id);
-        bool found = false;
-        for (int i = 0; i < next_cost; i++) {
-            if (cost == costs_[i]) {
-                map.set_label(id, i);
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            if (next_cost == 3) {
-                throw std::logic_error("too many different-cost tiles on this map");
-            }
-            costs_[next_cost] = cost;
-            map.set_label(id, next_cost);
-            next_cost++;
+        for (int i = 0; i < 8; i++) {
+            extra_[id].successor_sets_[i] = warthog::jps::ALL;
         }
     }
 
@@ -49,9 +26,6 @@ warthog::wjps_expansion_policy::wjps_expansion_policy(vl_gridmap& map)
 warthog::wjps_expansion_policy::~wjps_expansion_policy()
 {
     delete[] extra_;
-    for (int j = 0; j < 8; j++) {
-        delete[] tables_[j];
-    }
 }
 
 warthog::search_node*
@@ -367,67 +341,58 @@ int warthog::wjps_expansion_policy::nbhood_successors(
         uint32_t to, warthog::jps::direction going)
 {
     nbhood_labels nb = nbhood(to);
-    uint8_t* table;
+    uint8_t* successor_set;
     uint32_t source;
     switch (going) {
         case warthog::jps::NORTHWEST:
-            table = tables_[0];
+            successor_set = &extra_[nb.h].successor_sets_[0];
             source = 2 + 2 * 3;
             break;
         case warthog::jps::NORTH:
-            table = tables_[1];
+            successor_set = &extra_[nb.h].successor_sets_[1];
             source = 1 + 2 * 3;
             break;
         case warthog::jps::NORTHEAST:
-            table = tables_[2];
+            successor_set = &extra_[nb.h].successor_sets_[2];
             source = 0 + 2 * 3;
             break;
         case warthog::jps::WEST:
-            table = tables_[3];
+            successor_set = &extra_[nb.h].successor_sets_[3];
             source = 2 + 1 * 3;
             break;
         case warthog::jps::EAST:
-            table = tables_[4];
+            successor_set = &extra_[nb.h].successor_sets_[4];
             source = 0 + 1 * 3;
             break;
         case warthog::jps::SOUTHWEST:
-            table = tables_[5];
+            successor_set = &extra_[nb.h].successor_sets_[5];
             source = 2 + 0 * 3;
             break;
         case warthog::jps::SOUTH:
-            table = tables_[6];
+            successor_set = &extra_[nb.h].successor_sets_[6];
             source = 1 + 0 * 3;
             break;
         case warthog::jps::SOUTHEAST:
-            table = tables_[7];
+            successor_set = &extra_[nb.h].successor_sets_[7];
             source = 0 + 0 * 3;
             break;
         default:
             assert(false);
             return 0;
     }
-    size_t index = map_.get_label(nb.nw)
-            + map_.get_label(nb.n)  * 3
-            + map_.get_label(nb.ne) * 3 * 3
-            + map_.get_label(nb.w)  * 3 * 3 * 3
-            + map_.get_label(nb.h)  * 3 * 3 * 3 * 3
-            + map_.get_label(nb.e)  * 3 * 3 * 3 * 3 * 3
-            + map_.get_label(nb.sw) * 3 * 3 * 3 * 3 * 3 * 3
-            + map_.get_label(nb.s)  * 3 * 3 * 3 * 3 * 3 * 3 * 3
-            + map_.get_label(nb.se) * 3 * 3 * 3 * 3 * 3 * 3 * 3 * 3;
-    if (table[index] == warthog::jps::ALL) {
-        local_map_.set_label(local_nb_.nw, costs_[map_.get_label(nb.nw)]);
-        local_map_.set_label(local_nb_.n,  costs_[map_.get_label(nb.n)]);
-        local_map_.set_label(local_nb_.ne, costs_[map_.get_label(nb.ne)]);
-        local_map_.set_label(local_nb_.w,  costs_[map_.get_label(nb.w)]);
-        local_map_.set_label(local_nb_.h,  costs_[map_.get_label(nb.h)]);
-        local_map_.set_label(local_nb_.e,  costs_[map_.get_label(nb.e)]);
-        local_map_.set_label(local_nb_.sw, costs_[map_.get_label(nb.sw)]);
-        local_map_.set_label(local_nb_.s,  costs_[map_.get_label(nb.s)]);
-        local_map_.set_label(local_nb_.se, costs_[map_.get_label(nb.se)]);
-        table[index] = calculate_successors(source);
+    if (*successor_set == warthog::jps::ALL) {
+        local_map_.set_label(local_nb_.nw, map_.get_label(nb.nw));
+        local_map_.set_label(local_nb_.n,  map_.get_label(nb.n));
+        local_map_.set_label(local_nb_.ne, map_.get_label(nb.ne));
+        local_map_.set_label(local_nb_.w,  map_.get_label(nb.w));
+        local_map_.set_label(local_nb_.h,  map_.get_label(nb.h));
+        local_map_.set_label(local_nb_.e,  map_.get_label(nb.e));
+        local_map_.set_label(local_nb_.sw, map_.get_label(nb.sw));
+        local_map_.set_label(local_nb_.s,  map_.get_label(nb.s));
+        local_map_.set_label(local_nb_.se, map_.get_label(nb.se));
+        *successor_set = calculate_successors(source);
     }
-    return table[index];
+    return *successor_set;
 }
 
 int warthog::wjps_expansion_policy::calculate_successors(uint32_t source)
