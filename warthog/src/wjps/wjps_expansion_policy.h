@@ -128,7 +128,7 @@ private:
                 map_.get_label(nb.n) == map_.get_label(nb.h) &&
                 map_.get_label(nb.ne) == map_.get_label(nb.h) &&
                 map_.get_label(nb.w) == map_.get_label(nb.h) &&
-                map_.get_label(nb.ne) == map_.get_label(nb.h) &&
+                map_.get_label(nb.e) == map_.get_label(nb.h) &&
                 map_.get_label(nb.sw) == map_.get_label(nb.h) &&
                 map_.get_label(nb.s) == map_.get_label(nb.h) &&
                 map_.get_label(nb.se) == map_.get_label(nb.h);
