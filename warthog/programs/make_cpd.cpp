@@ -135,6 +135,7 @@ make_cpd(warthog::graph::xy_graph &g, warthog::cpd::graph_oracle_base<S> &cpd,
     cpd.compute_dfs_preorder(seed);
 
     info(verbose, "Computing Dijkstra labels.");
+
     std::cerr << "progress: [";
     for(uint32_t i = 0; i < 100; i++) { std::cerr <<" "; }
     std::cerr << "]\rprogress: [";
@@ -227,6 +228,7 @@ main(int argc, char *argv[])
         {"join", required_argument, 0, 1},
         {"seed", required_argument, 0, 1},
         {"type", required_argument, 0, 1},
+        {"nice", required_argument, 0, 1},
         {"verbose", no_argument, &verbose, 1},
         {0, 0, 0, 0}
     };
@@ -237,6 +239,8 @@ main(int argc, char *argv[])
     std::string type = cfg.get_param_value("type");
     bool reverse;
     warthog::cpd::symbol cpd_type;
+
+    cfg.get_param_value("nice")
 
     if (type == "" || type == "fwd" || type == "forward")
     {
@@ -456,6 +460,7 @@ main(int argc, char *argv[])
         #else
         size_t nthreads = omp_get_max_threads();
         #endif
+        std::cerr << "num_threads=" <<  nthreads << std::endl;
         std::vector<warthog::cpd::oracle_listener*> listeners(nthreads);
         std::vector<warthog::sn_id_t> nodes;
 
