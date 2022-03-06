@@ -69,7 +69,7 @@ class problem_instance_base
 };
 
 template <typename T>
-uint32_t warthog::problem_instance_base<T>::instance_counter_ = UINT32_MAX;
+uint32_t warthog::problem_instance_base<T>::instance_counter_ = 0;
 
 typedef problem_instance_base<warthog::sn_id_t> problem_instance;
 
