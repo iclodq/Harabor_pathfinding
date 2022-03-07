@@ -35,6 +35,7 @@
 
 #include "getopt.h"
 
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iomanip>
@@ -138,7 +139,7 @@ run_experiments(warthog::search* algo, std::string alg_name,
             << sol.met_.time_elapsed_nano_ << "\t"
             << sol.sum_of_edge_costs_ << "\t" 
             << (sol.path_.size()-1) << "\t" 
-            << scenmgr.last_file_loaded() 
+            << scenmgr.last_file_loaded()
             << std::endl;
 
         if(checkopt) { check_optimality(sol, exp); }
@@ -521,7 +522,7 @@ main(int argc, char** argv)
     std::string sfile = cfg.get_param_value("scen");
     std::string alg = cfg.get_param_value("alg");
     std::string gen = cfg.get_param_value("gen");
-    std::string mapname = cfg.get_param_value("map");
+    std::string mapfile = cfg.get_param_value("map");
 
 	if(gen != "")
 	{
@@ -550,82 +551,102 @@ main(int argc, char** argv)
     }
 
     // the map filename can be given or (default) taken from the scenario file
-    if(mapname == "")
-    { mapname = scenmgr.get_experiment(0)->map().c_str(); }
-
+    if(mapfile == "")
+    { 
+        // first, try to load the map from the scenario file
+        mapfile = scenmgr.get_experiment(0)->map().c_str(); 
+        if(!std::filesystem::exists(std::filesystem::path(mapfile)))
+        {
+            // else, look for the map in the current directory
+            mapfile = std::filesystem::path(mapfile).filename();
+            if(!std::filesystem::exists(std::filesystem::path(mapfile)))
+            {
+                // else, try to infer the map name from the scenario filename
+                std::filesystem::path p(sfile);
+                mapfile = std::filesystem::path(sfile).replace_extension("");
+                if(!std::filesystem::exists(std::filesystem::path(mapfile)))
+                {
+                    std::cerr << "could not locate a corresponding map file\n";
+                    help();
+                    exit(0);
+                }
+            }
+        }
+    }
+    std::cerr << "mapfile=" << mapfile <<std::endl;
 
     if(alg == "jps+")
     {
-        run_jpsplus(scenmgr, mapname, alg);
+        run_jpsplus(scenmgr, mapfile, alg);
     }
 
     else if(alg == "jps2")
     {
-        run_jps2(scenmgr, mapname, alg);
+        run_jps2(scenmgr, mapfile, alg);
     }
 
     else if(alg == "jps2+")
     {
-        run_jps2plus(scenmgr, mapname, alg);
+        run_jps2plus(scenmgr, mapfile, alg);
     }
 
     else if(alg == "jps")
     {
-        run_jps(scenmgr, mapname, alg);
+        run_jps(scenmgr, mapfile, alg);
     }
     else if(alg == "jps4c")
     {
-        run_jps4c(scenmgr, mapname, alg);
+        run_jps4c(scenmgr, mapfile, alg);
     }
 
     else if(alg == "dijkstra")
     {
-        run_dijkstra(scenmgr, mapname, alg); 
+        run_dijkstra(scenmgr, mapfile, alg); 
     }
 
     else if(alg == "astar")
     {
-        run_astar(scenmgr, mapname, alg); 
+        run_astar(scenmgr, mapfile, alg); 
     }
     else if(alg == "astar4c")
     {
-        run_astar4c(scenmgr, mapname, alg); 
+        run_astar4c(scenmgr, mapfile, alg); 
     }
 
     else if(alg == "cbs_ll")
     {
-        run_cbs_ll(scenmgr, mapname, alg); 
+        run_cbs_ll(scenmgr, mapfile, alg); 
     }
     else if(alg == "cbs_ll_w")
     {
-        run_cbs_ll_w(scenmgr, mapname, alg); 
+        run_cbs_ll_w(scenmgr, mapfile, alg); 
     }
     else if(alg == "sipp")
     {
-        run_sipp(scenmgr, mapname, alg);
+        run_sipp(scenmgr, mapfile, alg);
     }
 
     else if(alg == "astar_wgm")
     {
-        run_wgm_astar(scenmgr, mapname, alg); 
+        run_wgm_astar(scenmgr, mapfile, alg); 
     }
 
     else if(alg == "sssp")
     {
-        run_sssp(scenmgr, mapname, alg);
+        run_sssp(scenmgr, mapfile, alg);
     }
 
     else if(alg == "sssp")
     {
-        run_wgm_sssp(scenmgr, mapname, alg); 
+        run_wgm_sssp(scenmgr, mapfile, alg); 
     }
     else if(alg == "dfs")
     {
-        run_dfs(scenmgr, mapname, alg); 
+        run_dfs(scenmgr, mapfile, alg); 
     }
     else if(alg == "gdfs")
     {
-        run_gdfs(scenmgr, mapname, alg); 
+        run_gdfs(scenmgr, mapfile, alg); 
     }
     else
     {
