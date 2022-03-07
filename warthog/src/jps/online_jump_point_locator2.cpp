@@ -248,7 +248,7 @@ warthog::jps::online_jump_point_locator2::__jump_east(uint32_t node_id,
 {
 	jumpnode_id = node_id;
 
-	uint32_t neis[3] = {0, 0, 0};
+	uint64_t neis[3] = {0, 0, 0};
 	bool deadend = false;
 
 	jumpnode_id = node_id;
@@ -256,26 +256,26 @@ warthog::jps::online_jump_point_locator2::__jump_east(uint32_t node_id,
 	{
 		// read in tiles from 3 adjacent rows. the curent node 
 		// is in the low byte of the middle row
-		mymap->get_neighbours_32bit(jumpnode_id, neis);
+		mymap->get_neighbours_64bit(jumpnode_id, neis);
 
 		// identify forced neighbours and deadend tiles. 
 		// forced neighbours are found in the top or bottom row. they 
 		// can be identified as a non-obstacle tile that follows
 		// immediately  after an obstacle tile. A dead-end tile is
 		// an obstacle found  on the middle row; 
-		uint32_t 
+		uint64_t 
 		forced_bits = (~neis[0] << 1) & neis[0];
 		forced_bits |= (~neis[2] << 1) & neis[2];
-		uint32_t 
+		uint64_t 
 		deadend_bits = ~neis[1];
 
 		// stop if we found any forced or dead-end tiles
-		int stop_bits = (int)(forced_bits | deadend_bits);
+		uint64_t stop_bits = (forced_bits | deadend_bits);
 		if(stop_bits)
 		{
-			int stop_pos = __builtin_ffs(stop_bits)-1; // returns idx+1
-			jumpnode_id += (uint32_t)stop_pos; 
-			deadend = deadend_bits & (1 << stop_pos);
+			int stop_pos = __builtin_ctzll(stop_bits); 
+			jumpnode_id += stop_pos; 
+			deadend = deadend_bits & (1LL << stop_pos);
 			break;
 		}
 
@@ -283,7 +283,7 @@ warthog::jps::online_jump_point_locator2::__jump_east(uint32_t node_id,
 		// in case the last tile from the row above or below is an obstacle.
 		// Such a tile, followed by a non-obstacle tile, would yield a forced 
 		// neighbour that we don't want to miss.
-		jumpnode_id += 31;
+		jumpnode_id += 63;
 	}
 
 	uint32_t num_steps = jumpnode_id - node_id;
@@ -314,7 +314,7 @@ warthog::jps::online_jump_point_locator2::__rjump_east(uint32_t node_id,
 {
 	jumpnode_id = node_id;
 
-	uint32_t neis[3] = {0, 0, 0};
+	uint64_t neis[3] = {0, 0, 0};
 	bool deadend = false;
 
 	jumpnode_id = node_id;
@@ -322,30 +322,30 @@ warthog::jps::online_jump_point_locator2::__rjump_east(uint32_t node_id,
 	{
 		// read in tiles from 3 adjacent rows. the curent node 
 		// is in the low byte of the middle row
-		mymap->get_neighbours_32bit(jumpnode_id, neis);
+		mymap->get_neighbours_64bit(jumpnode_id, neis);
 
 		// identify forced neighbours and deadend tiles. 
 		// forced neighbours are found in the top or bottom row. they 
 		// can be identified as a non-obstacle tile that follows
 		// immediately  after an obstacle tile. A dead-end tile is
 		// an obstacle found  on the middle row; 
-		uint32_t 
+		uint64_t 
 		forced_bits =  (~neis[0] >> 1) & neis[0];
 		forced_bits |= (~neis[2] >> 1) & neis[2];
         
-		uint32_t 
+		uint64_t 
 		deadend_bits = ~neis[1];
 
         // hacky: yields false positives without this
         deadend_bits = deadend_bits >> 1;
 
 		// stop if we found any forced or dead-end tiles
-		int stop_bits = (int)(forced_bits | deadend_bits);
+		uint64_t stop_bits = (forced_bits | deadend_bits);
 		if(stop_bits)
 		{
-			int stop_pos = __builtin_ffs(stop_bits)-1; // returns idx+1
-			jumpnode_id += (uint32_t)stop_pos; 
-			deadend = deadend_bits & (1 << stop_pos);
+			int64_t stop_pos = __builtin_ctzll(stop_bits); // returns idx+1
+			jumpnode_id += stop_pos; 
+			deadend = deadend_bits & (1LL << stop_pos);
 			break;
 		}
 
@@ -353,7 +353,7 @@ warthog::jps::online_jump_point_locator2::__rjump_east(uint32_t node_id,
 		// in case the last tile from the row above or below is an obstacle.
 		// Such a tile, followed by a non-obstacle tile, would yield a forced 
 		// neighbour that we don't want to miss.
-		jumpnode_id += 31;
+		jumpnode_id += 63;
 	}
 
 	uint32_t num_steps = jumpnode_id - node_id;
@@ -404,34 +404,34 @@ warthog::jps::online_jump_point_locator2::__jump_west(uint32_t node_id,
 		warthog::gridmap* mymap)
 {
 	bool deadend = false;
-	uint32_t neis[3] = {0, 0, 0};
+	uint64_t neis[3] = {0, 0, 0};
 
 	jumpnode_id = node_id;
 	while(true)
 	{
 		// cache 32 tiles from three adjacent rows.
 		// current tile is in the high byte of the middle row
-		mymap->get_neighbours_upper_32bit(jumpnode_id, neis);
+		mymap->get_neighbours_upper_64bit(jumpnode_id, neis);
 
 		// identify forced and dead-end nodes
-		uint32_t 
+		uint64_t 
 		forced_bits = (~neis[0] >> 1) & neis[0];
 		forced_bits |= (~neis[2] >> 1) & neis[2];
-		uint32_t 
+		uint64_t 
 		deadend_bits = ~neis[1];
 
 		// stop if we encounter any forced or deadend nodes
-		uint32_t stop_bits = (forced_bits | deadend_bits);
+		uint64_t stop_bits = (forced_bits | deadend_bits);
 		if(stop_bits)
 		{
-			uint32_t stop_pos = (uint32_t)__builtin_clz(stop_bits);
+			uint64_t stop_pos = (uint64_t)__builtin_clzll(stop_bits);
 			jumpnode_id -= stop_pos;
-			deadend = deadend_bits & (0x80000000 >> stop_pos);
+			deadend = deadend_bits & (0x8000000000000000 >> stop_pos);
 			break;
 		}
 		// jump to the end of cache. jumping +32 involves checking
 		// for forced neis between adjacent sets of contiguous tiles
-		jumpnode_id -= 31;
+		jumpnode_id -= 63;
 	
 	}
 
@@ -461,37 +461,37 @@ warthog::jps::online_jump_point_locator2::__rjump_west(uint32_t node_id,
 		warthog::gridmap* mymap)
 {
 	bool deadend = false;
-	uint32_t neis[3] = {0, 0, 0};
+	uint64_t neis[3] = {0, 0, 0};
 
 	jumpnode_id = node_id;
 	while(true)
 	{
 		// cache 32 tiles from three adjacent rows.
 		// current tile is in the high byte of the middle row
-		mymap->get_neighbours_upper_32bit(jumpnode_id, neis);
+		mymap->get_neighbours_upper_64bit(jumpnode_id, neis);
 
 		// identify forced and dead-end nodes
-		uint32_t 
+		uint64_t 
 		forced_bits = (~neis[0] << 1) & neis[0];
 		forced_bits |= (~neis[2] << 1) & neis[2];
-		uint32_t 
+		uint64_t 
 		deadend_bits = ~neis[1];
 
         // hacky: need this to avoid false positives
         deadend_bits = deadend_bits << 1; 
 
 		// stop if we encounter any forced or deadend nodes
-		uint32_t stop_bits = (forced_bits | deadend_bits);
+		uint64_t stop_bits = (forced_bits | deadend_bits);
 		if(stop_bits)
 		{
-			uint32_t stop_pos = (uint32_t)__builtin_clz(stop_bits);
+			uint64_t stop_pos = (uint64_t)__builtin_clz(stop_bits);
 			jumpnode_id -= stop_pos;
-			deadend = deadend_bits & (0x80000000 >> stop_pos);
+			deadend = deadend_bits & (0x8000000000000000 >> stop_pos);
 			break;
 		}
 		// jump to the end of cache. jumping +32 involves checking
 		// for forced neis between adjacent sets of contiguous tiles
-		jumpnode_id -= 31;
+		jumpnode_id -= 63;
 	}
 
 	uint32_t num_steps = node_id - jumpnode_id;

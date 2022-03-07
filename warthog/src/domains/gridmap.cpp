@@ -55,9 +55,9 @@ warthog::gridmap::init_db()
 	// calculate # of extra/redundant padding bits required,
 	// per row, to align map width with dbword size
 	this->padded_width_  = this->header_.width_ + 1;
-    if((padded_width_ % 32) != 0) 
+    if((padded_width_ % 64) != 0) 
     {
-        padded_width_ = (this->header_.width_ / 32 + 1) * 32;
+        padded_width_ = (this->header_.width_ / 64 + 1) * 64;
     }
 	this->padding_per_row_ = this->padded_width_ - this->header_.width_;
 
