@@ -192,9 +192,9 @@ warthog::jps::online_jump_point_locator2::__jump_east(uint32_t node_id,
 	bool deadend = false;
 
     // read tiles from the grid: 
-    // - along the row of node_id, and to the EAST
-    // - from the row above node_id, and to the EAST
-    // - from the row below node_id and to the EAST
+    // - along the row of node_id
+    // - from the row above node_id
+    // - from the row below node_id 
     // NB: the jump direction (here, EAST) corresponds to moving from the 
     // low bit of the tileset and towards the high bit
     mymap->get_neighbours_64bit(node_id, neis);
