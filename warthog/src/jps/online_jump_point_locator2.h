@@ -35,13 +35,6 @@ class online_jump_point_locator2
 				std::vector<uint32_t>& jpoints,
 				std::vector<warthog::cost_t>& costs);
 
-        // similar to ::jump but assuming the parent is in the opposite 
-        // direction to @param d
-		void
-		rjump(warthog::jps::direction d, uint32_t node_id, uint32_t goalid, 
-				std::vector<uint32_t>& jpoints,
-				std::vector<warthog::cost_t>& costs);
-
 		size_t 
 		mem()
 		{
@@ -133,19 +126,6 @@ class online_jump_point_locator2
 				uint32_t& jumpnode_id, warthog::cost_t& jumpcost,
 				uint32_t& jp1_id, warthog::cost_t& jp1_cost,
 				uint32_t& jp2_id, warthog::cost_t& jp2_cost);
-
-        // these jump functions assume the parent is in
-        // the opposite direction to the jump direction
-		void
-		__rjump_east(uint32_t node_id, uint32_t goal_id, 
-				uint32_t& jumpnode_id, warthog::cost_t& jumpcost, 
-				warthog::gridmap* mymap);
-
-		void
-		__rjump_west(uint32_t node_id, uint32_t goal_id, 
-				uint32_t& jumpnode_id, warthog::cost_t& jumpcost, 
-				warthog::gridmap* mymap);
-
 
 		// functions to convert map indexes to rmap indexes
 		inline uint32_t

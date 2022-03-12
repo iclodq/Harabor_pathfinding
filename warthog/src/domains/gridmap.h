@@ -160,78 +160,25 @@ class gridmap
 			tiles[2] = (uint64_t)(*((uint64_t*)(db_+pos3)) >> (bit_offset+1));
 		}
 
-		// fetches a contiguous set of tiles from three adjacent rows. each row is
-		// 32 tiles long. the middle row begins with tile grid_id_p. the other tiles
-		// are from the row immediately above and immediately below grid_id_p.
+		// fetches a contiguous set of tiles from three adjacent rows. 
+		// the middle row contains tile grid_id_p. 
+        // the other tiles are from the row above and below grid_id_p.
 		void
 		get_neighbours_64bit(uint32_t grid_id_p, uint64_t tiles[3])
 		{
-			// 1. calculate the dbword offset for the node at index grid_id_p
-			// 2. convert grid_id_p into a dbword index.
-			uint32_t bit_offset = (grid_id_p & warthog::DBWORD_BITS_MASK);
-			uint32_t dbindex = grid_id_p >> warthog::LOG2_DBWORD_BITS;
+			// convert grid_id_p into a 64bit db_ index.
+			uint32_t dbindex = grid_id_p >> 6;
 
-			// compute dbword indexes for tiles immediately above 
-			// and immediately below node_id
-			uint32_t pos1 = dbindex - dbwidth_;
+			// compute 64bit dbword indexes for the tiles 
+            // above and below node_id
+			uint32_t pos1 = dbindex - dbwidth64_;
 			uint32_t pos2 = dbindex;
-			uint32_t pos3 = dbindex + dbwidth_;
+			uint32_t pos3 = dbindex + dbwidth64_;
 
-            uint64_t tmp;
-
-			// read 64bits of memory from each row; 
-            // grid_id_p is in the lowest bit position of tiles[1]
-			tiles[0] = (*((uint64_t*)(db_+pos1)) >> bit_offset);
-			tmp = (*((uint64_t*)(db_+pos1+1)) >> bit_offset) << 8;
-            tiles[0] |= tmp;
-
-			tiles[1] = (*((uint64_t*)(db_+pos2)) >> (bit_offset));
-			tmp = (*((uint64_t*)(db_+pos2+1)) >> bit_offset) << 8;
-            tiles[1] |= tmp;
-
-			tiles[2] = (*((uint64_t*)(db_+pos3)) >> (bit_offset));
-			tmp = (*((uint64_t*)(db_+pos3+1)) >> bit_offset) << 8;
-            tiles[2] |= tmp;
-		}
-
-		// similar to get_neighbours_32bit but grid_id_p is placed into the
-		// upper bit of the return value. this variant is useful when jumping
-		// toward smaller memory addresses (i.e. west instead of east).
-		inline void
-		get_neighbours_upper_64bit(uint32_t grid_id_p, uint64_t tiles[3])
-		{
-			// 1. calculate the dbword offset for the node at index grid_id_p
-			// 2. convert grid_id_p into a dbword index.
-			uint32_t bit_offset = (grid_id_p & warthog::DBWORD_BITS_MASK);
-			uint32_t dbindex = grid_id_p >> warthog::LOG2_DBWORD_BITS;
-			
-			// start reading from a prior index. this way everything
-			// up to grid_id_p is cached.
-            // here we read 8 byte
-			dbindex -= 7;
-
-			// compute dbword indexes for tiles immediately above 
-			// and immediately below node_id
-			uint32_t pos1 = dbindex - dbwidth_;
-			uint32_t pos2 = dbindex;
-			uint32_t pos3 = dbindex + dbwidth_;
-
-            uint64_t tmp;
-
-			// read 64bits of memory; grid_id_p is in the
-			// highest bit position of tiles[1]
-            bit_offset = 7-bit_offset;
-			tiles[0] = (*((uint64_t*)(db_+pos1)) << (bit_offset));
-			tmp = (*((uint64_t*)(db_+pos1-1)) << (bit_offset));
-            tiles[0] |= tmp >> 8;
-
-			tiles[1] = (*((uint64_t*)(db_+pos2)) << (bit_offset));
-			tmp = (*((uint64_t*)(db_+pos2-1)) << (bit_offset));
-            tiles[1] |= tmp >> 8;
-
-			tiles[2] = (*((uint64_t*)(db_+pos3)) << (bit_offset));
-			tmp = (*((uint64_t*)(db_+pos3-1)) << (bit_offset));
-            tiles[2] |= tmp >> 8;
+			// read 64bits of tile data from each of the three rows
+			tiles[0] = *((uint64_t*)(db_)+pos1);
+			tiles[1] = *((uint64_t*)(db_)+pos2);
+			tiles[2] = *((uint64_t*)(db_)+pos3);
 		}
 
 		// get the label associated with the padded coordinate pair (x, y)
@@ -359,6 +306,7 @@ class gridmap
 		char filename_[256];
 
 		uint32_t dbwidth_;
+        uint32_t dbwidth64_;
 		uint32_t dbheight_;
 		uint32_t db_size_;
 		uint32_t padded_width_;

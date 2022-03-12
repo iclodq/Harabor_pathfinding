@@ -4,7 +4,7 @@
 // search/anytime_astar.h
 //
 // An anytime variant of A*. The implementation here is based on
-// the class anytime_astar with some differences:
+// the class flexible_astar with some differences:
 //      - There exists a time cutoff.
 //      - The heuristic needs to implement an upperbound function
 //        ::ub in addition to the lowerbounding function ::h.

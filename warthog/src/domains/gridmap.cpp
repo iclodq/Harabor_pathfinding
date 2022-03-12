@@ -63,6 +63,7 @@ warthog::gridmap::init_db()
 
     this->dbheight_ = padded_height_;
     this->dbwidth_ = padded_width_ >> warthog::LOG2_DBWORD_BITS;
+    this->dbwidth64_ = padded_width_ >> 6;
 	this->db_size_ = this->dbwidth_ * this->dbheight_;
 
 	// create a one dimensional dbword array to store the grid
