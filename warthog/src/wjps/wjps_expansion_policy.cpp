@@ -432,7 +432,10 @@ int warthog::wjps_expansion_policy::calculate_successors(uint32_t source)
                 bool new_is_ortho =
                     c == h - 1 || c == h - local_map_.width() ||
                     c == h + 1 || c == h + local_map_.width();
-                if (new_is_ortho && !existing_is_ortho) {
+                if (
+                    (new_is_ortho && !existing_is_ortho) ||
+                    (new_is_ortho == existing_is_ortho && c == local_nb_.h)
+                ) {
                     // tiebreak in favor of ortho-last
                     n->set_parent(current->get_id());
                 }
