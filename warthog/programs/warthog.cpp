@@ -422,7 +422,8 @@ void
 run_wjps(warthog::scenario_manager& scenmgr, std::string alg_name)
 {
     warthog::vl_gridmap map(scenmgr.get_experiment(0)->map().c_str());
-	warthog::wjps_expansion_policy expander(map);
+    warthog::nbcache nbs;
+	warthog::wjps_expansion_policy expander(nbs, map);
 	warthog::octile_heuristic heuristic(map.width(), map.height());
     warthog::pqueue_min open;
     

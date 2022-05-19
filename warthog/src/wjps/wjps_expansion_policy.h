@@ -1,10 +1,10 @@
 #ifndef WJPS_EXPANSION_POLICY_H
 #define WJPS_EXPANSION_POLICY_H
 
+#include "jps.h"
 #include "expansion_policy.h"
 #include "labelled_gridmap.h"
-#include "vl_gridmap_expansion_policy.h"
-#include "pqueue.h"
+#include "nbcache.h"
 
 namespace warthog
 {
@@ -21,19 +21,6 @@ struct wjps_extra
     warthog::cost_t jump_g_cache_[4];
 };
 
-struct nbhood_labels
-{
-    uint32_t nw;
-    uint32_t n;
-    uint32_t ne;
-    uint32_t w;
-    uint32_t h;
-    uint32_t e;
-    uint32_t sw;
-    uint32_t s;
-    uint32_t se;
-};
-
 class wjps_expansion_policy : public expansion_policy
 {
 public:
@@ -43,7 +30,7 @@ public:
     *
     * If there are more than 2 nonzero tile types, an exception is thrown.
     */
-    wjps_expansion_policy(vl_gridmap& map);
+    wjps_expansion_policy(nbcache& nbcache, vl_gridmap& map);
     ~wjps_expansion_policy();
 
     virtual void 
@@ -64,8 +51,7 @@ public:
     virtual inline size_t
     mem()
     {
-        return expansion_policy::mem() + sizeof(*this) + map_.mem()
-                + expander_.mem() + pqueue_.mem()
+        return expansion_policy::mem() + sizeof(*this) + map_.mem() + nbcache_.mem()
                 + sizeof(wjps_extra) * map_.width() * map_.height();
     }
 
@@ -152,11 +138,7 @@ private:
 
     vl_gridmap& map_;
     wjps_extra* extra_;
-
-    vl_gridmap local_map_;
-    vl_gridmap_expansion_policy expander_;
-    pqueue_min pqueue_;
-    nbhood_labels local_nb_;
+    nbcache& nbcache_;
 };
 
 }
