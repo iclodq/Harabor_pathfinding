@@ -17,6 +17,8 @@ struct wjps_extra
     uint8_t successors_;
     uint32_t prospective_parent_;
     warthog::cost_t prospective_g_;
+    uint32_t jump_target_cache_[4];
+    warthog::cost_t jump_g_cache_[4];
 };
 
 struct nbhood_labels

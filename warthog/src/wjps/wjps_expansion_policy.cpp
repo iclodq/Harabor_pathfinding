@@ -10,6 +10,9 @@ warthog::wjps_expansion_policy::wjps_expansion_policy(vl_gridmap& map)
         for (int i = 0; i < 8; i++) {
             extra_[id].successor_sets_[i] = warthog::jps::ALL;
         }
+        for (int i = 0; i < 4; i++) {
+            extra_[id].jump_target_cache_[i] = 0;
+        }
     }
 
     local_nb_.nw = local_map_.to_padded_id(0, 0);
@@ -134,10 +137,45 @@ warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::prob
 void warthog::wjps_expansion_policy::jump_west(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    do {
-        cost += horizontal_cost(nb.w);
-        nb = nbhood(nb.w);
-    } while (locally_uniform(nb) && nb.h != pi->target_id_);
+    auto start = nb.h;
+    if (extra_[nb.h].jump_target_cache_[0]) {
+        cost += extra_[nb.h].jump_g_cache_[0];
+        nb = nbhood(extra_[nb.h].jump_target_cache_[0]);
+    } else {
+        auto jump_dist = 0;
+        uint32_t id = 0;
+        auto jump_cost = 0.0;
+        do {
+            jump_dist += 1;
+            nb = nbhood(nb.w);
+            id = nb.h;
+            if (!locally_uniform(nb)) {
+                break;
+            }
+            if (extra_[nb.h].jump_target_cache_[0]) {
+                jump_cost = extra_[nb.h].jump_g_cache_[0];
+                nb = nbhood(extra_[nb.h].jump_target_cache_[0]);
+                break;
+            }
+        } while (true);
+
+        for (int i = 0; i < jump_dist; i++) {
+            jump_cost += horizontal_cost(id);
+            id += 1;
+            extra_[id].jump_target_cache_[0] = nb.h;
+            extra_[id].jump_g_cache_[0] = jump_cost;
+        }
+
+        assert(id == start);
+        cost += extra_[id].jump_g_cache_[0];
+    }
+
+    if (start > pi->target_id_ && nb.h < pi->target_id_) {
+        // Jump overshoots target, so adjust to target
+        nb = nbhood(pi->target_id_);
+        cost -= extra_[nb.h].jump_g_cache_[0];
+    }
+
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::WEST) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::WEST, g + cost, pi);
@@ -147,10 +185,45 @@ void warthog::wjps_expansion_policy::jump_west(
 void warthog::wjps_expansion_policy::jump_east(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    do {
-        cost += horizontal_cost(nb.h);
-        nb = nbhood(nb.e);
-    } while (locally_uniform(nb) && nb.h != pi->target_id_);
+    auto start = nb.h;
+    if (extra_[nb.h].jump_target_cache_[1]) {
+        cost += extra_[nb.h].jump_g_cache_[1];
+        nb = nbhood(extra_[nb.h].jump_target_cache_[1]);
+    } else {
+        auto jump_dist = 0;
+        uint32_t id = 0;
+        auto jump_cost = 0.0;
+        do {
+            jump_dist += 1;
+            nb = nbhood(nb.e);
+            id = nb.h;
+            if (!locally_uniform(nb)) {
+                break;
+            }
+            if (extra_[nb.h].jump_target_cache_[1]) {
+                jump_cost = extra_[nb.h].jump_g_cache_[1];
+                nb = nbhood(extra_[nb.h].jump_target_cache_[1]);
+                break;
+            }
+        } while (true);
+
+        for (int i = 0; i < jump_dist; i++) {
+            id -= 1;
+            jump_cost += horizontal_cost(id);
+            extra_[id].jump_target_cache_[1] = nb.h;
+            extra_[id].jump_g_cache_[1] = jump_cost;
+        }
+
+        assert(id == start);
+        cost += extra_[id].jump_g_cache_[1];
+    }
+
+    if (start < pi->target_id_ && nb.h > pi->target_id_) {
+        // Jump overshoots target, so adjust to target
+        nb = nbhood(pi->target_id_);
+        cost -= extra_[nb.h].jump_g_cache_[1];
+    }
+
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::EAST) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::EAST, g + cost, pi);
@@ -160,10 +233,45 @@ void warthog::wjps_expansion_policy::jump_east(
 void warthog::wjps_expansion_policy::jump_north(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    do {
-        cost += vertical_cost(nb.n);
-        nb = nbhood(nb.n);
-    } while (locally_uniform(nb) && nb.h != pi->target_id_);
+    auto start = nb.h;
+    if (extra_[nb.h].jump_target_cache_[2]) {
+        cost += extra_[nb.h].jump_g_cache_[2];
+        nb = nbhood(extra_[nb.h].jump_target_cache_[2]);
+    } else {
+        auto jump_dist = 0;
+        uint32_t id = 0;
+        auto jump_cost = 0.0;
+        do {
+            jump_dist += 1;
+            nb = nbhood(nb.n);
+            id = nb.h;
+            if (!locally_uniform(nb)) {
+                break;
+            }
+            if (extra_[nb.h].jump_target_cache_[2]) {
+                jump_cost = extra_[nb.h].jump_g_cache_[2];
+                nb = nbhood(extra_[nb.h].jump_target_cache_[2]);
+                break;
+            }
+        } while (true);
+
+        for (int i = 0; i < jump_dist; i++) {
+            jump_cost += vertical_cost(id);
+            id += map_.width();
+            extra_[id].jump_target_cache_[2] = nb.h;
+            extra_[id].jump_g_cache_[2] = jump_cost;
+        }
+
+        assert(id == start);
+        cost += extra_[id].jump_g_cache_[2];
+    }
+
+    if (start % map_.width() == pi->target_id_ % map_.width() && start > pi->target_id_ && nb.h < pi->target_id_) {
+        // Jump overshoots target, so adjust to target
+        nb = nbhood(pi->target_id_);
+        cost -= extra_[nb.h].jump_g_cache_[2];
+    }
+
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::NORTH) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::NORTH, g + cost, pi);
@@ -173,10 +281,44 @@ void warthog::wjps_expansion_policy::jump_north(
 void warthog::wjps_expansion_policy::jump_south(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
-    do {
-        cost += vertical_cost(nb.h);
-        nb = nbhood(nb.s);
-    } while (locally_uniform(nb) && nb.h != pi->target_id_);
+    auto start = nb.h;
+    if (extra_[nb.h].jump_target_cache_[3]) {
+        cost += extra_[nb.h].jump_g_cache_[3];
+        nb = nbhood(extra_[nb.h].jump_target_cache_[3]);
+    } else {
+        auto jump_dist = 0;
+        uint32_t id = 0;
+        auto jump_cost = 0.0;
+        do {
+            jump_dist += 1;
+            nb = nbhood(nb.s);
+            id = nb.h;
+            if (!locally_uniform(nb)) {
+                break;
+            }
+            if (extra_[nb.h].jump_target_cache_[3]) {
+                jump_cost = extra_[nb.h].jump_g_cache_[3];
+                nb = nbhood(extra_[nb.h].jump_target_cache_[3]);
+                break;
+            }
+        } while (true);
+
+        for (int i = 0; i < jump_dist; i++) {
+            id -= map_.width();
+            jump_cost += vertical_cost(id);
+            extra_[id].jump_target_cache_[3] = nb.h;
+            extra_[id].jump_g_cache_[3] = jump_cost;
+        }
+
+        assert(id == start);
+        cost += extra_[id].jump_g_cache_[3];
+    }
+
+    if (start % map_.width() == pi->target_id_ % map_.width() && start < pi->target_id_ && nb.h > pi->target_id_) {
+        // Jump overshoots target, so adjust to target
+        nb = nbhood(pi->target_id_);
+        cost -= extra_[nb.h].jump_g_cache_[3];
+    }
     if (nb.h == pi->target_id_ || nbhood_successors(nb.h, warthog::jps::SOUTH) != 0) {
         add_neighbour(generate(nb.h), cost);
         reach(from, nb.h, warthog::jps::SOUTH, g + cost, pi);
