@@ -9,17 +9,7 @@
 namespace warthog
 {
 
-struct wjps_extra
-{
-    uint8_t successor_sets_[8];
-    uint32_t search_number_;
-    warthog::jps::direction moving_direction_;
-    uint8_t successors_;
-    uint32_t prospective_parent_;
-    warthog::cost_t prospective_g_;
-    uint32_t jump_target_cache_[4];
-    warthog::cost_t jump_g_cache_[4];
-};
+struct wjps_extra;
 
 class wjps_expansion_policy : public expansion_policy
 {
@@ -48,12 +38,7 @@ public:
     virtual warthog::search_node*
     generate_target_node(warthog::problem_instance* pi);
 
-    virtual inline size_t
-    mem()
-    {
-        return expansion_policy::mem() + sizeof(*this) + map_.mem() + nbcache_.mem()
-                + sizeof(wjps_extra) * map_.width() * map_.height();
-    }
+    virtual size_t mem();
 
 private:
     void reach(
@@ -69,17 +54,7 @@ private:
     int calculate_successors(uint32_t source);
     int nbhood_successors(uint32_t to, warthog::jps::direction going);
 
-    inline wjps_extra& get_extra(uint32_t id, warthog::problem_instance* pi) {
-        wjps_extra& extra = extra_[id];
-        if (extra.search_number_ != pi->instance_id_) {
-            extra.search_number_ = pi->instance_id_;
-            extra.prospective_g_ = warthog::COST_MAX;
-            extra.prospective_parent_ = 0;
-            extra.successors_ = 0;
-            extra.moving_direction_ = warthog::jps::NONE;
-        }
-        return extra;
-    }
+    wjps_extra& get_extra(uint32_t id, warthog::problem_instance* pi);
 
     inline double diagonal_cost(uint32_t nw_corner) {
         double sum = map_.get_label(nw_corner)
@@ -139,6 +114,8 @@ private:
     vl_gridmap& map_;
     wjps_extra* extra_;
     nbcache& nbcache_;
+    uint32_t* row_versions_;
+    uint32_t* col_versions_;
 };
 
 }
