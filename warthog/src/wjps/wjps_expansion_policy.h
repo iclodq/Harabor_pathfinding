@@ -97,6 +97,9 @@ private:
                 map_.get_label(nb.se) == map_.get_label(nb.h);
     }
 
+    template<int SLOT, typename F>
+    void calculate_jump(uint32_t start, int delta, uint32_t version, F cost);
+
     void jump_west(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi);
     void jump_east(

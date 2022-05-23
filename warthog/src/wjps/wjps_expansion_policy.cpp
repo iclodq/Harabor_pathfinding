@@ -174,41 +174,52 @@ warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::prob
     }
 }
 
+template<int SLOT, typename F>
+void warthog::wjps_expansion_policy::calculate_jump(
+    uint32_t start, int delta, uint32_t version, F cost)
+{
+    auto jump_dist = 0;
+    uint32_t last_id = 0;
+    auto jump_cost = 0.0;
+    auto nb = nbhood(start);
+    do {
+        jump_dist += 1;
+        nb = nbhood(nb.h + delta);
+        last_id = nb.h;
+        if (!locally_uniform(nb)) {
+            break;
+        }
+        auto& jc = extra_[nb.h].jump_cache_[SLOT];
+        if (jc.version_ == version) {
+            jump_cost = jc.g_;
+            nb = nbhood(jc.target_);
+            break;
+        }
+    } while (true);
+
+    for (int i = 0; i < jump_dist; i++) {
+        last_id -= delta;
+        jump_cost += cost(last_id);
+        extra_[last_id].jump_cache_[SLOT].target_ = nb.h;
+        extra_[last_id].jump_cache_[SLOT].g_ = jump_cost;
+        extra_[last_id].jump_cache_[SLOT].version_ = version;
+    }
+
+    assert(last_id == start);
+}
+
 void warthog::wjps_expansion_policy::jump_west(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
-    if (extra_[nb.h].jump_cache_[0].target_) {
-        cost += extra_[nb.h].jump_cache_[0].g_;
-        nb = nbhood(extra_[nb.h].jump_cache_[0].target_);
-    } else {
-        auto jump_dist = 0;
-        uint32_t id = 0;
-        auto jump_cost = 0.0;
-        do {
-            jump_dist += 1;
-            nb = nbhood(nb.w);
-            id = nb.h;
-            if (!locally_uniform(nb)) {
-                break;
-            }
-            if (extra_[nb.h].jump_cache_[0].target_) {
-                jump_cost = extra_[nb.h].jump_cache_[0].g_;
-                nb = nbhood(extra_[nb.h].jump_cache_[0].target_);
-                break;
-            }
-        } while (true);
-
-        for (int i = 0; i < jump_dist; i++) {
-            jump_cost += horizontal_cost(id);
-            id += 1;
-            extra_[id].jump_cache_[0].target_ = nb.h;
-            extra_[id].jump_cache_[0].g_ = jump_cost;
-        }
-
-        assert(id == start);
-        cost += extra_[id].jump_cache_[0].g_;
+    auto version = row_versions_[start / map_.width()];
+    if (extra_[nb.h].jump_cache_[0].version_ != version) {
+        calculate_jump<0>(start, -1, version, [this](uint32_t h) {
+            return horizontal_cost(h - 1);
+        });
     }
+    cost += extra_[nb.h].jump_cache_[0].g_;
+    nb = nbhood(extra_[nb.h].jump_cache_[0].target_);
 
     if (start > pi->target_id_ && nb.h < pi->target_id_) {
         // Jump overshoots target, so adjust to target
@@ -226,37 +237,14 @@ void warthog::wjps_expansion_policy::jump_east(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
-    if (extra_[nb.h].jump_cache_[1].target_) {
-        cost += extra_[nb.h].jump_cache_[1].g_;
-        nb = nbhood(extra_[nb.h].jump_cache_[1].target_);
-    } else {
-        auto jump_dist = 0;
-        uint32_t id = 0;
-        auto jump_cost = 0.0;
-        do {
-            jump_dist += 1;
-            nb = nbhood(nb.e);
-            id = nb.h;
-            if (!locally_uniform(nb)) {
-                break;
-            }
-            if (extra_[nb.h].jump_cache_[1].target_) {
-                jump_cost = extra_[nb.h].jump_cache_[1].g_;
-                nb = nbhood(extra_[nb.h].jump_cache_[1].target_);
-                break;
-            }
-        } while (true);
-
-        for (int i = 0; i < jump_dist; i++) {
-            id -= 1;
-            jump_cost += horizontal_cost(id);
-            extra_[id].jump_cache_[1].target_ = nb.h;
-            extra_[id].jump_cache_[1].g_ = jump_cost;
-        }
-
-        assert(id == start);
-        cost += extra_[id].jump_cache_[1].g_;
+    auto version = row_versions_[start / map_.width()];
+    if (extra_[nb.h].jump_cache_[1].version_ != version) {
+        calculate_jump<1>(start, 1, version, [this](uint32_t h) {
+            return horizontal_cost(h);
+        });
     }
+    cost += extra_[nb.h].jump_cache_[1].g_;
+    nb = nbhood(extra_[nb.h].jump_cache_[1].target_);
 
     if (start < pi->target_id_ && nb.h > pi->target_id_) {
         // Jump overshoots target, so adjust to target
@@ -274,37 +262,14 @@ void warthog::wjps_expansion_policy::jump_north(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
-    if (extra_[nb.h].jump_cache_[2].target_) {
-        cost += extra_[nb.h].jump_cache_[2].g_;
-        nb = nbhood(extra_[nb.h].jump_cache_[2].target_);
-    } else {
-        auto jump_dist = 0;
-        uint32_t id = 0;
-        auto jump_cost = 0.0;
-        do {
-            jump_dist += 1;
-            nb = nbhood(nb.n);
-            id = nb.h;
-            if (!locally_uniform(nb)) {
-                break;
-            }
-            if (extra_[nb.h].jump_cache_[2].target_) {
-                jump_cost = extra_[nb.h].jump_cache_[2].g_;
-                nb = nbhood(extra_[nb.h].jump_cache_[2].target_);
-                break;
-            }
-        } while (true);
-
-        for (int i = 0; i < jump_dist; i++) {
-            jump_cost += vertical_cost(id);
-            id += map_.width();
-            extra_[id].jump_cache_[2].target_ = nb.h;
-            extra_[id].jump_cache_[2].g_ = jump_cost;
-        }
-
-        assert(id == start);
-        cost += extra_[id].jump_cache_[2].g_;
+    auto version = col_versions_[start % map_.width()];
+    if (extra_[nb.h].jump_cache_[2].version_ != version) {
+        calculate_jump<2>(start, -(int) map_.width(), version, [this](uint32_t h) {
+            return vertical_cost(h - map_.width());
+        });
     }
+    cost += extra_[nb.h].jump_cache_[2].g_;
+    nb = nbhood(extra_[nb.h].jump_cache_[2].target_);
 
     if (start % map_.width() == pi->target_id_ % map_.width() && start > pi->target_id_ && nb.h < pi->target_id_) {
         // Jump overshoots target, so adjust to target
@@ -322,37 +287,14 @@ void warthog::wjps_expansion_policy::jump_south(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
-    if (extra_[nb.h].jump_cache_[3].target_) {
-        cost += extra_[nb.h].jump_cache_[3].g_;
-        nb = nbhood(extra_[nb.h].jump_cache_[3].target_);
-    } else {
-        auto jump_dist = 0;
-        uint32_t id = 0;
-        auto jump_cost = 0.0;
-        do {
-            jump_dist += 1;
-            nb = nbhood(nb.s);
-            id = nb.h;
-            if (!locally_uniform(nb)) {
-                break;
-            }
-            if (extra_[nb.h].jump_cache_[3].target_) {
-                jump_cost = extra_[nb.h].jump_cache_[3].g_;
-                nb = nbhood(extra_[nb.h].jump_cache_[3].target_);
-                break;
-            }
-        } while (true);
-
-        for (int i = 0; i < jump_dist; i++) {
-            id -= map_.width();
-            jump_cost += vertical_cost(id);
-            extra_[id].jump_cache_[3].target_ = nb.h;
-            extra_[id].jump_cache_[3].g_ = jump_cost;
-        }
-
-        assert(id == start);
-        cost += extra_[id].jump_cache_[3].g_;
+    auto version = col_versions_[start % map_.width()];
+    if (extra_[nb.h].jump_cache_[3].version_ != version) {
+        calculate_jump<3>(start, map_.width(), version, [this](uint32_t h) {
+            return vertical_cost(h);
+        });
     }
+    cost += extra_[nb.h].jump_cache_[3].g_;
+    nb = nbhood(extra_[nb.h].jump_cache_[3].target_);
 
     if (start % map_.width() == pi->target_id_ % map_.width() && start < pi->target_id_ && nb.h > pi->target_id_) {
         // Jump overshoots target, so adjust to target
