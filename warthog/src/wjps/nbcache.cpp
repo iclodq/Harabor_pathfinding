@@ -1,6 +1,6 @@
 #include "nbcache.h"
 
-warthog::nbcache::nbcache() : local_map_(3, 3), expander_(&local_map_), pqueue_()
+warthog::nbcache::nbcache() : local_map_(3, 3), expander_(&local_map_), pqueue_(), cached_()
 {
     local_nb_.nw = local_map_.to_padded_id(0, 0);
     local_nb_.n = local_map_.to_padded_id(1, 0);
@@ -13,53 +13,120 @@ warthog::nbcache::nbcache() : local_map_(3, 3), expander_(&local_map_), pqueue_(
     local_nb_.se = local_map_.to_padded_id(2, 2);
 }
 
-warthog::jps::direction warthog::nbcache::successors(
-        vl_gridmap& map, nbhood_labels& nb, warthog::jps::direction going)
+void rotate_left(std::array<uint8_t, 9>& cells, int count)
 {
-    local_map_.set_label(local_nb_.nw, map.get_label(nb.nw));
-    local_map_.set_label(local_nb_.n,  map.get_label(nb.n));
-    local_map_.set_label(local_nb_.ne, map.get_label(nb.ne));
-    local_map_.set_label(local_nb_.w,  map.get_label(nb.w));
-    local_map_.set_label(local_nb_.h,  map.get_label(nb.h));
-    local_map_.set_label(local_nb_.e,  map.get_label(nb.e));
-    local_map_.set_label(local_nb_.sw, map.get_label(nb.sw));
-    local_map_.set_label(local_nb_.s,  map.get_label(nb.s));
-    local_map_.set_label(local_nb_.se, map.get_label(nb.se));
-    uint32_t source;
+    for (int i = 0; i < count; i++) {
+        uint8_t first = cells[0];
+        for (int j = 1; j < 8; j++) {
+            cells[j - 1] = cells[j];
+        }
+        cells[7] = first;
+    }
+}
+
+void rotate(warthog::nb_key& key, warthog::jps::direction going)
+{
     switch (going) {
-        case warthog::jps::NORTHWEST:
-            source = 2 + 2 * 3;
-            break;
         case warthog::jps::NORTH:
-            source = 1 + 2 * 3;
+            key.diagonal = false;
             break;
-        case warthog::jps::NORTHEAST:
-            source = 0 + 2 * 3;
-            break;
-        case warthog::jps::WEST:
-            source = 2 + 1 * 3;
+        case warthog::jps::NORTHWEST:
+            key.diagonal = true;
             break;
         case warthog::jps::EAST:
-            source = 0 + 1 * 3;
+            key.diagonal = false;
+            rotate_left(key.cells, 2);
             break;
-        case warthog::jps::SOUTHWEST:
-            source = 2 + 0 * 3;
+        case warthog::jps::NORTHEAST:
+            key.diagonal = true;
+            rotate_left(key.cells, 2);
             break;
         case warthog::jps::SOUTH:
-            source = 1 + 0 * 3;
+            key.diagonal = false;
+            rotate_left(key.cells, 4);
             break;
         case warthog::jps::SOUTHEAST:
-            source = 0 + 0 * 3;
+            key.diagonal = true;
+            rotate_left(key.cells, 4);
+            break;
+        case warthog::jps::WEST:
+            key.diagonal = false;
+            rotate_left(key.cells, 6);
+            break;
+        case warthog::jps::SOUTHWEST:
+            key.diagonal = true;
+            rotate_left(key.cells, 6);
             break;
         default:
             assert(false);
-            return warthog::jps::NONE;
     }
-
-    return calculate_successors(source);
 }
 
-warthog::jps::direction warthog::nbcache::calculate_successors(uint32_t source)
+uint8_t warthog::nbcache::successors(
+        vl_gridmap& map, nbhood_labels& nb, warthog::jps::direction going)
+{
+    nb_key key = {
+        {
+            map.get_label(nb.nw),
+            map.get_label(nb.n),
+            map.get_label(nb.ne),
+            map.get_label(nb.e),
+            map.get_label(nb.se),
+            map.get_label(nb.s),
+            map.get_label(nb.sw),
+            map.get_label(nb.w),
+            map.get_label(nb.h),
+        },
+        false
+    };
+    rotate(key, going);
+
+    auto size = cached_.size();
+    auto& set = cached_[key];
+    if (cached_.size() != size) {
+        local_map_.set_label(local_nb_.nw, key.cells[0]);
+        local_map_.set_label(local_nb_.n,  key.cells[1]);
+        local_map_.set_label(local_nb_.ne, key.cells[2]);
+        local_map_.set_label(local_nb_.e,  key.cells[3]);
+        local_map_.set_label(local_nb_.se, key.cells[4]);
+        local_map_.set_label(local_nb_.s,  key.cells[5]);
+        local_map_.set_label(local_nb_.sw, key.cells[6]);
+        local_map_.set_label(local_nb_.w,  key.cells[7]);
+        local_map_.set_label(local_nb_.h,  key.cells[8]);
+        set = calculate_successors(key.diagonal ? 8 : 7);
+    }
+
+    switch (going) {
+        case warthog::jps::NORTH:
+        case warthog::jps::NORTHWEST:
+            return set;
+        case warthog::jps::EAST:
+        case warthog::jps::NORTHEAST:
+            return ((set >> 3) & 0b00000001)
+                 | ((set >> 2) & 0b00100000)
+                 | ((set >> 1) & 0b00010010)
+                 | ((set << 1) & 0b10000000)
+                 | ((set << 2) & 0b01001100);
+        case warthog::jps::SOUTH:
+        case warthog::jps::SOUTHEAST:
+            return ((set >> 3) & 0b00010000)
+                 | ((set >> 1) & 0b00100101)
+                 | ((set << 1) & 0b01001010)
+                 | ((set << 3) & 0b10000000);
+        case warthog::jps::WEST:
+        case warthog::jps::SOUTHWEST:
+            return ((set >> 2) & 0b00010011)
+                 | ((set >> 1) & 0b01000000)
+                 | ((set << 1) & 0b00100100)
+                 | ((set << 2) & 0b10000000)
+                 | ((set << 3) & 0b00001000);
+        default:;
+    }
+    assert(false);
+    return 0;
+}
+
+uint8_t warthog::nbcache::calculate_successors(uint32_t source)
 {
     warthog::problem_instance pi(source);
 
@@ -105,7 +172,7 @@ warthog::jps::direction warthog::nbcache::calculate_successors(uint32_t source)
         }
     }
 
-    int successors = warthog::jps::NONE;
+    uint8_t successors = warthog::jps::NONE;
     warthog::search_node* n = expander_.generate(local_nb_.nw);
     if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
         successors |= warthog::jps::NORTHWEST;
@@ -138,5 +205,5 @@ warthog::jps::direction warthog::nbcache::calculate_successors(uint32_t source)
     if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
         successors |= warthog::jps::SOUTHEAST;
     }
-    return (warthog::jps::direction) successors;
+    return successors;
 }
