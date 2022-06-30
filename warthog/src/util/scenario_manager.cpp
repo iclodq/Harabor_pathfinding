@@ -192,16 +192,16 @@ warthog::scenario_manager::load_gppc_scenario(std::ifstream& infile)
             std::cerr << "err; instance " << i+1 << " map-width value doesn't match actual map width\n";
             exit(EINVAL);
         }
-        if(gm.get_label(gm.to_padded_id(experiments_.at(i)->startx(), experiments_.at(i)->starty())) == 0)
-        {
-            std::cerr << "err; instance " << i+1 << " has non-traversable start location\n";
-            exit(EINVAL);
-        }
-        if(gm.get_label(gm.to_padded_id(experiments_.at(i)->goalx(), experiments_.at(i)->goaly())) == 0)
-        {
-            std::cerr << "err; instance " << i+1 << " has non-traversable goal location\n";
-            exit(EINVAL);
-        }
+        // if(gm.get_label(gm.to_padded_id(experiments_.at(i)->startx(), experiments_.at(i)->starty())) == 0)
+        // {
+        //     std::cerr << "err; instance " << i+1 << " has non-traversable start location\n";
+        //     exit(EINVAL);
+        // }
+        // if(gm.get_label(gm.to_padded_id(experiments_.at(i)->goalx(), experiments_.at(i)->goaly())) == 0)
+        // {
+        //     std::cerr << "err; instance " << i+1 << " has non-traversable goal location\n";
+        //     exit(EINVAL);
+        // }
     }
 }
 
