@@ -1,6 +1,7 @@
 #include "nbcache.h"
 
-warthog::nbcache::nbcache() : local_map_(3, 3), expander_(&local_map_), pqueue_(), cached_()
+warthog::nbcache::nbcache(warthog::cost_table& costs)
+    : local_map_(3, 3), expander_(&local_map_, costs), pqueue_(), cached_()
 {
     local_nb_.nw = local_map_.to_padded_id(0, 0);
     local_nb_.n = local_map_.to_padded_id(1, 0);

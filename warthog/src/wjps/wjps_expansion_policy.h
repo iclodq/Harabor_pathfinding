@@ -5,6 +5,7 @@
 #include "expansion_policy.h"
 #include "labelled_gridmap.h"
 #include "nbcache.h"
+#include "cost_table.h"
 
 namespace warthog
 {
@@ -20,7 +21,7 @@ public:
     *
     * If there are more than 2 nonzero tile types, an exception is thrown.
     */
-    wjps_expansion_policy(nbcache& nbcache, vl_gridmap& map);
+    wjps_expansion_policy(nbcache& nbcache, vl_gridmap& map, cost_table& costs);
     ~wjps_expansion_policy();
 
     virtual void 
@@ -57,19 +58,19 @@ private:
     wjps_extra& get_extra(uint32_t id, warthog::problem_instance* pi);
 
     inline double diagonal_cost(uint32_t nw_corner) {
-        double sum = map_.get_label(nw_corner)
-                + map_.get_label(nw_corner + 1)
-                + map_.get_label(nw_corner + map_.width())
-                + map_.get_label(nw_corner + map_.width() + 1);
+        double sum = costs_[map_.get_label(nw_corner)]
+                + costs_[map_.get_label(nw_corner + 1)]
+                + costs_[map_.get_label(nw_corner + map_.width())]
+                + costs_[map_.get_label(nw_corner + map_.width() + 1)];
         return sum * warthog::DBL_ROOT_TWO / 4.0;
     }
 
     inline double vertical_cost(uint32_t north) {
-        return (map_.get_label(north) + map_.get_label(north + map_.width())) / 2.0;
+        return (costs_[map_.get_label(north)] + costs_[map_.get_label(north + map_.width())]) / 2.0;
     }
 
     inline double horizontal_cost(uint32_t west) {
-        return (map_.get_label(west) + map_.get_label(west + 1)) / 2.0;
+        return (costs_[map_.get_label(west)] + costs_[map_.get_label(west + 1)]) / 2.0;
     }
 
     inline nbhood_labels nbhood(uint32_t around) {
@@ -115,6 +116,7 @@ private:
     void jump_se(nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi);
 
     vl_gridmap& map_;
+    cost_table& costs_;
     wjps_extra* extra_;
     nbcache& nbcache_;
     uint32_t* row_versions_;

@@ -20,9 +20,10 @@ struct warthog::wjps_extra
     jumpcache jump_cache_[4];
 };
 
-warthog::wjps_expansion_policy::wjps_expansion_policy(nbcache& nbcache, vl_gridmap& map)
+warthog::wjps_expansion_policy::wjps_expansion_policy(
+        nbcache& nbcache, vl_gridmap& map, cost_table& costs)
     : expansion_policy(map.height()*map.width()),
-    map_(map), nbcache_(nbcache)
+    map_(map), costs_(costs), nbcache_(nbcache)
 {
     extra_ = new wjps_extra[map.width() * map.height()];
     for (uint32_t id = 0; id < map.width()*map.height(); id++) {

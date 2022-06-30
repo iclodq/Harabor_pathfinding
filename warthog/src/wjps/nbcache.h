@@ -61,7 +61,7 @@ namespace warthog {
 class nbcache
 {
 public:
-    nbcache();
+    nbcache(warthog::cost_table& costs);
 
     uint8_t successors(
         vl_gridmap& map, nbhood_labels& nb, warthog::jps::direction going);
