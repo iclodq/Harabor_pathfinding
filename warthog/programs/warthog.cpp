@@ -440,6 +440,8 @@ run_wjps(warthog::scenario_manager& scenmgr, std::string alg_name, std::string c
     }
     heuristic.set_hscale(lowest_cost);
 
+    expander.fill_nb_cache();
+
 	warthog::flexible_astar<
 		warthog::octile_heuristic,
 	   	warthog::wjps_expansion_policy,

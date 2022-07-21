@@ -52,6 +52,44 @@ warthog::wjps_expansion_policy::~wjps_expansion_policy()
     delete[] col_versions_;
 }
 
+void warthog::wjps_expansion_policy::fill_nb_cache()
+{
+    for (uint32_t id = 0; id < map_.width() * map_.height(); id++) {
+        if (!map_.get_label(id)) {
+            continue;
+        }
+
+        for (int i = 0; i < 8; i++) {
+            nbhood_successors(id, (warthog::jps::direction) (1 << i));
+        }
+    }
+}
+
+void warthog::wjps_expansion_policy::fill_jump_cache()
+{
+    for (uint32_t id = 0; id < map_.width() * map_.height(); id++) {
+        if (!map_.get_label(id)) {
+            continue;
+        }
+
+        auto row_version = row_versions_[id / map_.width()];
+        calculate_jump<0>(id, -1, row_version, [this](uint32_t h) {
+            return horizontal_cost(h - 1);
+        });
+        calculate_jump<1>(id, 1, row_version, [this](uint32_t h) {
+            return horizontal_cost(h);
+        });
+
+        auto col_version = col_versions_[id % map_.width()];
+        calculate_jump<2>(id, -(int) map_.width(), col_version, [this](uint32_t h) {
+            return vertical_cost(h - map_.width());
+        });
+        calculate_jump<3>(id, map_.width(), col_version, [this](uint32_t h) {
+            return vertical_cost(h);
+        });
+    }
+}
+
 size_t warthog::wjps_expansion_policy::mem()
 {
     return expansion_policy::mem() + sizeof(*this) + map_.mem() + nbcache_.mem()

@@ -24,6 +24,9 @@ public:
     wjps_expansion_policy(nbcache& nbcache, vl_gridmap& map, cost_table& costs);
     ~wjps_expansion_policy();
 
+    void fill_nb_cache();
+    void fill_jump_cache();
+
     virtual void 
     expand(warthog::search_node*, warthog::problem_instance*);
 
