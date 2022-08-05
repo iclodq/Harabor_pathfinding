@@ -114,35 +114,35 @@ warthog::wjps_expansion_policy::generate_start_node(warthog::problem_instance* p
     extra.search_number_ = pi->instance_id_;
     extra.successors_ = 0;
     extra.prospective_g_ = 0.0;
-    if (map_.get_label(nb.n)) {
+    if (costs_[map_.get_label(nb.n)]) {
         extra.successors_ |= warthog::jps::NORTH;
         prospect(nb.n, vertical_cost(nb.n), pi);
-        if (map_.get_label(nb.e) && map_.get_label(nb.ne)) {
+        if (costs_[map_.get_label(nb.e)] && costs_[map_.get_label(nb.ne)]) {
             extra.successors_ |= warthog::jps::NORTHEAST;
             prospect(nb.ne, diagonal_cost(nb.n), pi);
         }
-        if (map_.get_label(nb.w) && map_.get_label(nb.nw)) {
+        if (costs_[map_.get_label(nb.w)] && costs_[map_.get_label(nb.nw)]) {
             extra.successors_ |= warthog::jps::NORTHWEST;
             prospect(nb.nw, diagonal_cost(nb.nw), pi);
         }
     }
-    if (map_.get_label(nb.s)) {
+    if (costs_[map_.get_label(nb.s)]) {
         extra.successors_ |= warthog::jps::SOUTH;
         prospect(nb.s, vertical_cost(nb.h), pi);
-        if (map_.get_label(nb.e) && map_.get_label(nb.se)) {
+        if (costs_[map_.get_label(nb.e)] && costs_[map_.get_label(nb.se)]) {
             extra.successors_ |= warthog::jps::SOUTHEAST;
             prospect(nb.se, diagonal_cost(nb.h), pi);
         }
-        if (map_.get_label(nb.w) && map_.get_label(nb.sw)) {
+        if (costs_[map_.get_label(nb.w)] && costs_[map_.get_label(nb.sw)]) {
             extra.successors_ |= warthog::jps::SOUTHWEST;
             prospect(nb.sw, diagonal_cost(nb.w), pi);
         }
     }
-    if (map_.get_label(nb.e)) {
+    if (costs_[map_.get_label(nb.e)]) {
         extra.successors_ |= warthog::jps::EAST;
         prospect(nb.e, horizontal_cost(nb.h), pi);
     }
-    if (map_.get_label(nb.w)) {
+    if (costs_[map_.get_label(nb.w)]) {
         extra.successors_ |= warthog::jps::WEST;
         prospect(nb.w, horizontal_cost(nb.w), pi);
     }
