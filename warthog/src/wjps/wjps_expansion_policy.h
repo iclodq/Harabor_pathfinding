@@ -46,19 +46,12 @@ public:
 
 private:
     void reach(
-        uint32_t from, uint32_t to,
-        warthog::jps::direction direction, double g,
-        warthog::problem_instance* pi);
+        uint32_t id, warthog::jps::direction direction, double g, warthog::problem_instance* pi);
 
-    void prospect(
-        uint32_t from, uint32_t to,
-        warthog::jps::direction direction, double g,
-        warthog::problem_instance* pi);
+    void prospect(uint32_t id, double g, warthog::problem_instance* pi);
 
     int calculate_successors(uint32_t source);
     int nbhood_successors(uint32_t to, warthog::jps::direction going);
-
-    wjps_extra& get_extra(uint32_t id, warthog::problem_instance* pi);
 
     inline double diagonal_cost(uint32_t nw_corner) {
         double sum = costs_[map_.get_label(nw_corner)]
