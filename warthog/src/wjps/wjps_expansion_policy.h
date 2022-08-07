@@ -48,7 +48,7 @@ private:
     void reach(
         uint32_t id, warthog::jps::direction direction, double g, warthog::problem_instance* pi);
 
-    void prospect(uint32_t id, double g, warthog::problem_instance* pi);
+    void prospect(uint32_t id, double g, bool ortho, warthog::problem_instance* pi);
 
     int calculate_successors(uint32_t source);
     int nbhood_successors(uint32_t to, warthog::jps::direction going);

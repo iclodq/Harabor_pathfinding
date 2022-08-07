@@ -13,6 +13,7 @@ struct warthog::wjps_extra
     warthog::cost_t prospective_g_;
     uint32_t search_number_;
     uint8_t successors_;
+    bool reached_orthogonally_;
 
     uint8_t successor_sets_[8];
     jumpcache jump_cache_[4];
@@ -114,37 +115,38 @@ warthog::wjps_expansion_policy::generate_start_node(warthog::problem_instance* p
     extra.search_number_ = pi->instance_id_;
     extra.successors_ = 0;
     extra.prospective_g_ = 0.0;
+    extra.reached_orthogonally_ = true;
     if (costs_[map_.get_label(nb.n)]) {
         extra.successors_ |= warthog::jps::NORTH;
-        prospect(nb.n, vertical_cost(nb.n), pi);
+        prospect(nb.n, vertical_cost(nb.n), true, pi);
         if (costs_[map_.get_label(nb.e)] && costs_[map_.get_label(nb.ne)]) {
             extra.successors_ |= warthog::jps::NORTHEAST;
-            prospect(nb.ne, diagonal_cost(nb.n), pi);
+            prospect(nb.ne, diagonal_cost(nb.n), false, pi);
         }
         if (costs_[map_.get_label(nb.w)] && costs_[map_.get_label(nb.nw)]) {
             extra.successors_ |= warthog::jps::NORTHWEST;
-            prospect(nb.nw, diagonal_cost(nb.nw), pi);
+            prospect(nb.nw, diagonal_cost(nb.nw), false, pi);
         }
     }
     if (costs_[map_.get_label(nb.s)]) {
         extra.successors_ |= warthog::jps::SOUTH;
-        prospect(nb.s, vertical_cost(nb.h), pi);
+        prospect(nb.s, vertical_cost(nb.h), true, pi);
         if (costs_[map_.get_label(nb.e)] && costs_[map_.get_label(nb.se)]) {
             extra.successors_ |= warthog::jps::SOUTHEAST;
-            prospect(nb.se, diagonal_cost(nb.h), pi);
+            prospect(nb.se, diagonal_cost(nb.h), false, pi);
         }
         if (costs_[map_.get_label(nb.w)] && costs_[map_.get_label(nb.sw)]) {
             extra.successors_ |= warthog::jps::SOUTHWEST;
-            prospect(nb.sw, diagonal_cost(nb.w), pi);
+            prospect(nb.sw, diagonal_cost(nb.w), false, pi);
         }
     }
     if (costs_[map_.get_label(nb.e)]) {
         extra.successors_ |= warthog::jps::EAST;
-        prospect(nb.e, horizontal_cost(nb.h), pi);
+        prospect(nb.e, horizontal_cost(nb.h), true, pi);
     }
     if (costs_[map_.get_label(nb.w)]) {
         extra.successors_ |= warthog::jps::WEST;
-        prospect(nb.w, horizontal_cost(nb.w), pi);
+        prospect(nb.w, horizontal_cost(nb.w), true, pi);
     }
 
     return generate(padded_id);
@@ -175,33 +177,33 @@ warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::prob
     uint8_t successors = extra_[id].successors_;
 
     // do orthogonal directions first so successors are updated for diagonal branch pruning
-    if (extra_[id].successors_ & warthog::jps::NORTH) {
+    if (successors & warthog::jps::NORTH) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.n].prospective_g_ >= node->get_g() + vertical_cost(nb.n)) {
+        if (extra_[nb.n].prospective_g_ == node->get_g() + vertical_cost(nb.n)) {
             jump_north(id, nb, node->get_g(), 0.0, pi);
         } else {
             successors &= ~warthog::jps::NORTH;
         }
     }
-    if (extra_[id].successors_ & warthog::jps::WEST) {
+    if (successors & warthog::jps::WEST) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.w].prospective_g_ >= node->get_g() + horizontal_cost(nb.w)) {
+        if (extra_[nb.w].prospective_g_ == node->get_g() + horizontal_cost(nb.w)) {
             jump_west(id, nb, node->get_g(), 0.0, pi);
         } else {
             successors &= ~warthog::jps::WEST;
         }
     }
-    if (extra_[id].successors_ & warthog::jps::EAST) {
+    if (successors & warthog::jps::EAST) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.e].prospective_g_ >= node->get_g() + horizontal_cost(nb.h)) {
+        if (extra_[nb.e].prospective_g_ == node->get_g() + horizontal_cost(nb.h)) {
             jump_east(id, nb, node->get_g(), 0.0, pi);
         } else {
             successors &= ~warthog::jps::EAST;
         }
     }
-    if (extra_[id].successors_ & warthog::jps::SOUTH) {
+    if (successors & warthog::jps::SOUTH) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.s].prospective_g_ >= node->get_g() + vertical_cost(nb.h)) {
+        if (extra_[nb.s].prospective_g_ == node->get_g() + vertical_cost(nb.h)) {
             jump_south(id, nb, node->get_g(), 0.0, pi);
         } else {
             successors &= ~warthog::jps::SOUTH;
@@ -209,28 +211,32 @@ warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::prob
     }
 
     // now that orthogonal successors are updated, do the diagonal directions
-    if (extra_[id].successors_ & warthog::jps::NORTHWEST) {
+    if (successors & warthog::jps::NORTHWEST) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.nw].prospective_g_ >= node->get_g() + diagonal_cost(nb.nw)) {
-            jump_nw(nb, node->get_g(), extra_[id].successors_, pi);
+        if (extra_[nb.nw].prospective_g_ == node->get_g() + diagonal_cost(nb.nw)
+                && !extra_[nb.nw].reached_orthogonally_) {
+            jump_nw(nb, node->get_g(), successors, pi);
         }
     }
-    if (extra_[id].successors_ & warthog::jps::NORTHEAST) {
+    if (successors & warthog::jps::NORTHEAST) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.ne].prospective_g_ >= node->get_g() + diagonal_cost(nb.n)) {
-            jump_ne(nb, node->get_g(), extra_[id].successors_, pi);
+        if (extra_[nb.ne].prospective_g_ == node->get_g() + diagonal_cost(nb.n)
+                && !extra_[nb.ne].reached_orthogonally_) {
+            jump_ne(nb, node->get_g(), successors, pi);
         }
     }
-    if (extra_[id].successors_ & warthog::jps::SOUTHWEST) {
+    if (successors & warthog::jps::SOUTHWEST) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.sw].prospective_g_ >= node->get_g() + diagonal_cost(nb.w)) {
-            jump_sw(nb, node->get_g(), extra_[id].successors_, pi);
+        if (extra_[nb.sw].prospective_g_ == node->get_g() + diagonal_cost(nb.w)
+                && !extra_[nb.sw].reached_orthogonally_) {
+            jump_sw(nb, node->get_g(), successors, pi);
         }
     }
-    if (extra_[id].successors_ & warthog::jps::SOUTHEAST) {
+    if (successors & warthog::jps::SOUTHEAST) {
         // check that the successor is not pruned by prospective g
-        if (extra_[nb.se].prospective_g_ >= node->get_g() + diagonal_cost(nb.h)) {
-            jump_se(nb, node->get_g(), extra_[id].successors_, pi);
+        if (extra_[nb.se].prospective_g_ == node->get_g() + diagonal_cost(nb.h)
+                && !extra_[nb.se].reached_orthogonally_) {
+            jump_se(nb, node->get_g(), successors, pi);
         }
     }
 }
@@ -451,55 +457,62 @@ void warthog::wjps_expansion_policy::jump_se(
 void warthog::wjps_expansion_policy::reach(
         uint32_t id, warthog::jps::direction direction, double g, warthog::problem_instance* pi)
 {
+    constexpr auto ORTHO_DIRS =
+        warthog::jps::NORTH | warthog::jps::SOUTH | warthog::jps::EAST | warthog::jps::WEST;
+
     auto& extra = extra_[id];
     auto nb = nbhood(id);
     warthog::search_node* node = generate(id);
     if (pi->instance_id_ != node->get_search_number() || g < node->get_g()) {
-        // determine successor set and perform prospective step
-        extra.prospective_g_ = g;
+        // determine successor set, update prospective g for the reached node
         extra.successors_ = nbhood_successors(id, direction);
-        extra.search_number_ = pi->instance_id_;
+        prospect(id, g, (direction & ORTHO_DIRS) != 0, pi);
 
         // for each direction, update the prospective g value of the node reached
         if (extra.successors_ & warthog::jps::NORTHWEST) {
-            prospect(nb.nw, g + diagonal_cost(nb.nw), pi);
+            prospect(nb.nw, g + diagonal_cost(nb.nw), false, pi);
         }
         if (extra.successors_ & warthog::jps::NORTH) {
-            prospect(nb.n, g + vertical_cost(nb.n), pi);
+            prospect(nb.n, g + vertical_cost(nb.n), true, pi);
         }
         if (extra.successors_ & warthog::jps::NORTHEAST) {
-            prospect(nb.ne, g + diagonal_cost(nb.n), pi);
+            prospect(nb.ne, g + diagonal_cost(nb.n), false, pi);
         }
 
         if (extra.successors_ & warthog::jps::WEST) {
-            prospect(nb.w, g + horizontal_cost(nb.w), pi);
+            prospect(nb.w, g + horizontal_cost(nb.w), true, pi);
         }
         if (extra.successors_ & warthog::jps::EAST) {
-            prospect(nb.e, g + horizontal_cost(nb.h), pi);
+            prospect(nb.e, g + horizontal_cost(nb.h), true, pi);
         }
 
         if (extra.successors_ & warthog::jps::SOUTHWEST) {
-            prospect(nb.sw, g + diagonal_cost(nb.w), pi);
+            prospect(nb.sw, g + diagonal_cost(nb.w), false, pi);
         }
         if (extra.successors_ & warthog::jps::SOUTH) {
-            prospect(nb.s, g + vertical_cost(nb.h), pi);
+            prospect(nb.s, g + vertical_cost(nb.h), true, pi);
         }
         if (extra.successors_ & warthog::jps::SOUTHEAST) {
-            prospect(nb.se, g + diagonal_cost(nb.h), pi);
+            prospect(nb.se, g + diagonal_cost(nb.h), false, pi);
         }
     } else if (pi->instance_id_ == node->get_search_number() && g == node->get_g()) {
         // when there are multiple canonical optimal paths to a node, its successors are the
         // intersection of the canonical successor sets in each direction.
         extra.successors_ &= nbhood_successors(id, direction);
+        extra.reached_orthogonally_ |= (direction & ORTHO_DIRS) != 0;
     }
 }
 
-void warthog::wjps_expansion_policy::prospect(uint32_t id, double g, warthog::problem_instance* pi)
+void warthog::wjps_expansion_policy::prospect(
+        uint32_t id, double g, bool ortho, warthog::problem_instance* pi)
 {
     auto& extra = extra_[id];
     if (extra.search_number_ != pi->instance_id_ || g < extra.prospective_g_) {
         extra.search_number_ = pi->instance_id_;
         extra.prospective_g_ = g;
+        extra.reached_orthogonally_ = ortho;
+    } else if (extra.search_number_ == pi->instance_id_ && g == extra.prospective_g_) {
+        extra.reached_orthogonally_ |= ortho;
     }
 }
 
