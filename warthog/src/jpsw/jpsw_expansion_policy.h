@@ -1,5 +1,5 @@
-#ifndef WJPS_EXPANSION_POLICY_H
-#define WJPS_EXPANSION_POLICY_H
+#ifndef JPSW_EXPANSION_POLICY_H
+#define JPSW_EXPANSION_POLICY_H
 
 #include "jps.h"
 #include "expansion_policy.h"
@@ -10,9 +10,9 @@
 namespace warthog
 {
 
-struct wjps_extra;
+struct jpsw_extra;
 
-class wjps_expansion_policy : public expansion_policy
+class jpsw_expansion_policy : public expansion_policy
 {
 public:
     /*
@@ -21,8 +21,8 @@ public:
     *
     * If there are more than 2 nonzero tile types, an exception is thrown.
     */
-    wjps_expansion_policy(nbcache& nbcache, vl_gridmap& map, cost_table& costs);
-    ~wjps_expansion_policy();
+    jpsw_expansion_policy(nbcache& nbcache, vl_gridmap& map, cost_table& costs);
+    ~jpsw_expansion_policy();
 
     void fill_nb_cache();
     void fill_jump_cache();
@@ -113,7 +113,7 @@ private:
 
     vl_gridmap& map_;
     cost_table& costs_;
-    wjps_extra* extra_;
+    jpsw_extra* extra_;
     nbcache& nbcache_;
     uint32_t* row_versions_;
     uint32_t* col_versions_;

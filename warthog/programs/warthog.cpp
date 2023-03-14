@@ -32,7 +32,7 @@
 #include "labelled_gridmap.h"
 #include "sipp_expansion_policy.h"
 #include "vl_gridmap_expansion_policy.h"
-#include "wjps_expansion_policy.h"
+#include "jpsw_expansion_policy.h"
 #include "zero_heuristic.h"
 
 #include "getopt.h"
@@ -72,7 +72,7 @@ help()
     << "Invoking the program this way solves all instances in [scen file] with algorithm [alg]\n"
     << "Currently recognised values for [alg]:\n"
     << "\tcbs_ll, cbs_ll_w, dijkstra, astar, astar_wgm, astar4c, sipp\n"
-    << "\tsssp, jps, jps2, jps+, jps2+, jps, jps4c, wjps\n"
+    << "\tsssp, jps, jps2, jps+, jps2+, jps, jps4c, jpsw\n"
     << "\tdfs, gdfs\n\n"
     << ""
     << "The following are valid parameters for GENERATING instances:\n"
@@ -424,12 +424,12 @@ run_wgm_astar(warthog::scenario_manager& scenmgr, std::string mapname, std::stri
 }
 
 void
-run_wjps(warthog::scenario_manager& scenmgr, std::string alg_name, std::string costfile)
+run_jpsw(warthog::scenario_manager& scenmgr, std::string alg_name, std::string costfile)
 {
     warthog::cost_table costs(costfile.c_str());
     warthog::vl_gridmap map(scenmgr.get_experiment(0)->map().c_str());
     warthog::nbcache nbs(costs);
-	warthog::wjps_expansion_policy expander(nbs, map, costs);
+	warthog::jpsw_expansion_policy expander(nbs, map, costs);
 	warthog::octile_heuristic heuristic(map.width(), map.height());
     warthog::pqueue_min open;
 
@@ -444,7 +444,7 @@ run_wjps(warthog::scenario_manager& scenmgr, std::string alg_name, std::string c
 
 	warthog::flexible_astar<
 		warthog::octile_heuristic,
-	   	warthog::wjps_expansion_policy,
+	   	warthog::jpsw_expansion_policy,
         warthog::pqueue_min> 
             astar(&heuristic, &expander, &open);
 
@@ -655,9 +655,9 @@ main(int argc, char** argv)
         run_wgm_astar(scenmgr, mapname, alg, costfile);
     }
 
-    else if(alg == "wjps")
+    else if(alg == "jpsw")
     {
-        run_wjps(scenmgr, alg, costfile);
+        run_jpsw(scenmgr, alg, costfile);
     }
 
     else if(alg == "sssp")

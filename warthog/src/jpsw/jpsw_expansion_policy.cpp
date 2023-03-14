@@ -1,4 +1,4 @@
-#include "wjps_expansion_policy.h"
+#include "jpsw_expansion_policy.h"
 #include "jps.h"
 
 struct jumpcache
@@ -8,7 +8,7 @@ struct jumpcache
     warthog::cost_t g_;
 };
 
-struct warthog::wjps_extra
+struct warthog::jpsw_extra
 {
     warthog::cost_t prospective_g_;
     uint32_t search_number_;
@@ -19,12 +19,12 @@ struct warthog::wjps_extra
     jumpcache jump_cache_[4];
 };
 
-warthog::wjps_expansion_policy::wjps_expansion_policy(
+warthog::jpsw_expansion_policy::jpsw_expansion_policy(
         nbcache& nbcache, vl_gridmap& map, cost_table& costs)
     : expansion_policy(map.height()*map.width()),
     map_(map), costs_(costs), nbcache_(nbcache)
 {
-    extra_ = new wjps_extra[map.width() * map.height()];
+    extra_ = new jpsw_extra[map.width() * map.height()];
     for (uint32_t id = 0; id < map.width()*map.height(); id++) {
         for (int i = 0; i < 8; i++) {
             extra_[id].successor_sets_[i] = warthog::jps::ALL;
@@ -44,14 +44,14 @@ warthog::wjps_expansion_policy::wjps_expansion_policy(
     }
 }
 
-warthog::wjps_expansion_policy::~wjps_expansion_policy()
+warthog::jpsw_expansion_policy::~jpsw_expansion_policy()
 {
     delete[] extra_;
     delete[] row_versions_;
     delete[] col_versions_;
 }
 
-void warthog::wjps_expansion_policy::fill_nb_cache()
+void warthog::jpsw_expansion_policy::fill_nb_cache()
 {
     for (uint32_t id = 0; id < map_.width() * map_.height(); id++) {
         if (!map_.get_label(id)) {
@@ -64,7 +64,7 @@ void warthog::wjps_expansion_policy::fill_nb_cache()
     }
 }
 
-void warthog::wjps_expansion_policy::fill_jump_cache()
+void warthog::jpsw_expansion_policy::fill_jump_cache()
 {
     for (uint32_t id = 0; id < map_.width() * map_.height(); id++) {
         if (!map_.get_label(id)) {
@@ -89,15 +89,15 @@ void warthog::wjps_expansion_policy::fill_jump_cache()
     }
 }
 
-size_t warthog::wjps_expansion_policy::mem()
+size_t warthog::jpsw_expansion_policy::mem()
 {
     return expansion_policy::mem() + sizeof(*this) + map_.mem() + nbcache_.mem()
-            + sizeof(wjps_extra) * map_.width() * map_.height()
+            + sizeof(jpsw_extra) * map_.width() * map_.height()
             + sizeof(uint32_t) * (map_.width() + map_.height());
 }
 
 warthog::search_node*
-warthog::wjps_expansion_policy::generate_start_node(warthog::problem_instance* pi)
+warthog::jpsw_expansion_policy::generate_start_node(warthog::problem_instance* pi)
 {
     uint32_t max_id = map_.header_width() * map_.header_height();
     if ((uint32_t) pi->start_id_ >= max_id) {
@@ -153,7 +153,7 @@ warthog::wjps_expansion_policy::generate_start_node(warthog::problem_instance* p
 }
 
 warthog::search_node*
-warthog::wjps_expansion_policy::generate_target_node(warthog::problem_instance* pi)
+warthog::jpsw_expansion_policy::generate_target_node(warthog::problem_instance* pi)
 {
     uint32_t max_id = map_.header_width() * map_.header_height();
     if ((uint32_t) pi->target_id_ >= max_id) {
@@ -167,7 +167,7 @@ warthog::wjps_expansion_policy::generate_target_node(warthog::problem_instance* 
 }
 
 void
-warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::problem_instance* pi)
+warthog::jpsw_expansion_policy::expand(warthog::search_node* node, warthog::problem_instance* pi)
 {
     reset();
 
@@ -242,7 +242,7 @@ warthog::wjps_expansion_policy::expand(warthog::search_node* node, warthog::prob
 }
 
 template<int SLOT, typename F>
-void warthog::wjps_expansion_policy::calculate_jump(
+void warthog::jpsw_expansion_policy::calculate_jump(
     uint32_t start, int delta, uint32_t version, F cost)
 {
     auto jump_dist = 0;
@@ -275,7 +275,7 @@ void warthog::wjps_expansion_policy::calculate_jump(
     assert(last_id == start);
 }
 
-void warthog::wjps_expansion_policy::jump_west(
+void warthog::jpsw_expansion_policy::jump_west(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
@@ -300,7 +300,7 @@ void warthog::wjps_expansion_policy::jump_west(
     }
 }
 
-void warthog::wjps_expansion_policy::jump_east(
+void warthog::jpsw_expansion_policy::jump_east(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
@@ -325,7 +325,7 @@ void warthog::wjps_expansion_policy::jump_east(
     }
 }
 
-void warthog::wjps_expansion_policy::jump_north(
+void warthog::jpsw_expansion_policy::jump_north(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
@@ -350,7 +350,7 @@ void warthog::wjps_expansion_policy::jump_north(
     }
 }
 
-void warthog::wjps_expansion_policy::jump_south(
+void warthog::jpsw_expansion_policy::jump_south(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
 {
     auto start = nb.h;
@@ -374,7 +374,7 @@ void warthog::wjps_expansion_policy::jump_south(
     }
 }
 
-void warthog::wjps_expansion_policy::jump_nw(
+void warthog::jpsw_expansion_policy::jump_nw(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
 {
     uint32_t from = nb.h;
@@ -394,7 +394,7 @@ void warthog::wjps_expansion_policy::jump_nw(
     reach(nb.h, warthog::jps::NORTHWEST, g + cost, pi);
 }
 
-void warthog::wjps_expansion_policy::jump_ne(
+void warthog::jpsw_expansion_policy::jump_ne(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
 {
     uint32_t from = nb.h;
@@ -414,7 +414,7 @@ void warthog::wjps_expansion_policy::jump_ne(
     reach(nb.h, warthog::jps::NORTHEAST, g + cost, pi);
 }
 
-void warthog::wjps_expansion_policy::jump_sw(
+void warthog::jpsw_expansion_policy::jump_sw(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
 {
     uint32_t from = nb.h;
@@ -434,7 +434,7 @@ void warthog::wjps_expansion_policy::jump_sw(
     reach(nb.h, warthog::jps::SOUTHWEST, g + cost, pi);
 }
 
-void warthog::wjps_expansion_policy::jump_se(
+void warthog::jpsw_expansion_policy::jump_se(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
 {
     uint32_t from = nb.h;
@@ -454,7 +454,7 @@ void warthog::wjps_expansion_policy::jump_se(
     reach(nb.h, warthog::jps::SOUTHEAST, g + cost, pi);
 }
 
-void warthog::wjps_expansion_policy::reach(
+void warthog::jpsw_expansion_policy::reach(
         uint32_t id, warthog::jps::direction direction, double g, warthog::problem_instance* pi)
 {
     constexpr auto ORTHO_DIRS =
@@ -503,7 +503,7 @@ void warthog::wjps_expansion_policy::reach(
     }
 }
 
-void warthog::wjps_expansion_policy::prospect(
+void warthog::jpsw_expansion_policy::prospect(
         uint32_t id, double g, bool ortho, warthog::problem_instance* pi)
 {
     auto& extra = extra_[id];
@@ -516,7 +516,7 @@ void warthog::wjps_expansion_policy::prospect(
     }
 }
 
-int warthog::wjps_expansion_policy::nbhood_successors(
+int warthog::jpsw_expansion_policy::nbhood_successors(
         uint32_t to, warthog::jps::direction going)
 {
     nbhood_labels nb = nbhood(to);
