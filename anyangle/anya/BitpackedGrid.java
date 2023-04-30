@@ -370,8 +370,6 @@ public class BitpackedGrid
     	int start_bit_index = tile_id & INDEX_MASK;
     	int mask = (1 << start_bit_index);
     	corners &= ~(mask | (mask-1));
-    	// avoid scanning through double-corners
-        corners |= (double_corner_[t_index] & mask);
     	// ignore tile obstacles in bit positions <= (i.e., to the left of) of the 
         // starting cell. these cannot influence the computation
     	obstacles &= ~(mask-1);
@@ -435,8 +433,6 @@ public class BitpackedGrid
     	int mask = (1 << start_bit_index) - 1;
     	corners &= mask;
     	obstacles &= mask;
-        // avoid scanning through double-corners
-        corners |= (double_corner_[t_index] & (1 << start_bit_index));
 
     	int stop_pos;
     	int start_index = t_index;

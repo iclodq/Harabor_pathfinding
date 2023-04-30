@@ -71,9 +71,14 @@ public class AnyaHeuristic implements Heuristic<AnyaNode>
 		double rise_irow_to_target = Math.abs(n.interval.getRow() - t.root.y);
 		double lrun = n.root.x - n.interval.getLeft();
 		double rrun = n.interval.getRight() - n.root.x;
-		double left_proj = n.interval.getLeft() - rise_irow_to_target * (lrun / rise_root_to_irow);
-		double right_proj = n.interval.getRight() + rise_irow_to_target * (rrun / rise_root_to_irow);
-		
+		double left_proj = ileft;
+		double right_proj = iright;
+		if(targety != rooty)
+		{
+			left_proj = n.interval.getLeft() - rise_irow_to_target * (lrun / rise_root_to_irow);
+			right_proj = n.interval.getRight() + rise_irow_to_target * (rrun / rise_root_to_irow);
+		}
+
 		if((t.root.x+BitpackedGrid.epsilon) < left_proj)
 		{
 			return // pass through the left endpoint

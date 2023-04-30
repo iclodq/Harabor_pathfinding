@@ -141,7 +141,7 @@ public class AnyaSearch implements MBRunnable {
 		while(!open.isEmpty())
 		{
 			SearchNode current = (SearchNode)open.removeMin();
-			if(verbose) { System.out.println("expanding (f="+current.getKey()+") "+current.toString()); }
+			if(verbose) { System.out.println("expanding (f="+String.format("%.5f", current.getKey())+") "+current.toString()); }
 			expander.expand(current.getData());
 			expanded++;
 			heap_ops++;
@@ -205,7 +205,8 @@ public class AnyaSearch implements MBRunnable {
 
 					if(verbose)
 					{
-						System.out.println("\tinserting with f=" + neighbour.getKey() +" (g= "+new_g_value+");" + neighbour.toString());
+						System.out.println("\tinserting with f=" + String.format("%.5f", neighbour.getKey())+
+                            " (g= "+String.format("%.5f", new_g_value)+");" + neighbour.toString());
 					}
 							
 					heap_ops++;
