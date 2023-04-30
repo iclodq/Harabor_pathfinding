@@ -38,7 +38,6 @@ public class AnyaExpansionPolicy implements ExpansionPolicy<AnyaNode> {
 		grid_ = new BitpackedGrid(filename);
 		
 		this.prune_ = prune;
-        this.prune_ = false;
 		successors_ = new ArrayList<AnyaNode>(32);
 		heuristic_ = new AnyaHeuristic();
 		euclidean_ = new EuclideanDistanceHeuristic();

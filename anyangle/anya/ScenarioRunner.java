@@ -1,6 +1,8 @@
 import java.awt.Point;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -92,7 +94,7 @@ public class ScenarioRunner {
         }
     }
 
-    public static void run_anya(String scenarioFilePath)
+    public static void run_anya(String scenarioFilePath, boolean prune)
     {
         System.gc();
         AnyaExperimentLoader exploader = new AnyaExperimentLoader();
@@ -107,8 +109,21 @@ public class ScenarioRunner {
             	System.err.println("No experiments to run; finishing.");
             	return;
             }
+
             String mapfile = experiments.get(0).getMapFile();
-        	anya = new AnyaSearch(new AnyaExpansionPolicy(mapfile));
+            if(!(new File(mapfile).isFile()))
+            {
+                System.err.println("Could not find map file at location: "+mapfile);
+                mapfile = Paths.get(scenarioFilePath).getParent().toString()+ "/" + Paths.get(mapfile).getFileName().toString();
+                System.err.println("Trying alternative location: " + mapfile);
+                if(!(new File(mapfile).isFile()))
+                {
+                    System.err.println("Could not find map file anywhere. Giving up");
+                    return;
+                }
+            }
+
+        	anya = new AnyaSearch(new AnyaExpansionPolicy(mapfile, prune));
         	anya.verbose = ScenarioRunner.verbose;
         }
         catch(Exception e)
@@ -136,6 +151,7 @@ public class ScenarioRunner {
         AnyaNode target = new AnyaNode(null, new AnyaInterval(0, 0, 0), 0, 0);
     	anya.mb_start_ = start;
     	anya.mb_target_ = target;
+        String algo_name = "AnyaSearch" + (prune ? " (prune)" : " (no_prune)");
         for (int i = 0; i < experiments.size(); i++)
         {
         	ExperimentInterface exp = experiments.get(i);
@@ -149,7 +165,7 @@ public class ScenarioRunner {
         	long duration = (long)(exp_runner.getAvgTime()+0.5);
         	
             System.out.println(i + ";"+ 
-            		"AnyaSearch" + ";" +
+            		algo_name + ";" +
                     wallt_micro + ";"+
                     duration + ";"+
                     anya.expanded + ";"+
@@ -176,7 +192,7 @@ public class ScenarioRunner {
     			continue;
     		}
     		
-    		if( args[i].equals("-ASTAR") || args[i].equals("-ANYA"))
+    		if( args[i].equals("-ASTAR") || args[i].equals("-ANYA") || args[i].equals("-ANYA_no_prune"))
     		{
     			if(algo.equals("") && (i+1) < args.length)
     			{
@@ -210,14 +226,18 @@ public class ScenarioRunner {
     			run_astar(scenario);
     			break;
     		case "-ANYA":
-                run_anya(scenario);
+                run_anya(scenario, true);
+                break;
+    		case "-ANYA_no_prune":
+                run_anya(scenario, false);
+                break;
     	}
     }
     
     private static void printHelp()
     {
 		System.err.println("Parameters: [alg] [scenario]\n;"+
-				"Possible values for [alg]: -ASTAR, -ANYA");
+				"Possible values for [alg]: -ASTAR, -ANYA -ANYA_no_prune");
 
     }
 
