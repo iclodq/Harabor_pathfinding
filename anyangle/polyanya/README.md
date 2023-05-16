@@ -86,6 +86,12 @@ In the `utils` folder,
 will convert a grid map of Arena from Dragon Age: Origins to a Rect mesh, output
 to standard output.
 
+##
+***Please note that due to issues with the Fade2d library,
+there may be cases where certain grid maps cannot be converted successfully.
+However, a fixed version of the mesh converter is available [here](https://github.com/bshen95/GPPC-mesh-converter),
+which follows the same mesh file format as defined in this repository.***
+
 
 # Mesh file format
 
