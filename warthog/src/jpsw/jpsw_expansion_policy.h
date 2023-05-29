@@ -1,5 +1,20 @@
-#ifndef JPSW_EXPANSION_POLICY_H
-#define JPSW_EXPANSION_POLICY_H
+#ifndef WARTHOG_JPSW_EXPANSION_POLICY_H
+#define WARTHOG_JPSW_EXPANSION_POLICY_H
+
+// jpsw_expansion_policy.h
+//
+// This expansion policy performs symmetry breaking to reduce the branching
+// factor of nodes during search on a weighted grid map. It also performs jumps
+// to reduce the number of nodes generated, and caches the result of jumps to
+// reduce the time computing jump locations.
+//
+// For more details, see:
+// [M. Carlson, S. Moghadam, D. Harabor, P.J. Stuckey, and M. Ebrahimi, 2023,
+// Optimal Pathfinding on Weighted Grid Maps, AAAI]
+//
+// @author: Mark Carlson
+// @created: 2022-01-24
+//
 
 #include "jps.h"
 #include "expansion_policy.h"
@@ -15,12 +30,6 @@ struct jpsw_extra;
 class jpsw_expansion_policy : public expansion_policy
 {
 public:
-    /*
-    * This will modify the provided map, changing nonzero labels to 1 for one tile type and 2 for
-    * the other (the expansion policy will remember the costs).
-    *
-    * If there are more than 2 nonzero tile types, an exception is thrown.
-    */
     jpsw_expansion_policy(nbcache& nbcache, vl_gridmap& map, cost_table& costs);
     ~jpsw_expansion_policy();
 

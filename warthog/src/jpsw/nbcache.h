@@ -1,5 +1,13 @@
-#ifndef NBCACHE_H
-#define NBCACHE_H
+#ifndef WARTHOG_NBCACHE_H
+#define WARTHOG_NBCACHE_H
+
+// nbcache.h
+//
+// A cache for storing previously computed neighborhood successor sets in JPSW.
+//
+// @author: Mark Carlson
+// @created: 2022-05-20
+//
 
 #include "vl_gridmap_expansion_policy.h"
 #include "pqueue.h"

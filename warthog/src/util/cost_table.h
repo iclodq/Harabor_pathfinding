@@ -1,6 +1,14 @@
 #ifndef WARTHOG_COST_TABLE_H
 #define WARTHOG_COST_TABLE_H
 
+// cost_table.h
+//
+// A utility for mapping terrain types to their weights in weighted maps.
+//
+// @author: Mark Carlson
+// @created: 2022-06-30
+//
+
 #include "labelled_gridmap.h"
 #include <array>
 
