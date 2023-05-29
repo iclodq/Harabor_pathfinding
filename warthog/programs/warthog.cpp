@@ -37,6 +37,7 @@
 
 #include "getopt.h"
 
+#include <cmath>
 #include <fstream>
 #include <functional>
 #include <iomanip>
@@ -406,7 +407,7 @@ run_wgm_astar(warthog::scenario_manager& scenmgr, std::string mapname, std::stri
     warthog::pqueue_min open;
 
     double lowest_cost = costs.lowest_cost(map);
-    if (lowest_cost != lowest_cost) {
+    if (std::isnan(lowest_cost)) {
         std::cerr << "err; costs file does not specify cost of some terrains" << std::endl;
         exit(1);
     }
@@ -434,7 +435,7 @@ run_jpsw(warthog::scenario_manager& scenmgr, std::string alg_name, std::string c
     warthog::pqueue_min open;
 
     double lowest_cost = costs.lowest_cost(map);
-    if (lowest_cost != lowest_cost) {
+    if (std::isnan(lowest_cost)) {
         std::cerr << "err; costs file does not specify cost of some terrains" << std::endl;
         exit(1);
     }
@@ -463,7 +464,7 @@ run_wgm_sssp(warthog::scenario_manager& scenmgr, std::string mapname, std::strin
     warthog::pqueue_min open;
 
     double lowest_cost = costs.lowest_cost(map);
-    if (lowest_cost != lowest_cost) {
+    if (std::isnan(lowest_cost)) {
         std::cerr << "err; costs file does not specify cost of some terrains" << std::endl;
         exit(1);
     }

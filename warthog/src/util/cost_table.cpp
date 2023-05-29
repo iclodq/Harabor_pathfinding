@@ -1,5 +1,7 @@
 #include "cost_table.h"
 
+#include <cmath>
+
 warthog::cost_table::cost_table(const char* filename) : cost_table()
 {
     std::ifstream file(filename, std::fstream::in);
@@ -39,10 +41,10 @@ warthog::cost_table::cost_table(const char* filename) : cost_table()
 
 warthog::cost_t warthog::cost_table::lowest_cost(warthog::vl_gridmap& map)
 {
-    warthog::cost_t lowest = 1.0 / 0.0;
+    warthog::cost_t lowest = INFINITY;
     for (uint32_t id = 0; id < map.width() * map.height(); id++) {
         auto cost = costs_[map.get_label(id)];
-        if (cost != cost) {
+        if (std::isnan(cost)) {
             // return NaN if any terrain cost is NaN
             return cost;
         }
