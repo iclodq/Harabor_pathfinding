@@ -12,6 +12,7 @@
 #include <istream>
 #include <ostream>
 #include <float.h>
+#include <cstdint>
 
 namespace warthog
 {
