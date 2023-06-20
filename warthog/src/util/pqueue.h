@@ -230,7 +230,7 @@ class pqueue
                 exit(1);
             }
 
-            warthog::search_node** tmp = new search_node*[newsize];
+            warthog::search_node** tmp = new search_node*[newsize]{};
             for(unsigned int i=0; i < queuesize_; i++)
             {
                 tmp[i] = elts_[i];
