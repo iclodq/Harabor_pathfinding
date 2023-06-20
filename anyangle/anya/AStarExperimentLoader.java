@@ -25,15 +25,11 @@ public class AStarExperimentLoader {
         int experimentCounter = 0;
         while ( expLine  != null)
         {
-            String expTokens[] = expLine.split("\t");
-            if (expTokens.length <9)
+            String expTokens[] = expLine.split("\\s+");
+            if (expTokens.length != 9)
             {
-                expTokens = expLine.split(" ");
-                if (expTokens.length <9)
-                {
-                    expLine = in.readLine();
-                    continue;
-                }
+                expLine = in.readLine();
+                continue;
             }
             experimentCounter++;
 

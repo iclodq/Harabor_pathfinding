@@ -45,7 +45,7 @@ endif
 default:
 	+$(MAKE) fast main
 
-##@ Options
+##@ Commands
 
 # These need to be explicitly split
 all:														## Build all flavours
@@ -59,6 +59,7 @@ help:														## Print this message
 	@echo ""
 	@echo "Usage: make [cmd | flavour [target]]"
 	@awk 'BEGIN {FS = ":.*##";} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*##";} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' make.file
 	@echo "$(PROGRAMS)"
 
 ##@ Cleaning
@@ -99,6 +100,3 @@ debug: build/debug/Makefile		## Opti flags with debug symbols
 # Gobble extra targets
 %:
 	@true
-
-# Used for help
-##@ Targets

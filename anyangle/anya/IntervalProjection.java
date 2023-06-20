@@ -153,19 +153,46 @@ public class IntervalProjection
 	{
 		if(rootx <= ileft)
 		{
+            // don't try to project through double corners
+            if(grid.get_point_is_double_corner((int)iright, rooty)) 
+            { return; }
+
+            //if( (!grid.get_cell_is_traversable((int)iright, rooty) &&
+			//     !grid.get_cell_is_traversable((int)iright-1, rooty-1)) ||
+			//	(!grid.get_cell_is_traversable((int)iright-1, rooty) &&
+			//     !grid.get_cell_is_traversable((int)iright, rooty-1)) )
+            // { return; }
+
+            // OK, interval can be extended. compute the projection
 			left = iright;
 			right = grid.scan_right(left, rooty);
-			deadend = !( 
-				grid.get_cell_is_traversable((int)right, rooty) &&
-			    grid.get_cell_is_traversable((int)right, rooty-1));	
+
+			deadend = (
+                // solid wall
+				(!grid.get_cell_is_traversable((int)right, rooty) &&
+			     !grid.get_cell_is_traversable((int)right, rooty-1)) 
+                 );
 		}
 		else
 		{
+            // don't try to project through double corners
+            if(grid.get_point_is_double_corner((int)ileft, rooty)) 
+            { return; }
+
+            //if( (!grid.get_cell_is_traversable((int)(ileft-grid.smallest_step_div2)-1, rooty) &&
+			//	 !grid.get_cell_is_traversable((int)(ileft-grid.smallest_step_div2), rooty-1)) ||
+			//	(!grid.get_cell_is_traversable((int)(ileft-grid.smallest_step_div2), rooty) &&
+			//	 !grid.get_cell_is_traversable((int)(ileft-grid.smallest_step_div2)-1, rooty-1)) )
+            //   { return; }
+
+            // OK, the interval can be extended. compute its projection
 			right = ileft;
 			left = grid.scan_left(right, rooty);
-			deadend = !(
-				grid.get_cell_is_traversable((int)(left-grid.smallest_step_div2), rooty) &&
-				grid.get_cell_is_traversable((int)(left-grid.smallest_step_div2), rooty-1));
+			deadend = (
+                // solid wall
+				(!grid.get_cell_is_traversable((int)(left-grid.smallest_step_div2), rooty) &&
+				 !grid.get_cell_is_traversable((int)(left-grid.smallest_step_div2), rooty-1))
+                );
 		}
 		
 		intermediate = 

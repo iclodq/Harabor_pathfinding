@@ -178,30 +178,40 @@ public class AnyaExpansionPolicy implements ExpansionPolicy<AnyaNode> {
     	// generate conical observable successors below the start point 
     	int max_left = grid_.scan_cells_left(rootx, rooty)+1;
     	int max_right = grid_.scan_cells_right(rootx, rooty);
-    	if(max_left != rootx && !start_dc)
-    	{
-    		split_interval_make_successors(max_left, rootx, rooty+1, 
+        if(!start_dc)
+        {
+    		split_interval_make_successors(max_left, max_right, rooty+1, 
     				rootx, rooty, rooty+1, node, retval);
-    	}    	
-    	if(max_right  != rootx)
-    	{
-    		split_interval_make_successors(rootx, max_right, rooty+1, 
-    				rootx, rooty, rooty+1, node, retval);
-    	}
+        }
+    	//if(max_left != rootx && !start_dc)
+    	//{
+    	//	split_interval_make_successors(max_left, rootx, rooty+1, 
+    	//			rootx, rooty, rooty+1, node, retval);
+    	//}    	
+    	//if(max_right  != rootx)
+    	//{
+    	//	split_interval_make_successors(rootx, max_right, rooty+1, 
+    	//			rootx, rooty, rooty+1, node, retval);
+    	//}
 
     	// generate conical observable successors above the start point
     	max_left = grid_.scan_cells_left(rootx-1, rooty-1)+1;
     	max_right = grid_.scan_cells_right(rootx, rooty-1);
-    	if(max_left != rootx && !start_dc)
-    	{
-    		split_interval_make_successors(max_left, rootx, rooty-1, 
+        if(!start_dc)
+        {
+    		split_interval_make_successors(max_left, max_right, rooty-1, 
     				rootx, rooty, rooty-2, node, retval);
-    	}    	
-    	if(max_right != rootx)
-    	{
-    		split_interval_make_successors(rootx, max_right, rooty-1, 
-    				rootx, rooty, rooty-2, node, retval);
-    	}
+        }
+    	//if(max_left != rootx && !start_dc)
+    	//{
+    	//	split_interval_make_successors(max_left, rootx, rooty-1, 
+    	//			rootx, rooty, rooty-2, node, retval);
+    	//}    	
+    	//if(max_right != rootx)
+    	//{
+    	//	split_interval_make_successors(rootx, max_right, rooty-1, 
+    	//			rootx, rooty, rooty-2, node, retval);
+    	//}
     }
     
     private void split_interval_make_successors(
@@ -471,10 +481,12 @@ public class AnyaExpansionPolicy implements ExpansionPolicy<AnyaNode> {
 		assert(projection.row == rooty);
 		if(!projection.valid) { return; }
 		
+        //System.out.print("generate_observable_flat__ ");
 		boolean goal_interval = 
 			contains_target(projection.left, projection.right, projection.row);
 		if(projection.intermediate && prune_ && !goal_interval)
 		{
+            //System.out.println("projecting intermediate");
 			// ignore intermediate nodes and project further along the row
 			projection.project(projection.left, projection.right, 
 					projection.row, rootx, rooty, grid_);
@@ -486,6 +498,7 @@ public class AnyaExpansionPolicy implements ExpansionPolicy<AnyaNode> {
 		
 		if(!projection.deadend || !prune_ || goal_interval)
 		{
+            //System.out.println(" generate deadend="+projection.deadend+" prune="+prune_+" goal="+goal_interval);
 			retval.add(
 				new AnyaNode(parent,
 					new AnyaInterval(projection.left, projection.right, 

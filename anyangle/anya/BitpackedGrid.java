@@ -370,11 +370,9 @@ public class BitpackedGrid
     	int start_bit_index = tile_id & INDEX_MASK;
     	int mask = (1 << start_bit_index);
     	corners &= ~(mask | (mask-1));
-    	// ignore obstacles in bit positions < (i.e. strictly left of) the starting cell    	
-    	// Because we scan cells (and not corners) we cannot ignore the current location. 
-    	// To do so might result in intervals that pass through obstacles 
-    	// (e.g. current location is a double corner)
-    	obstacles &= ~(mask-1); 
+    	// ignore tile obstacles in bit positions <= (i.e., to the left of) of the 
+        // starting cell. these cannot influence the computation
+    	obstacles &= ~(mask-1);
 
     	int stop_pos;
     	int start_index = t_index;
@@ -429,9 +427,8 @@ public class BitpackedGrid
 
     	// ignore cells in bit positions >= (i.e. to the right of) the starting cell
     	// (NB: big endian order means the rightmost cell is in the highest bit)
-    	// Because we scan cells (and not just corners) we can safely ignore
-    	// the current position. The traversability of its associated cell has
-    	// no impact on deciding whether we can travel left, away from the cell.
+        // The traversability of these cells has no impact on deciding whether
+        // we can travel left from the current point
     	int start_bit_index = tile_id & INDEX_MASK;
     	int mask = (1 << start_bit_index) - 1;
     	corners &= mask;
