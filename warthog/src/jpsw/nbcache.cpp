@@ -14,20 +14,24 @@ warthog::nbcache::nbcache(warthog::cost_table& costs)
     local_nb_.se = local_map_.to_padded_id(2, 2);
 }
 
-void rotate_left(std::array<uint8_t, 9>& cells, int count)
+void
+rotate_left(std::array<uint8_t, 9>& cells, int count)
 {
     for (int i = 0; i < count; i++) {
         uint8_t first = cells[0];
-        for (int j = 1; j < 8; j++) {
+        for (int j = 1; j < 8; j++)
+        {
             cells[j - 1] = cells[j];
         }
         cells[7] = first;
     }
 }
 
-void rotate(warthog::nb_key& key, warthog::jps::direction going)
+void
+rotate(warthog::nb_key& key, warthog::jps::direction going)
 {
-    switch (going) {
+    switch (going)
+    {
         case warthog::jps::NORTH:
             key.diagonal = false;
             break;
@@ -63,8 +67,8 @@ void rotate(warthog::nb_key& key, warthog::jps::direction going)
     }
 }
 
-uint8_t warthog::nbcache::successors(
-        vl_gridmap& map, nbhood_labels& nb, warthog::jps::direction going)
+uint8_t
+warthog::nbcache::successors(vl_gridmap& map, nbhood_labels& nb, warthog::jps::direction going)
 {
     nb_key key = {
         {
@@ -82,9 +86,10 @@ uint8_t warthog::nbcache::successors(
     };
     rotate(key, going);
 
-    auto size = cached_.size();
-    auto& set = cached_[key];
-    if (cached_.size() != size) {
+    size_t size = cached_.size();
+    uint8_t& set = cached_[key];
+    if (cached_.size() != size)
+    {
         local_map_.set_label(local_nb_.nw, key.cells[0]);
         local_map_.set_label(local_nb_.n,  key.cells[1]);
         local_map_.set_label(local_nb_.ne, key.cells[2]);
@@ -97,7 +102,8 @@ uint8_t warthog::nbcache::successors(
         set = calculate_successors(key.diagonal ? 8 : 7);
     }
 
-    switch (going) {
+    switch (going)
+    {
         case warthog::jps::NORTH:
         case warthog::jps::NORTHWEST:
             return set;
@@ -127,7 +133,8 @@ uint8_t warthog::nbcache::successors(
     return 0;
 }
 
-uint8_t warthog::nbcache::calculate_successors(uint64_t source)
+uint8_t
+warthog::nbcache::calculate_successors(uint64_t source)
 {
     warthog::problem_instance pi(source, SN_ID_MAX);
 
@@ -136,7 +143,8 @@ uint8_t warthog::nbcache::calculate_successors(uint64_t source)
     start->init(pi.instance_id_, warthog::SN_ID_MAX, 0, 0);
     pqueue_.push(start);
 
-    while (pqueue_.size()) {
+    while (pqueue_.size())
+    {
         warthog::search_node* current = pqueue_.pop();
         current->set_expanded(true);
         expander_.expand(current, &pi);
@@ -144,15 +152,21 @@ uint8_t warthog::nbcache::calculate_successors(uint64_t source)
         warthog::search_node* n;
         warthog::cost_t cost_to_n;
 
-        for (expander_.first(n, cost_to_n); n != 0; expander_.next(n, cost_to_n)) {
+        for (expander_.first(n, cost_to_n); n != 0; expander_.next(n, cost_to_n))
+        {
             warthog::cost_t gval = current->get_g() + cost_to_n;
-            if (n->get_search_number() != current->get_search_number()) {
+            if (n->get_search_number() != current->get_search_number())
+            {
                 n->init(current->get_search_number(), current->get_id(), gval, gval);
                 pqueue_.push(n);
-            } else if (gval < n->get_g()) {
+            }
+            else if (gval < n->get_g())
+            {
                 n->relax(gval, current->get_id());
                 pqueue_.decrease_key(n);
-            } else if (gval == n->get_g()) {
+            }
+            else if (gval == n->get_g())
+            {
                 uint32_t h = n->get_id();
                 uint32_t p = n->get_parent();
                 bool existing_is_ortho =
@@ -162,10 +176,8 @@ uint8_t warthog::nbcache::calculate_successors(uint64_t source)
                 bool new_is_ortho =
                     c == h - 1 || c == h - local_map_.width() ||
                     c == h + 1 || c == h + local_map_.width();
-                if (
-                    (new_is_ortho && !existing_is_ortho) ||
-                    (new_is_ortho == existing_is_ortho && c == local_nb_.h)
-                ) {
+                if ((new_is_ortho && !existing_is_ortho) || (new_is_ortho == existing_is_ortho && c == local_nb_.h))
+                {
                     // tiebreak in favor of ortho-last
                     n->set_parent(current->get_id());
                 }
@@ -175,35 +187,43 @@ uint8_t warthog::nbcache::calculate_successors(uint64_t source)
 
     uint8_t successors = warthog::jps::NONE;
     warthog::search_node* n = expander_.generate(local_nb_.nw);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::NORTHWEST;
     }
     n = expander_.generate(local_nb_.n);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::NORTH;
     }
     n = expander_.generate(local_nb_.ne);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::NORTHEAST;
     }
     n = expander_.generate(local_nb_.w);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::WEST;
     }
     n = expander_.generate(local_nb_.e);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::EAST;
     }
     n = expander_.generate(local_nb_.sw);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::SOUTHWEST;
     }
     n = expander_.generate(local_nb_.s);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::SOUTH;
     }
     n = expander_.generate(local_nb_.se);
-    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h) {
+    if (n->get_search_number() == pi.instance_id_ && n->get_parent() == local_nb_.h)
+    {
         successors |= warthog::jps::SOUTHEAST;
     }
     return successors;
