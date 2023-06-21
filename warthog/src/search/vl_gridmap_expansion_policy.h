@@ -31,6 +31,7 @@
 #include "expansion_policy.h"
 #include "search_node.h"
 #include "labelled_gridmap.h"
+#include "cost_table.h"
 
 #include <memory>
 
@@ -40,7 +41,7 @@ namespace warthog
 class vl_gridmap_expansion_policy : public expansion_policy
 {
 	public:
-		vl_gridmap_expansion_policy(warthog::vl_gridmap* map);
+		vl_gridmap_expansion_policy(warthog::vl_gridmap* map, warthog::cost_table& costs);
 		virtual ~vl_gridmap_expansion_policy();
 
 		virtual void 
@@ -66,6 +67,7 @@ class vl_gridmap_expansion_policy : public expansion_policy
 
 	private:
 		warthog::vl_gridmap* map_;
+		warthog::cost_table& costs_;
 };
 
 }

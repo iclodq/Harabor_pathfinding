@@ -12,6 +12,7 @@
 #include "cbs_ll_heuristic.h"
 #include "cfg.h"
 #include "constants.h"
+#include "cost_table.h"
 #include "depth_first_search.h"
 #include "flexible_astar.h"
 #include "four_connected_jps_locator.h"
@@ -31,11 +32,13 @@
 #include "labelled_gridmap.h"
 #include "sipp_expansion_policy.h"
 #include "vl_gridmap_expansion_policy.h"
+#include "jpsw_expansion_policy.h"
 #include "zero_heuristic.h"
 
 #include "getopt.h"
 
 #include <filesystem>
+#include <cmath>
 #include <fstream>
 #include <functional>
 #include <iomanip>
@@ -65,12 +68,13 @@ help()
 	<< "\t--alg [alg] (required)\n"
     << "\t--scen [scen file] (required) \n"
     << "\t--map [map file] (optional; specify this to override map values in scen file) \n"
+    << "\t--costs [costs file] (required if using a weighted terrain algorithm)\n"
 	<< "\t--checkopt (optional; compare solution costs against values in the scen file)\n"
 	<< "\t--verbose (optional; prints debugging info when compiled with debug symbols)\n"
     << "Invoking the program this way solves all instances in [scen file] with algorithm [alg]\n"
     << "Currently recognised values for [alg]:\n"
     << "\tcbs_ll, cbs_ll_w, dijkstra, astar, astar_wgm, astar4c, sipp\n"
-    << "\tsssp, jps, jps2, jps+, jps2+, jps, jps4c\n"
+    << "\tsssp, jps, jps2, jps+, jps2+, jps, jps4c, jpsw\n"
     << "\tdfs, gdfs\n\n"
     << ""
     << "The following are valid parameters for GENERATING instances:\n"
@@ -395,17 +399,20 @@ run_dijkstra(warthog::scenario_manager& scenmgr, std::string mapname, std::strin
 }
 
 void
-run_wgm_astar(warthog::scenario_manager& scenmgr, std::string mapname, std::string alg_name)
+run_wgm_astar(warthog::scenario_manager& scenmgr, std::string mapname, std::string alg_name, std::string costfile)
 {
+    warthog::cost_table costs(costfile.c_str());
     warthog::vl_gridmap map(mapname.c_str());
-	warthog::vl_gridmap_expansion_policy expander(&map);
+	warthog::vl_gridmap_expansion_policy expander(&map, costs);
 	warthog::octile_heuristic heuristic(map.width(), map.height());
     warthog::pqueue_min open;
-    
-    // cheapest terrain (movingai benchmarks) has ascii value '.'; we scale
-    // all heuristic values accordingly (otherwise the heuristic doesn't 
-    // impact f-values much and search starts to behave like dijkstra)
-    heuristic.set_hscale('.');
+
+    double lowest_cost = costs.lowest_cost(map);
+    if (std::isnan(lowest_cost)) {
+        std::cerr << "err; costs file does not specify cost of some terrains" << std::endl;
+        exit(1);
+    }
+    heuristic.set_hscale(lowest_cost);
 
 	warthog::flexible_astar<
 		warthog::octile_heuristic,
@@ -419,12 +426,49 @@ run_wgm_astar(warthog::scenario_manager& scenmgr, std::string mapname, std::stri
 }
 
 void
-run_wgm_sssp(warthog::scenario_manager& scenmgr, std::string mapname, std::string alg_name)
+run_jpsw(warthog::scenario_manager& scenmgr, std::string mapname, std::string alg_name, std::string costfile)
 {
+    warthog::cost_table costs(costfile.c_str());
     warthog::vl_gridmap map(mapname.c_str());
-	warthog::vl_gridmap_expansion_policy expander(&map);
+    warthog::nbcache nbs(costs);
+	warthog::jpsw_expansion_policy expander(nbs, map, costs);
+	warthog::octile_heuristic heuristic(map.width(), map.height());
+    warthog::pqueue_min open;
+
+    double lowest_cost = costs.lowest_cost(map);
+    if (std::isnan(lowest_cost)) {
+        std::cerr << "err; costs file does not specify cost of some terrains" << std::endl;
+        exit(1);
+    }
+    heuristic.set_hscale(lowest_cost);
+
+    expander.fill_nb_cache();
+
+	warthog::flexible_astar<
+		warthog::octile_heuristic,
+	   	warthog::jpsw_expansion_policy,
+        warthog::pqueue_min> 
+            astar(&heuristic, &expander, &open);
+
+    run_experiments(&astar, alg_name, scenmgr, 
+            verbose, checkopt, std::cout);
+	std::cerr << "done. total memory: "<< astar.mem() + scenmgr.mem() << "\n";
+}
+
+void
+run_wgm_sssp(warthog::scenario_manager& scenmgr, std::string mapname, std::string alg_name, std::string costfile)
+{
+    warthog::cost_table costs(costfile.c_str());
+    warthog::vl_gridmap map(mapname.c_str());
+	warthog::vl_gridmap_expansion_policy expander(&map, costs);
 	warthog::zero_heuristic heuristic;
     warthog::pqueue_min open;
+
+    double lowest_cost = costs.lowest_cost(map);
+    if (std::isnan(lowest_cost)) {
+        std::cerr << "err; costs file does not specify cost of some terrains" << std::endl;
+        exit(1);
+    }
 
 	warthog::flexible_astar<
 		warthog::zero_heuristic,
@@ -507,6 +551,7 @@ main(int argc, char** argv)
 		{"help", no_argument, &print_help, 1},
 		{"checkopt",  no_argument, &checkopt, 1},
 		{"verbose",  no_argument, &verbose, 1},
+        {"costs", required_argument, 0, 1},
 		{0,  0, 0, 0}
 	};
 
@@ -523,6 +568,7 @@ main(int argc, char** argv)
     std::string alg = cfg.get_param_value("alg");
     std::string gen = cfg.get_param_value("gen");
     std::string mapfile = cfg.get_param_value("map");
+    std::string costfile = cfg.get_param_value("costs");
 
 	if(gen != "")
 	{
@@ -628,7 +674,12 @@ main(int argc, char** argv)
 
     else if(alg == "astar_wgm")
     {
-        run_wgm_astar(scenmgr, mapfile, alg); 
+        run_wgm_astar(scenmgr, mapfile, alg, costfile);
+    }
+
+    else if(alg == "jpsw")
+    {
+        run_jpsw(scenmgr, mapfile, alg, costfile);
     }
 
     else if(alg == "sssp")
@@ -638,7 +689,7 @@ main(int argc, char** argv)
 
     else if(alg == "sssp")
     {
-        run_wgm_sssp(scenmgr, mapfile, alg); 
+        run_wgm_sssp(scenmgr, mapfile, alg, costfile);
     }
     else if(alg == "dfs")
     {

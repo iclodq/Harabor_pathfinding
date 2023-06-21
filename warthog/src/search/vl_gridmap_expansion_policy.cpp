@@ -3,8 +3,8 @@
 #include "vl_gridmap_expansion_policy.h"
 
 warthog::vl_gridmap_expansion_policy::vl_gridmap_expansion_policy(
-		warthog::vl_gridmap* map) 
-    : expansion_policy(map->height() * map->width()), map_(map)
+		warthog::vl_gridmap* map, warthog::cost_table& costs) 
+    : expansion_policy(map->height() * map->width()), map_(map), costs_(costs)
 {
 }
 
@@ -40,72 +40,68 @@ warthog::vl_gridmap_expansion_policy::expand(warthog::search_node* current,
     warthog::dbword* label_SW = label_S - 1;
     
     // generate neighbours to the north
-    if(*label_N) 
+    if(costs_[*label_N]) 
     {
         warthog::search_node* n = generate(id_N);
-        double cost = (*label + *label_N) * 0.5;
+        double cost = (costs_[*label] + costs_[*label_N]) * 0.5;
         add_neighbour(n, cost);
 
-        if(*label_NE && *label_E)
+        if(costs_[*label_NE] && costs_[*label_E])
         {
             warthog::search_node* n =  generate(id_NE);
             double cost = 
-                ((uint32_t)*label + (uint32_t)*label_N 
-                 + (uint32_t)*label_E + (uint32_t)*label_NE) 
+                (costs_[*label] + costs_[*label_N] + costs_[*label_E] + costs_[*label_NE]) 
                  * warthog::DBL_ROOT_TWO * 0.25;
             add_neighbour(n, cost);
         }
-        if(*label_NW && *label_W)
+        if(costs_[*label_NW] && costs_[*label_W])
         {
             warthog::search_node* n =  generate(id_NW);
             double cost = 
-                ((uint32_t)*label + (uint32_t)*label_N 
-                 + (uint32_t)*label_W + (uint32_t)*label_NW) 
+                (costs_[*label] + costs_[*label_N] + costs_[*label_W] + costs_[*label_NW]) 
                  * warthog::DBL_ROOT_TWO * 0.25;
             add_neighbour(n, cost);
         }
     }
 
     // neighburs to the south
-    if(*label_S) 
+    if(costs_[*label_S]) 
     {
         warthog::search_node* n = generate(id_S);
-        double cost = (*label + *label_S) * 0.5;
+        double cost = (costs_[*label] + costs_[*label_S]) * 0.5;
         add_neighbour(n, cost);
 
-        if(*label_SE && *label_E)
+        if(costs_[*label_SE] && costs_[*label_E])
         {
             warthog::search_node* n =  generate(id_SE);
             double cost = 
-                ((uint32_t)*label + (uint32_t)*label_S 
-                 + (uint32_t)*label_E + (uint32_t)*label_SE) 
+                (costs_[*label] + costs_[*label_S] + costs_[*label_E] + costs_[*label_SE]) 
                  * warthog::DBL_ROOT_TWO * 0.25;
             add_neighbour(n, cost);
         }
-        if(*label_SW && *label_W)
+        if(costs_[*label_SW] && costs_[*label_W])
         {
             warthog::search_node* n =  generate(id_SW);
             double cost = 
-                ((uint32_t)*label + (uint32_t)*label_S 
-                 + (uint32_t)*label_W + (uint32_t)*label_SW) 
+                (costs_[*label] + costs_[*label_S] + costs_[*label_W] + costs_[*label_SW]) 
                  * warthog::DBL_ROOT_TWO * 0.25;
             add_neighbour(n, cost);
         }
     }
 
     // neighbour to the east
-    if(*label_E)
+    if(costs_[*label_E])
     {
         warthog::search_node* n = generate(id_E);
-		double cost = ((uint32_t)*label + (uint32_t)*label_E) * 0.5;
+		double cost = (costs_[*label] + costs_[*label_E]) * 0.5;
         add_neighbour(n, cost);
     }
 
     // neighbour to the west
-    if(*label_W) 
+    if(costs_[*label_W]) 
     {
         warthog::search_node* n = generate(id_W);
-		double cost = ((uint32_t)*label + (uint32_t)*label_W) * 0.5;
+		double cost = (costs_[*label] + costs_[*label_W]) * 0.5;
         add_neighbour(n, cost);
     }
 }
