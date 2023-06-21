@@ -1,24 +1,6 @@
 #include "jpsw_expansion_policy.h"
 #include "jps.h"
 
-struct jumpcache
-{
-    uint32_t version_;
-    uint32_t target_;
-    warthog::cost_t g_;
-};
-
-struct warthog::jpsw_extra
-{
-    warthog::cost_t prospective_g_;
-    uint32_t search_number_;
-    uint8_t successors_;
-    bool reached_orthogonally_;
-
-    uint8_t successor_sets_[8];
-    jumpcache jump_cache_[4];
-};
-
 warthog::jpsw_expansion_policy::jpsw_expansion_policy(
         nbcache& nbcache, vl_gridmap& map, cost_table& costs)
     : expansion_policy(map.height()*map.width()),

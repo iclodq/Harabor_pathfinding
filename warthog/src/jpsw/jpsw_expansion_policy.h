@@ -25,7 +25,23 @@
 namespace warthog
 {
 
-struct jpsw_extra;
+struct jumpcache
+{
+    uint32_t version_;
+    uint32_t target_;
+    warthog::cost_t g_;
+};
+
+struct jpsw_extra
+{
+    warthog::cost_t prospective_g_;
+    uint32_t search_number_;
+    uint8_t successors_;
+    bool reached_orthogonally_;
+
+    uint8_t successor_sets_[8];
+    jumpcache jump_cache_[4];
+};
 
 class jpsw_expansion_policy : public expansion_policy
 {
