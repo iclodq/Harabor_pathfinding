@@ -44,6 +44,8 @@ warthog::cost_table::cost_table(const char* filename) : cost_table()
     file.close();
 }
 
+// Identifies the cost of the lowest-cost terrain on the specified map.
+// If the map contains terrain to which no cost has been assigned, then NaN is returned.
 warthog::cost_t
 warthog::cost_table::lowest_cost(warthog::vl_gridmap& map)
 {

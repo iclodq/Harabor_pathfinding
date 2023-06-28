@@ -3,7 +3,11 @@
 
 // nbcache.h
 //
-// A cache for storing previously computed neighborhood successor sets in JPSW.
+// A cache which manages computing and caching neighborhood successor sets in JPSW.
+//
+// The cache is backed by std::unordered_map and handles rotational symmetry to increase the hit rate.
+// In particular, the neighborhood rotated so that the going direction is either north or north-west
+// before performing the cache lookup, and the result is rotated back to the required orientation.
 //
 // @author: Mark Carlson
 // @created: 2022-05-20
@@ -31,6 +35,8 @@ struct nbhood_labels
 
 struct nb_key
 {
+    // First 8 elements are ordered clockwise starting from the north-west,
+    // and the final element is the center location.
     std::array<uint8_t, 9> cells;
     uint8_t diagonal;
 

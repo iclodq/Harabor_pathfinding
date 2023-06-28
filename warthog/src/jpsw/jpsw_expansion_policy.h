@@ -106,6 +106,7 @@ class jpsw_expansion_policy : public expansion_policy
             return (costs_[map_.get_label(west)] + costs_[map_.get_label(west + 1)]) / 2.0;
         }
 
+        // Fetches the node IDs for the locations surrounding the specified node
         inline nbhood_labels
         nbhood(uint32_t around) {
             return
@@ -122,6 +123,8 @@ class jpsw_expansion_policy : public expansion_policy
             };
         }
 
+        // Identified whether the specified neighborhood contains only a single tile type, which
+        // means we can jump through it.
         inline bool
         locally_uniform(nbhood_labels nb)
         {

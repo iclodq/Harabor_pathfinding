@@ -113,6 +113,9 @@ warthog::jpsw_expansion_policy::generate_start_node(warthog::problem_instance* p
     extra.successors_ = 0;
     extra.prospective_g_ = 0.0;
     extra.reached_orthogonally_ = true;
+
+    // At this point, we've reached the start node and so must perform the prospective g update with
+    // its successors. So identify the successors and update each of their prospective g values.
     if (costs_[map_.get_label(nb.n)])
     {
         extra.successors_ |= warthog::jps::NORTH;
@@ -272,6 +275,10 @@ warthog::jpsw_expansion_policy::expand(warthog::search_node* node, warthog::prob
     }
 }
 
+// Calculates orthogonal jump distance and cost using the caching jump procedure from the paper.
+//
+// Instead of directly returning the distance and cost, the cache entries are filled in and these
+// values can then be extracted from the cache by the caller.
 template<int SLOT, typename F>
 void
 warthog::jpsw_expansion_policy::calculate_jump(uint32_t start, int delta, uint32_t version, F cost)
@@ -287,17 +294,20 @@ warthog::jpsw_expansion_policy::calculate_jump(uint32_t start, int delta, uint32
         last_id = nb.h;
         if (!locally_uniform(nb))
         {
+            // End of jump
             break;
         }
         jpsw_& jc = extra_[nb.h].jump_cache_[SLOT];
         if (jc.version_ == version)
         {
+            // Cache hit
             jump_cost = jc.g_;
             nb = nbhood(jc.target_);
             break;
         }
     }
 
+    // Fill in the cache entries for the locations visited in the previous loop
     for (int i = 0; i < jump_dist; i++)
     {
         last_id -= delta;
@@ -310,6 +320,7 @@ warthog::jpsw_expansion_policy::calculate_jump(uint32_t start, int delta, uint32
     assert(last_id == start);
 }
 
+// Performs an orthogonal jump to the west, and adds the successor (if found) to the neighbour list.
 void
 warthog::jpsw_expansion_policy::jump_west(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
@@ -337,6 +348,7 @@ warthog::jpsw_expansion_policy::jump_west(
     }
 }
 
+// Analogous to ::jump_west
 void
 warthog::jpsw_expansion_policy::jump_east(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
@@ -364,6 +376,7 @@ warthog::jpsw_expansion_policy::jump_east(
     }
 }
 
+// Analogous to ::jump_west
 void
 warthog::jpsw_expansion_policy::jump_north(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
@@ -391,6 +404,7 @@ warthog::jpsw_expansion_policy::jump_north(
     }
 }
 
+// Analogous to ::jump_west
 void
 warthog::jpsw_expansion_policy::jump_south(
         uint32_t from, nbhood_labels nb, double g, double cost, warthog::problem_instance* pi)
@@ -417,6 +431,8 @@ warthog::jpsw_expansion_policy::jump_south(
     }
 }
 
+// Performs a diagonal jump north-west (with diagonal branch pruning), adding any successors
+// to the neighbor list.
 void
 warthog::jpsw_expansion_policy::jump_nw(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
@@ -441,6 +457,7 @@ warthog::jpsw_expansion_policy::jump_nw(
     reach(nb.h, warthog::jps::NORTHWEST, g + cost, pi);
 }
 
+// Analogous to ::jump_nw
 void
 warthog::jpsw_expansion_policy::jump_ne(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
@@ -465,6 +482,7 @@ warthog::jpsw_expansion_policy::jump_ne(
     reach(nb.h, warthog::jps::NORTHEAST, g + cost, pi);
 }
 
+// Analogous to ::jump_nw
 void
 warthog::jpsw_expansion_policy::jump_sw(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
@@ -489,6 +507,7 @@ warthog::jpsw_expansion_policy::jump_sw(
     reach(nb.h, warthog::jps::SOUTHWEST, g + cost, pi);
 }
 
+// Analogous to ::jump_nw
 void
 warthog::jpsw_expansion_policy::jump_se(
         nbhood_labels nb, double g, int successor_set, warthog::problem_instance* pi)
@@ -513,6 +532,9 @@ warthog::jpsw_expansion_policy::jump_se(
     reach(nb.h, warthog::jps::SOUTHEAST, g + cost, pi);
 }
 
+// Handles the pseudo-expansion step for the prospective g update when a node is reached.
+// This implements the loop part of the prospective g update algorithm from the paper.
+// This does not add any successors to the neighbour list.
 void
 warthog::jpsw_expansion_policy::reach(
         uint32_t id, warthog::jps::direction direction, double g, warthog::problem_instance* pi)
@@ -574,6 +596,8 @@ warthog::jpsw_expansion_policy::reach(
     }
 }
 
+// Updates the prospective g values for a node using the specified prospective g value.
+// This implements the loop body (not the loop) part of the prospective g update algorithm.
 void
 warthog::jpsw_expansion_policy::prospect(
         uint32_t id, double g, bool ortho, warthog::problem_instance* pi)
@@ -591,6 +615,8 @@ warthog::jpsw_expansion_policy::prospect(
     }
 }
 
+// Finds the neighborhood successor set for the specified tile reached in the specified direction.
+// This uses a location-based cache which can be accessed more quickly than the main neighbourhood-based cache.
 int
 warthog::jpsw_expansion_policy::nbhood_successors(
         uint32_t to, warthog::jps::direction going)

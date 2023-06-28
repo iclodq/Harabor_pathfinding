@@ -14,6 +14,8 @@ warthog::nbcache::nbcache(warthog::cost_table& costs)
     local_nb_.se = local_map_.to_padded_id(2, 2);
 }
 
+// Rotates the cells of a key counter-clockwise 45*count degrees.
+// A 45 degree rotation is not useful, so this is always called with an even count.
 void
 rotate_left(std::array<uint8_t, 9>& cells, int count)
 {
@@ -27,8 +29,11 @@ rotate_left(std::array<uint8_t, 9>& cells, int count)
     }
 }
 
+// Canonicalizes an nb_key.
+// This performs any rotation required to orient the key to the north or north-west directions,
+// and also sets whether the key is for a diagonal direction.
 void
-rotate(warthog::nb_key& key, warthog::jps::direction going)
+canonicalize(warthog::nb_key& key, warthog::jps::direction going)
 {
     switch (going)
     {
@@ -67,6 +72,8 @@ rotate(warthog::nb_key& key, warthog::jps::direction going)
     }
 }
 
+// Finds the successor set for the specified neighborhood going in the specified direction.
+// This will look in the cache for the successor set, and only calculate it if it is not present.
 uint8_t
 warthog::nbcache::successors(vl_gridmap& map, nbhood_labels& nb, warthog::jps::direction going)
 {
@@ -84,12 +91,14 @@ warthog::nbcache::successors(vl_gridmap& map, nbhood_labels& nb, warthog::jps::d
         },
         false
     };
-    rotate(key, going);
+    // Canonicalization will rotate the key into the canonical direction and set the diagonal flag.
+    canonicalize(key, going);
 
     size_t size = cached_.size();
     uint8_t& set = cached_[key];
     if (cached_.size() != size)
     {
+        // No cache entry existed, so we need to calculate the successor set.
         local_map_.set_label(local_nb_.nw, key.cells[0]);
         local_map_.set_label(local_nb_.n,  key.cells[1]);
         local_map_.set_label(local_nb_.ne, key.cells[2]);
@@ -102,6 +111,9 @@ warthog::nbcache::successors(vl_gridmap& map, nbhood_labels& nb, warthog::jps::d
         set = calculate_successors(key.diagonal ? 8 : 7);
     }
 
+    // Rotate the successor set back to the required direction and return it.
+    // Unfortunately this requires some opaque bit-twiddling.
+    // See the warthog::jps::direction enum (src/jps/jps.h) for which bits correspond to which directions.
     switch (going)
     {
         case warthog::jps::NORTH:
@@ -133,6 +145,8 @@ warthog::nbcache::successors(vl_gridmap& map, nbhood_labels& nb, warthog::jps::d
     return 0;
 }
 
+// Performs a Dijkstra search on the caller-setup 3x3 neighborhood with the required tiebreaking
+// to produce an orthogonal-last successor set.
 uint8_t
 warthog::nbcache::calculate_successors(uint64_t source)
 {
@@ -179,6 +193,8 @@ warthog::nbcache::calculate_successors(uint64_t source)
                 if ((new_is_ortho && !existing_is_ortho) || (new_is_ortho == existing_is_ortho && c == local_nb_.h))
                 {
                     // tiebreak in favor of ortho-last
+                    // also, if there is a tie, prefer the center tile since it must have this successor
+                    // and we detect successors as "parent is center tile"
                     n->set_parent(current->get_id());
                 }
             }
