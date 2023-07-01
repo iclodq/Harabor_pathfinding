@@ -1,6 +1,7 @@
 #include "gm_parser.h"
 
 #include <unordered_map>
+#include <cstdint>
 
 warthog::gm_parser::gm_parser(const char* filename)
 {
