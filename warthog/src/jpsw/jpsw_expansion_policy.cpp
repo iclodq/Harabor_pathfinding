@@ -297,7 +297,7 @@ warthog::jpsw_expansion_policy::calculate_jump(uint32_t start, int delta, uint32
             // End of jump
             break;
         }
-        jpsw_& jc = extra_[nb.h].jump_cache_[SLOT];
+        warthog::jumpcache& jc = extra_[nb.h].jump_cache_[SLOT];
         if (jc.version_ == version)
         {
             // Cache hit
@@ -539,8 +539,9 @@ void
 warthog::jpsw_expansion_policy::reach(
         uint32_t id, warthog::jps::direction direction, double g, warthog::problem_instance* pi)
 {
-    constexpr warthog::jps::direction ORTHO_DIRS =
-        warthog::jps::NORTH | warthog::jps::SOUTH | warthog::jps::EAST | warthog::jps::WEST;
+    constexpr uint8_t ORTHO_DIRS =
+        warthog::jps::NORTH | warthog::jps::SOUTH | 
+         warthog::jps::EAST | warthog::jps::WEST;
 
     jpsw_extra& extra = extra_[id];
     nbhood_labels nb = nbhood(id);
