@@ -23,6 +23,7 @@
 #include "sipp/jpst_gridmap.h"
 #include "sipp/temporal_jps_expansion_policy.h"
 #include "getopt.h"
+#include "Statistic.h"
 
 #include <fstream>
 #include <functional>
@@ -34,6 +35,7 @@
 #include <memory>
 
 #include "time_constraints.h"
+Statistic g_statistic;
 
 // check computed solutions are optimal
 int checkopt = 0;

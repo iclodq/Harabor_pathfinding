@@ -43,6 +43,8 @@
 #include <memory>
 
 #include "time_constraints.h"
+#include "util/Statistic.h"
+
 
 // check computed solutions are optimal
 int checkopt = 0;
@@ -50,6 +52,8 @@ int checkopt = 0;
 int verbose = 0;
 // display program help on startup
 int print_help = 0;
+
+Statistic g_statistic;
 
 void
 help()
@@ -140,6 +144,7 @@ run_experiments(warthog::search* algo, std::string alg_name,
             << (sol.path_.size()-1) << "\t" 
             << scenmgr.last_file_loaded() 
             << std::endl;
+        out << g_statistic<<"\n";
 
         if(checkopt) { check_optimality(sol, exp); }
 	}

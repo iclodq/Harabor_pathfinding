@@ -4,6 +4,10 @@
 
 #include <cassert>
 #include <climits>
+#include "Statistic.h"
+
+
+extern Statistic g_statistic;
 
 warthog::online_jump_point_locator::online_jump_point_locator(warthog::gridmap* map)
 	: map_(map)//, jumplimit_(UINT32_MAX)
@@ -53,6 +57,7 @@ warthog::online_jump_point_locator::jump(warthog::jps::direction d,
 	   	uint32_t node_id, uint32_t goal_id, uint32_t& jumpnode_id, 
 		warthog::cost_t& jumpcost)
 {
+	g_statistic.callFindJumpCnt++;
 	switch(d)
 	{
 		case warthog::jps::NORTH:
@@ -88,6 +93,7 @@ void
 warthog::online_jump_point_locator::jump_north(uint32_t node_id, 
 		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost)
 {
+	g_statistic.callCardinalCnt++;
 	node_id = this->map_id_to_rmap_id(node_id);
 	goal_id = this->map_id_to_rmap_id(goal_id);
 	__jump_north(node_id, goal_id, jumpnode_id, jumpcost, rmap_);
@@ -108,6 +114,7 @@ void
 warthog::online_jump_point_locator::jump_south(uint32_t node_id, 
 		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost)
 {
+	g_statistic.callCardinalCnt++;
 	node_id = this->map_id_to_rmap_id(node_id);
 	goal_id = this->map_id_to_rmap_id(goal_id);
 	__jump_south(node_id, goal_id, jumpnode_id, jumpcost, rmap_);
@@ -121,6 +128,7 @@ warthog::online_jump_point_locator::__jump_south(uint32_t node_id,
 {
 	// jumping north in the original map is the same as jumping
 	// west when we use a version of the map rotated 90 degrees.
+	g_statistic.callCardinalCnt++;
 	__jump_west(node_id, goal_id, jumpnode_id, jumpcost, rmap_);
 }
 
@@ -128,6 +136,7 @@ void
 warthog::online_jump_point_locator::jump_east(uint32_t node_id, 
 		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost)
 {
+	g_statistic.callCardinalCnt++;
 	__jump_east(node_id, goal_id, jumpnode_id, jumpcost, map_);
 }
 
@@ -148,7 +157,7 @@ warthog::online_jump_point_locator::__jump_east(uint32_t node_id,
 		// read in tiles from 3 adjacent rows. the curent node 
 		// is in the low byte of the middle row
 		mymap->get_neighbours_32bit(jumpnode_id, neis);
-
+		g_statistic.cardinalCnt++;
 		// identity forced neighbours and deadend tiles. 
 		// forced neighbours are found in the top or bottom row. they 
 		// can be identified as a non-obstacle tile that follows
@@ -203,6 +212,7 @@ void
 warthog::online_jump_point_locator::jump_west(uint32_t node_id, 
 		uint32_t goal_id, uint32_t& jumpnode_id, warthog::cost_t& jumpcost)
 {
+	g_statistic.callCardinalCnt++;
 	__jump_west(node_id, goal_id, jumpnode_id, jumpcost, map_);
 }
 
@@ -217,6 +227,7 @@ warthog::online_jump_point_locator::__jump_west(uint32_t node_id,
 	jumpnode_id = node_id;
 	while(true)
 	{
+		g_statistic.cardinalCnt++;
 		// cache 32 tiles from three adjacent rows.
 		// current tile is in the high byte of the middle row
 		mymap->get_neighbours_upper_32bit(jumpnode_id, neis);
@@ -284,12 +295,13 @@ warthog::online_jump_point_locator::jump_northeast(uint32_t node_id,
 	uint32_t rnext_id = map_id_to_rmap_id(next_id);
 	uint32_t rgoal_id = map_id_to_rmap_id(goal_id);
 	uint32_t rmapw = rmap_->width();
+	g_statistic.callDiagonalCnt++;
 	while(true)
 	{
 		num_steps++;
 		next_id = next_id - mapw + 1;
 		rnext_id = rnext_id + rmapw + 1;
-
+		g_statistic.diagonalCnt++;
 		// recurse straight before stepping again diagonally;
 		// (ensures we do not miss any optimal turning points)
 		uint32_t jp_id1, jp_id2;
@@ -327,12 +339,13 @@ warthog::online_jump_point_locator::jump_northwest(uint32_t node_id,
 	uint32_t rnext_id = map_id_to_rmap_id(next_id);
 	uint32_t rgoal_id = map_id_to_rmap_id(goal_id);
 	uint32_t rmapw = rmap_->width();
+	g_statistic.callDiagonalCnt++;
 	while(true)
 	{
 		num_steps++;
 		next_id = next_id - mapw - 1;
 		rnext_id = rnext_id - (rmapw - 1);
-
+		g_statistic.diagonalCnt++;
 		// recurse straight before stepping again diagonally;
 		// (ensures we do not miss any optimal turning points)
 		uint32_t jp_id1, jp_id2;
@@ -370,11 +383,13 @@ warthog::online_jump_point_locator::jump_southeast(uint32_t node_id,
 	uint32_t rnext_id = map_id_to_rmap_id(next_id);
 	uint32_t rgoal_id = map_id_to_rmap_id(goal_id);
 	uint32_t rmapw = rmap_->width();
+	g_statistic.callDiagonalCnt++;
 	while(true)
 	{
 		num_steps++;
 		next_id = next_id + mapw + 1;
 		rnext_id = rnext_id + rmapw - 1;
+		g_statistic.diagonalCnt++;
 
 		// recurse straight before stepping again diagonally;
 		// (ensures we do not miss any optimal turning points)
@@ -412,11 +427,13 @@ warthog::online_jump_point_locator::jump_southwest(uint32_t node_id,
 	uint32_t rnext_id = map_id_to_rmap_id(next_id);
 	uint32_t rgoal_id = map_id_to_rmap_id(goal_id);
 	uint32_t rmapw = rmap_->width();
+	g_statistic.callDiagonalCnt++;
 	while(true)
 	{
 		num_steps++;
 		next_id = next_id + mapw - 1;
 		rnext_id = rnext_id - (rmapw + 1);
+		g_statistic.diagonalCnt++;
 
 		// recurse straight before stepping again diagonally;
 		// (ensures we do not miss any optimal turning points)

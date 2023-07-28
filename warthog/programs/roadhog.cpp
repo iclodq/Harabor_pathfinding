@@ -37,6 +37,7 @@
 #include "timer.h"
 #include "workload_manager.h"
 #include "zero_heuristic.h"
+#include "Statistic.h"
 
 #include "getopt.h"
 
@@ -46,6 +47,8 @@
 #include <memory>
 #include <sstream>
 #include <unordered_map>
+
+Statistic g_statistic;
 
 // check computed solutions are optimal
 int checkopt = 0;

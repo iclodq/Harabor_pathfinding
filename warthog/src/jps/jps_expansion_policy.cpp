@@ -1,4 +1,7 @@
 #include "jps_expansion_policy.h"
+#include "Statistic.h"
+
+extern Statistic g_statistic;
 
 warthog::jps_expansion_policy::jps_expansion_policy(warthog::gridmap* map)
     : expansion_policy(map->height()*map->width())
@@ -38,6 +41,7 @@ warthog::jps_expansion_policy::expand(
 		warthog::jps::direction d = (warthog::jps::direction) (1 << i);
 		if(succ_dirs & d)
 		{
+            g_statistic.expandCnt++;
             warthog::cost_t jumpcost;
 			uint32_t succ_id;
 			jpl_->jump(d, current_id, goal_id, succ_id, jumpcost);

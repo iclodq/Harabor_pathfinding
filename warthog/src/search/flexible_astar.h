@@ -24,11 +24,13 @@
 #include "search_node.h"
 #include "solution.h"
 #include "timer.h"
+#include "Statistic.h"
 
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <vector>
+
 
 namespace warthog
 {
@@ -207,6 +209,8 @@ class flexible_astar: public warthog::search
 		{
 			warthog::timer mytimer;
 			mytimer.start();
+            g_statistic.Clear();
+            g_statistic.TimerStart();
 			open_->clear();
 
 			warthog::search_node* start;
@@ -233,7 +237,7 @@ class flexible_astar: public warthog::search
                     0, heuristic_->h(pi_.start_id_, pi_.target_id_));
 
 			open_->push(start);
-            
+            g_statistic.addOpenCnt++;
             listener_->generate_node(0, start, 0, UINT32_MAX);
 
 			#ifndef NDEBUG
@@ -245,13 +249,20 @@ class flexible_astar: public warthog::search
 			{
                 // early termination: in case we want bounded-cost
                 // search or if we want to impose some memory limit
-                if(open_->peek()->get_f() > cost_cutoff_) { break; }
-                if(sol.nodes_expanded_ >= exp_cutoff_) { break; }
+                if(open_->peek()->get_f() > cost_cutoff_) { 
+                    std::cout<<"what:"<< open_->peek()->get_f() << " > " << cost_cutoff_ << "\n";
+                    // break; 
+                }
+                if(sol.nodes_expanded_ >= exp_cutoff_) { 
+                    // break;
+                    std::cout<<"what expand:"<< sol.nodes_expanded_ << " > " << exp_cutoff_ << "\n";
+                }
 
 				warthog::search_node* current = open_->pop();
 				current->set_expanded(true); // NB: set before generating
 				assert(current->get_expanded());
 				sol.nodes_expanded_++;
+                g_statistic.closeCnt++;
 
                 listener_->expand_node(current);
 
@@ -287,7 +298,7 @@ class flexible_astar: public warthog::search
                     listener_->generate_node(current, n, cost_to_n, edge_id++);
                     warthog::cost_t gval = current->get_g() + cost_to_n;
                     sol.nodes_touched_++;
-                    
+                    g_statistic.touchedCnt++;
                     if(n->get_search_number() != current->get_search_number())
                     {
                         // add new nodes to the fringe
@@ -296,6 +307,7 @@ class flexible_astar: public warthog::search
                             gval + heuristic_->h(n->get_id(),pi_.target_id_));
 
                         open_->push(n);
+                        g_statistic.addOpenCnt++;
 
                         #ifndef NDEBUG
                         if(pi_.verbose_)
@@ -322,11 +334,13 @@ class flexible_astar: public warthog::search
                             n->set_expanded(false);
                             open_->push(n);
                             sol.nodes_reopen_++;
+                            g_statistic.reopenCnt++;
                         }
                         else
                         {
                             // update priority
                             open_->decrease_key(n);
+                            g_statistic.uptOpenCnt++;
                         }
 
                         #ifndef NDEBUG
@@ -363,9 +377,11 @@ class flexible_astar: public warthog::search
 			}
 
 			mytimer.stop();
+            g_statistic.TimerStop();
 			sol.time_elapsed_nano_ = mytimer.elapsed_time_nano();
             sol.nodes_surplus_ = open_->size();
             sol.heap_ops_ = open_->get_heap_ops();
+            
 
             #ifndef NDEBUG
             if(pi_.verbose_)
